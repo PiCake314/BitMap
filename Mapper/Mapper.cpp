@@ -1,101 +1,212 @@
 #include "Mapper.hpp"
 #include <cassert>
 
-Mapper::Mapper(std::string fn, int height, int width){
-    assert(fn.length() > 4);
+
+bool isNumber(std::string s){
+    for(char &c : s){
+        if(!isdigit(c))
+            return false;
+    }
+
+    return true;
+}
+
+bool isValidP(std::string P){
+    return (P == "P3" || P == "P5");
+}
+
+bool isValidHeight(int height){
+    return (height >= 1);
+}
+
+bool isValidWidth(int width){
+    return (width >= 1);
+}
+
+bool isValidMax(int max){
+    return (max <= 255);
+}
+
+bool areValid(std::string fn, std::string P, int h, int w, int M){
+    return (isValidP(P) && isValidHeight(h) && isValidWidth(w) && isValidMax(M));
+}
+
+bool areValidString(std::string p, std::string h, std::string w, std::string m){
+    return (isNumber(h) && isNumber(w) && isNumber(m) && isValidP(p) &&  isValidHeight(std::stoi(h)) && isValidWidth(std::stoi(w)) && isValidMax(std::stoi(m)));
+}
+
+
+/*==============================================================================================*/
+
+Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std::string type){
+    assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
-
     filename = fn;
-    s.height = height;
-    s.width = width;
-
-    file.open(fn, std::ios::app);
-    file << "P3" << std::endl;
-    file << height << " " << width << std::endl;
-    file << 255 << std::endl;
+    if(type == "load")
+        loadFile();
+    else
+        resetFile();
 }
 
+// Mapper::~Mapper(){
+//     // file.close();
+// }
 
-Mapper::~Mapper(){
-    file.close();
+void Mapper::resetFile(){
+    std::cout << "RESET!" << std::endl;
+    pType = "P3";
+    s.height = 1000;
+    s.width = 1000;
+    max = 255;
+
+    // RGB arr[10000];
+    map = new RGB[1000000];
+
+    fillWhite();
+    setState();
 }
 
+void Mapper::loadFile(){
+    std::string P;
+    std::string h;
+    std::string w;
+    std::string M;
+
+    std::ifstream fin(filename);
+    assert(fin.is_open() == true);
+
+    std::string spaces;
+
+    std::getline(fin, P);
+    fin >> h;
+    fin >> w;
+    std::getline(fin, spaces);
+    std::getline(fin, M);
+
+    assert(areValidString(P, h, w, M) == true);
+
+    pType = P;
+    s.height = std::stoi(h);
+    s.width = std::stoi(w);
+    max = std::stod(M);
+
+    int r;
+    int g;
+    int b;
+
+    std::string garbage;
+
+    std::cout << "H: " << s.height << std::endl;
+    std::cout << "W: " << s.width << std::endl;
+    
+    // RGB arr[s.height*s.width];
+    map = new RGB[s.height*s.width]();
+
+    for(int i=0; i<s.height-1; i++){
+        for(int j=0; j<s.width; ++j){
+            fin >> r >> g >> b;
+            map[i*s.width + j] = RGB(r, b, g);
+        }
+        std::getline(fin, garbage);
+    }
+
+    fin.close();
+}
 
 void Mapper::fillWhite(){
-    for(int i = s.height; i--;){
-        for(int j = s.width; j--;)
-            file << "255 255 255 ";
-        file << '\n';
-    }
+    for(int i=0; i<s.height; i++)
+        for(int j=0; j<s.width; j++)
+            map[i*s.width + j] = RGB(255, 255, 255);
+
+    setState();
+}
+
+
+void Mapper::fillColor(int r, int g, int b){
+    for(int i=0; i<s.height; i++)
+        for(int j=0; j<s.width; j++)
+            *(map + i * s.width + j) = RGB(r, g, b);
 }
 
 
 void Mapper::randomize(){
     srand(time(NULL));
-    
-    for(int i = s.height; i--;){
-        for(int j = s.width; j--;)
-            file << rand()%256 << " " << rand()%256 << " " << rand()%256 << " ";
-        file << '\n';
-    }
 
+    for(int i=0; i<s.height; i++)
+        for(int j=0; j<s.width; j++)
+            *(map + i * s.width + j) = RGB(rand()%256, rand()%256, rand()%256);
+
+    setState();
 }
 
 
 void Mapper::randomizeGrey(){
     srand(time(NULL));
 
-    for(int i = s.height; i--;){
-        for(int j = s.width; j--;){
-            int c = rand()%256;
-            file << c << " " << c << " " << c << " ";
-        }
-        file << '\n';
-    }
-}
-
-
-void Mapper::removePixel(){
-    std::string word;
-    for(int i=3; i--;){
-        file >> word;
-        for(int j=word.length(); j--;)
-            file << '\r';
-    }
-}
-
-
-void Mapper::drawRect(int top, int left, int len, int wid){
-    for(int i=0; i<s.height; i++){
+    for(int i=0; i<s.height; i++)
         for(int j=0; j<s.width; j++){
-            if(i >= top && i < top+len && j >= left && j < left+wid){
-                removePixel();
-                file << "255 0 0 ";
-            }
-            else
-                file << "255 255 255 ";
+            int c = rand()%256;
+            *(map + i * s.width + j) = RGB(c, c, c);
         }
-        file << '\n';
-    }
+
+    setState();
 }
 
 
-    // std::string line;
-    // for(int i=top; i--;)
-    //     getline(file, line);
+void Mapper::drawRect(std::string alignment, RGB color, int top, int left, int height, int width){
+    if(alignment == "center"){
+        top = (s.height-height)/2;
+        left = (s.width-width)/2;
+    }
 
-    // std::string word;
-    // for(int i=left; i--;)
-    //     for(int j=3; j--;)
-    //         file >> word;
-    
-    // for(int i=wid; i--;)
-    //     for(int j=3; j--;){
-    //         file >> word;
-    //         for(int k=word.length()+1; k--;)
-    //             file << '\r';
-    //         file << '\r';
-    //     }
+    for(int i = top; i<top+height; i++)
+        for(int j=left; j<left+width; ++j)
+            map[i*s.width + j] = color;
 
-    // for(int i=wid; i--;)
-    //     file << "255 0 0 ";
+    setState();
+}
+
+
+void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int r){
+    if(alignment == "center"){
+        top = (s.height-r)/2;
+        left = (s.width-r)/2;
+    }
+
+    for(int i=top; i<top+2*r; i++){
+        int x = i - top;
+        for(int j=left; j<left+2*r; ++j){
+            int y = j - left;
+            if(x*x + y*y <= r*r){
+                std::cout << "yes" << std::endl;
+                map[i*s.width + j] = color;
+            }
+        }
+    }
+
+    setState();
+}
+
+void Mapper::setInfo(){
+    std::ofstream fout(filename);
+    assert(fout.is_open() == true);
+    assert(areValid(filename, pType, s.height, s.width, max) == true);
+
+    fout << pType << std::endl;
+    fout << s.height << " " << s.width << std::endl;
+    fout << max << std::endl;
+
+    fout.close();
+}
+
+void Mapper::setState(){
+    setInfo();
+
+    std::ofstream fout(filename, std::ios::app);
+
+    for(int i=0; i<s.height; i++){
+        for(int j=0; j<s.width; ++j)
+            fout << map[i*s.width + j].Pixel() << " ";
+        fout << '\n';
+    }
+}
