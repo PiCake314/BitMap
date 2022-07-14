@@ -1,26 +1,25 @@
 #include <iostream>
-#include <fstream>
-#include <stdio.h>
-#include <time.h>
+#include "Mapper/Mapper.hpp"
+#include <string>
 
 
-using namespace std;
 
+int main(int argc, char** argv){
+    Mapper m("output.ppm", 10, 10);
 
-int main(){
-    srand(time(NULL));
+    if(argc < 2 || !isdigit(argv[1][0]) || std::stoi(argv[1]) < 1 || std::stoi(argv[1]) > 3){
+        std::cout << "Usage: " << argv[0] << " <Number>" << std::endl;
+        std::cout << "1. White / 2. Randomize / 3. Draw Rect" << std::endl;
+        return 0;
+    }
 
-    ofstream file("test.ppm");
-
-    file << "P3\n";
-    //545 x 702
-    file << 100 << " " << 100 << '\n';
-    file << "255\n";
-
-    int x = 0;
-
-    for(int i=0; i<100; i++)
-        for(int j=0; j<100; ++j)
-            file << 255 << " " << 256 << " " << 0 << " ";
+    if(std::stoi(argv[1]) == 1)
+        m.fillWhite();
+    else if(std::stoi(argv[1]) == 2)
+        m.randomize();
+    else if(std::stoi(argv[1]) == 3)
+        m.drawRect(25, 25, 50, 50);
+    else
+        std::cout << "Error: Invalid number" << std::endl;
 
 }
