@@ -48,15 +48,17 @@ Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std:
         resetFile();
 }
 
-// Mapper::~Mapper(){
-//     // file.close();
-// }
+
+Mapper::~Mapper(){
+    delete[] map;
+}
+
 
 void Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
     pType = "P3";
-    s.height = 1000;
-    s.width = 1000;
+    s.height = 100;
+    s.width = 100;
     max = 255;
 
     // RGB arr[10000];
@@ -67,6 +69,7 @@ void Mapper::resetFile(){
 }
 
 void Mapper::loadFile(){
+    std::cout << "LOAD!" << std::endl;
     std::string P;
     std::string h;
     std::string w;
@@ -95,14 +98,11 @@ void Mapper::loadFile(){
     int b;
 
     std::string garbage;
-
-    std::cout << "H: " << s.height << std::endl;
-    std::cout << "W: " << s.width << std::endl;
     
     // RGB arr[s.height*s.width];
     map = new RGB[s.height*s.width]();
 
-    for(int i=0; i<s.height-1; i++){
+    for(int i=0; i<s.height; i++){
         for(int j=0; j<s.width; ++j){
             fin >> r >> g >> b;
             map[i*s.width + j] = RGB(r, b, g);
@@ -155,6 +155,8 @@ void Mapper::randomizeGrey(){
 
 void Mapper::drawRect(std::string alignment, RGB color, int top, int left, int height, int width){
     if(alignment == "center"){
+        height = s.height/2;
+        width = s.width/2;
         top = (s.height-height)/2;
         left = (s.width-width)/2;
     }
@@ -169,20 +171,29 @@ void Mapper::drawRect(std::string alignment, RGB color, int top, int left, int h
 
 void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int r){
     if(alignment == "center"){
-        top = (s.height-r)/2;
-        left = (s.width-r)/2;
+        top = (s.height/2) - r;
+        left = (s.width/2) - r;
     }
 
+    int topMid = top+r;
+    int leftMid = left+r;
+
     for(int i=top; i<top+2*r; i++){
-        int x = i - top;
         for(int j=left; j<left+2*r; ++j){
-            int y = j - left;
-            if(x*x + y*y <= r*r){
-                std::cout << "yes" << std::endl;
+            if((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r){
                 map[i*s.width + j] = color;
             }
         }
     }
+
+
+    // for(int i=top; i<top+2*r; i++){
+    //     for(int j=left; j<left+2*r; ++j){
+    //         if((i-topMid)*(i-topMid0) + (j-leftMid)*(j-leftMid) <= r*r){
+    //             map[i*s.width + j] = color;
+    //         }
+    //     }
+    // }
 
     setState();
 }
