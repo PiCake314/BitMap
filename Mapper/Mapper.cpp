@@ -57,8 +57,8 @@ Mapper::~Mapper(){
 void Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
     pType = "P3";
-    s.height = 100;
-    s.width = 100;
+    s.height = 500;
+    s.width = 500;
     max = 255;
 
     // RGB arr[10000];
@@ -103,7 +103,7 @@ void Mapper::loadFile(){
     map = new RGB[s.height*s.width]();
 
     for(int i=0; i<s.height; i++){
-        for(int j=0; j<s.width; ++j){
+        for(int j=0; j<s.width; j++){
             fin >> r >> g >> b;
             map[i*s.width + j] = RGB(r, b, g);
         }
@@ -178,8 +178,8 @@ void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int
     int topMid = top+r;
     int leftMid = left+r;
 
-    for(int i=top; i<top+2*r; i++){
-        for(int j=left; j<left+2*r; ++j){
+    for(int i=top; i<=top+2*r; i++){
+        for(int j=left; j<=left+2*r; j++){
             if((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r){
                 map[i*s.width + j] = color;
             }
@@ -188,7 +188,7 @@ void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int
 
 
     // for(int i=top; i<top+2*r; i++){
-    //     for(int j=left; j<left+2*r; ++j){
+    //     for(int j=left; j<left+2*r; j++){
     //         if((i-topMid)*(i-topMid0) + (j-leftMid)*(j-leftMid) <= r*r){
     //             map[i*s.width + j] = color;
     //         }
@@ -199,7 +199,8 @@ void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int
 }
 
 void Mapper::setInfo(){
-    std::ofstream fout(filename);
+    std::ofstream fout(filename, std::ios::trunc);
+
     assert(fout.is_open() == true);
     assert(areValid(filename, pType, s.height, s.width, max) == true);
 
@@ -216,7 +217,7 @@ void Mapper::setState(){
     std::ofstream fout(filename, std::ios::app);
 
     for(int i=0; i<s.height; i++){
-        for(int j=0; j<s.width; ++j)
+        for(int j=0; j<s.width; j++)
             fout << map[i*s.width + j].Pixel() << " ";
         fout << '\n';
     }
