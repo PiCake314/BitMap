@@ -1,7 +1,16 @@
 #include <iostream>
 #include "Mapper/Mapper.hpp"
-#include <string>
+// #include <string>
 
+
+// //TODO: OUT DATED - FIX!!!
+// void drawKuwaitFlag(Mapper &m){
+//     m.drawRect("width", RGB(0, 255, 0), 0, 0, 0.3);
+
+//     m.drawRect("width", RGB(255, 0, 0), 70, 0, 0.3);
+
+//     m.drawCircle("", RGB(0, 0, 0), 50, 0, -70);
+// }
 
 
 int main(int argc, char** argv){
@@ -9,15 +18,14 @@ int main(int argc, char** argv){
         std::cerr << "Usage: ./a.out + <command> (reset/load)" << std::endl;
         return 0;
     }
+    //
 
-    Mapper m("output.ppm", "P3", 100, 100, 255, argv[1]);
+    Mapper m("output.ppm", "P3", 100, 200, 255, argv[1]);
+    
+    m.drawRect("width", RGB(0, 255, 0), 0, 0, 33);
 
-    // m.fillWhite();
+    m.drawRect("width", RGB(255, 0, 0), 67, 0, 33);
 
-    // m.drawCircle("", RGB(100, 0, 100), 100, 235, 55);
-
-    m.drawRect("center", RGB(255, 0, 0));
-
-    // m.drawCircle("", RGB(0, 0, 0), 200, 200, 100);
+    m.drawCircle("", RGB(0, 0, 0), 50, 0, -50);
     
 }
