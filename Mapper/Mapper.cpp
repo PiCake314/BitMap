@@ -3,10 +3,9 @@
 
 
 bool isNumber(std::string s){
-    for(char &c : s){
+    for(char &c : s)
         if(!isdigit(c))
             return false;
-    }
 
     return true;
 }
@@ -41,7 +40,11 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
 Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std::string type){
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
-    filename = fn;
+    m_filename = fn;
+    m_pType = p;
+    m_s.height = height;
+    m_s.width = width;
+    m_max = m;
     if(type == "load")
         loadFile();
     else
@@ -50,19 +53,19 @@ Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std:
 
 
 Mapper::~Mapper(){
-    delete[] map;
+    delete[] m_map;
 }
 
 
 void Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
-    pType = "P3";
-    s.height = 500;
-    s.width = 500;
-    max = 255;
+    // m_pType = "P3";
+    // m_s.height = 500;
+    // m_s.width = 500;
+    // m_max = 255;
 
     // RGB arr[10000];
-    map = new RGB[1000000];
+    m_map = new RGB[m_s.height * m_s.width];
 
     fillWhite();
     setState();
@@ -75,7 +78,7 @@ void Mapper::loadFile(){
     std::string w;
     std::string M;
 
-    std::ifstream fin(filename);
+    std::ifstream fin(m_filename);
     assert(fin.is_open() == true);
 
     std::string spaces;
@@ -88,10 +91,10 @@ void Mapper::loadFile(){
 
     assert(areValidString(P, h, w, M) == true);
 
-    pType = P;
-    s.height = std::stoi(h);
-    s.width = std::stoi(w);
-    max = std::stod(M);
+    m_pType = P;
+    m_s.height = std::stoi(h);
+    m_s.width = std::stoi(w);
+    m_max = std::stod(M);
 
     int r;
     int g;
@@ -100,12 +103,12 @@ void Mapper::loadFile(){
     std::string garbage;
     
     // RGB arr[s.height*s.width];
-    map = new RGB[s.height*s.width]();
+    m_map = new RGB[m_s.height*m_s.width]();
 
-    for(int i=0; i<s.height; i++){
-        for(int j=0; j<s.width; j++){
+    for(int i=0; i<m_s.height; i++){
+        for(int j=0; j<m_s.width; j++){
             fin >> r >> g >> b;
-            map[i*s.width + j] = RGB(r, b, g);
+            m_map[i*m_s.width + j] = RGB(r, b, g);
         }
         std::getline(fin, garbage);
     }
@@ -114,27 +117,27 @@ void Mapper::loadFile(){
 }
 
 void Mapper::fillWhite(){
-    for(int i=0; i<s.height; i++)
-        for(int j=0; j<s.width; j++)
-            map[i*s.width + j] = RGB(255, 255, 255);
+    for(int i=0; i<m_s.height; i++)
+        for(int j=0; j<m_s.width; j++)
+            m_map[i*m_s.width + j] = RGB(255, 255, 255);
 
     setState();
 }
 
 
 void Mapper::fillColor(int r, int g, int b){
-    for(int i=0; i<s.height; i++)
-        for(int j=0; j<s.width; j++)
-            *(map + i * s.width + j) = RGB(r, g, b);
+    for(int i=0; i<m_s.height; i++)
+        for(int j=0; j<m_s.width; j++)
+            *(m_map + i * m_s.width + j) = RGB(r, g, b);
 }
 
 
 void Mapper::randomize(){
     srand(time(NULL));
 
-    for(int i=0; i<s.height; i++)
-        for(int j=0; j<s.width; j++)
-            *(map + i * s.width + j) = RGB(rand()%256, rand()%256, rand()%256);
+    for(int i=0; i<m_s.height; i++)
+        for(int j=0; j<m_s.width; j++)
+            *(m_map + i * m_s.width + j) = RGB(rand()%256, rand()%256, rand()%256);
 
     setState();
 }
@@ -143,49 +146,108 @@ void Mapper::randomize(){
 void Mapper::randomizeGrey(){
     srand(time(NULL));
 
-    for(int i=0; i<s.height; i++)
-        for(int j=0; j<s.width; j++){
+    for(int i=0; i<m_s.height; i++)
+        for(int j=0; j<m_s.width; j++){
             int c = rand()%256;
-            *(map + i * s.width + j) = RGB(c, c, c);
+            *(m_map + i * m_s.width + j) = RGB(c, c, c);
         }
 
     setState();
 }
 
 
-void Mapper::drawRect(std::string alignment, RGB color, int top, int left, int height, int width){
+void Mapper::drawRect(std::string alignment, RGB color, int top, int left, float height, float width){
+    // int small_side = height < width ? height : width;
+    // int tall_side = height > width ? height : width;
+    // if(height < 1)
+    //     height = height * m_s.height;
+    
+    // if(width < 1)
+    //     width = width * m_s.width;
+
+
+
     if(alignment == "center"){
-        height = s.height/2;
-        width = s.width/2;
-        top = (s.height-height)/2;
-        left = (s.width-width)/2;
+        top = (m_s.height-height)/2;
+        left = (m_s.width-width)/2;
+    }
+    else if(alignment == "top-left"){
+        height = m_s.height/2;
+        width = m_s.width/2;
+        top = 0;
+        left = 0;
+    }
+    else if(alignment == "top-right"){
+        height = m_s.height/2;
+        width = m_s.width/2;
+        top = 0;
+        left = m_s.width-width;
+    }
+    else if(alignment == "bottom-left"){
+        height = m_s.height/2;
+        width = m_s.width/2;
+        top = m_s.height-height;
+        left = 0;
+    }
+    else if(alignment == "bottom-right"){
+        height = m_s.height/2;
+        width = m_s.width/2;
+        top = m_s.height-height;
+        left = m_s.width-width;
+    }
+    else if(alignment == "width"){
+        width = m_s.width;
+        left = 0;
+    }
+    else if(alignment == "height"){
+        height = m_s.height;
+        top = 0;
     }
 
-    for(int i = top; i<top+height; i++)
-        for(int j=left; j<left+width; ++j)
-            map[i*s.width + j] = color;
+    for(int i = (top>=0?top:0); i<(top+height<m_s.height?top+height:m_s.height); i++)
+        for(int j=(left>=0?left:0); j<(left+width<m_s.width?left+width:m_s.width); ++j)
+            if(i*m_s.width + j >= 0 && i*m_s.width + j < m_s.height * m_s.width)
+                m_map[i*m_s.width + j] = color;
 
     setState();
 }
 
 
-void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int r){
+void Mapper::drawCircle(std::string alignment, RGB color, int r, int top, int left){
     if(alignment == "center"){
-        top = (s.height/2) - r;
-        left = (s.width/2) - r;
+        top = (m_s.height/2) - r;
+        left = (m_s.width/2) - r;
+    }
+
+    if(alignment == "top"){
+        top = 0;
+        left = (m_s.width/2) - r;
+    }
+
+    if(alignment == "bottom"){
+        top = m_s.height - 2*r;
+        left = (m_s.width/2) - r;
+    }
+
+    if(alignment == "left"){
+        top = (m_s.height/2) - r;
+        left = 0;
+    }
+
+    if(alignment == "right"){
+        top = (m_s.height/2) - r;
+        left = m_s.width - 2*r;
     }
 
     int topMid = top+r;
     int leftMid = left+r;
 
-    for(int i=top; i<=top+2*r; i++){
-        for(int j=left; j<=left+2*r; j++){
-            if((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r){
-                map[i*s.width + j] = color;
-            }
-        }
-    }
 
+    for(int i=(top>=0?top:0); i<top+2*r; i++)
+        for(int j=(left>=0?left:0); j<left+2*r; j++)
+            if((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r)
+                if(i*m_s.width + j >= 0 && i*m_s.width + j < m_s.height*m_s.width)
+                    m_map[i*m_s.width + j] = color;
 
     // for(int i=top; i<top+2*r; i++){
     //     for(int j=left; j<left+2*r; j++){
@@ -199,14 +261,14 @@ void Mapper::drawCircle(std::string alignment, RGB color, int top, int left, int
 }
 
 void Mapper::setInfo(){
-    std::ofstream fout(filename, std::ios::trunc);
+    std::ofstream fout(m_filename, std::ios::trunc);
 
     assert(fout.is_open() == true);
-    assert(areValid(filename, pType, s.height, s.width, max) == true);
+    assert(areValid(m_filename, m_pType, m_s.height, m_s.width, m_max) == true);
 
-    fout << pType << std::endl;
-    fout << s.height << " " << s.width << std::endl;
-    fout << max << std::endl;
+    fout << m_pType << std::endl;
+    fout << m_s.width << " " << m_s.height << std::endl;
+    fout << m_max << std::endl;
 
     fout.close();
 }
@@ -214,11 +276,11 @@ void Mapper::setInfo(){
 void Mapper::setState(){
     setInfo();
 
-    std::ofstream fout(filename, std::ios::app);
+    std::ofstream fout(m_filename, std::ios::app);
 
-    for(int i=0; i<s.height; i++){
-        for(int j=0; j<s.width; j++)
-            fout << map[i*s.width + j].Pixel() << " ";
+    for(int i=0; i<m_s.height; i++){
+        for(int j=0; j<m_s.width; j++)
+            fout << m_map[i*m_s.width + j].Pixel() << " ";
         fout << '\n';
     }
 }

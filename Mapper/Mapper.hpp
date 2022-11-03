@@ -38,17 +38,17 @@ struct RGB{
 
 class Mapper{
     private:
-        std::string filename;
-        std::string pType;
-        size s;
-        int max;
-        RGB *map;
+        std::string m_filename;
+        std::string m_pType;
+        size m_s;
+        int m_max;
+        RGB *m_map;
 
 
     public:
         // Mapper();
         Mapper(std::string = "output.ppm", std::string = "P3", int = 100, int = 100, int = 255, std::string = "reset");
-        // ~Mapper();
+        ~Mapper();
 
         void resetFile();
 
@@ -62,9 +62,9 @@ class Mapper{
 
         void randomizeGrey();
 
-        void drawRect(std::string alignment = "none", RGB color = RGB(255, 255, 255), int top = 0, int left = 0, int height = 10, int width = 10);
+        void drawRect(std::string alignment = "none", RGB  = RGB(255, 255, 255), int top = 0, int left = 0, float height = 10, float width = 10);
 
-        void drawCircle(std::string alignment = "none", RGB color = RGB(255, 255, 255), int top = 0, int left = 0, int r = 10);
+        void drawCircle(std::string alignment = "none", RGB = RGB(255, 255, 255), int r = 10 , int top = 0, int left = 0);
         
         void setInfo();
         void setState();
