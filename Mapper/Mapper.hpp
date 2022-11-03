@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include <sstream>
 #include <fstream>
 #include <stdio.h>
@@ -36,6 +37,16 @@ struct RGB{
     }
 };
 
+
+struct Point{
+    float x;
+    float y;
+
+    Point() : x(0), y(0) {}
+    Point(float x_, float y_) : x(x_), y(y_) {};
+
+};
+
 class Mapper{
     private:
         std::string m_filename;
@@ -47,7 +58,7 @@ class Mapper{
 
     public:
         // Mapper();
-        Mapper(std::string = "output.ppm", std::string = "P3", int = 100, int = 100, int = 255, std::string = "reset");
+        Mapper(std::string = "output.ppm", std::string = "P3", int h = 100, int w = 100, int m = 255, std::string = "reset");
         ~Mapper();
 
         void resetFile();
@@ -56,15 +67,21 @@ class Mapper{
 
         void fillWhite();
 
-        void fillColor(int, int, int);
+        void fillColor(RGB = RGB());
 
         void randomize();
 
         void randomizeGrey();
 
-        void drawRect(std::string alignment = "none", RGB  = RGB(255, 255, 255), int top = 0, int left = 0, float height = 10, float width = 10);
+        void drawLine(Point p1 = Point(), Point p2 = Point(), RGB = RGB(), bool thick = false);
 
-        void drawCircle(std::string alignment = "none", RGB = RGB(255, 255, 255), int r = 10 , int top = 0, int left = 0);
+        void drawTri(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), RGB = RGB(), bool thick = false);
+
+        void drawMulti(std::vector<Point>, RGB = RGB(), bool thick = false);
+
+        void drawRect(float top = 0, float left = 0, float height = 10, float width = 10, RGB  = RGB(), std::string alignment = "none");
+
+        void drawCircle(int top = 0, int left = 0, int r = 10, RGB = RGB(), std::string alignment = "none");
         
         void setInfo();
         void setState();

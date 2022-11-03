@@ -1,31 +1,39 @@
-#include <iostream>
 #include "Mapper/Mapper.hpp"
-// #include <string>
+#include "rdtsc.h"
 
 
-// //TODO: OUT DATED - FIX!!!
-// void drawKuwaitFlag(Mapper &m){
-//     m.drawRect("width", RGB(0, 255, 0), 0, 0, 0.3);
+void drawKuwaitFlag(Mapper &m, int h){
+    m.drawRect(0, 0, 0.33, 0, RGB(0, 255, 0), "width");
 
-//     m.drawRect("width", RGB(255, 0, 0), 70, 0, 0.3);
+    m.drawRect(0.67, 0, 0.33, 0, RGB(255, 0, 0), "width");
 
-//     m.drawCircle("", RGB(0, 0, 0), 50, 0, -70);
-// }
+    m.drawCircle(0, -h/2, h/2, RGB(0, 0, 0));
+}
 
 
 int main(int argc, char** argv){
     if(argc < 2){
-        std::cerr << "Usage: ./a.out + <command> (reset/load)" << std::endl;
+        std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
         return 0;
     }
-    //
-
-    Mapper m("output.ppm", "P3", 100, 200, 255, argv[1]);
+    int height = 100, width = 200;
+    Mapper m("output.ppm", "P3", height, width, 255, argv[1]);
     
-    m.drawRect("width", RGB(0, 255, 0), 0, 0, 33);
+  long long cycStart, cycStop;
+  cycStart = rdtscll();
+  
+  m.fillColor();
+  m.drawRect(0, 0, 0.33, 0, RGB(0, 255, 0), "width");
+  m.drawRect(0.33, 0, 0.34, 0, RGB(255, 255, 255), "width");
+  m.drawRect(0.67, 0, 0.33, 0, RGB(255, 0, 0), "width");
+  std::vector<Point> p = {Point(0, 0), Point(height/3.0f, 40), Point(height/1.5, 40), Point(100, 0)};
+  m.drawMulti(p, RGB(), true);
 
-    m.drawRect("width", RGB(255, 0, 0), 67, 0, 33);
 
-    m.drawCircle("", RGB(0, 0, 0), 50, 0, -50);
-    
+  cycStop = rdtscll();
+  long diff = cycStop - cycStart;
+  long diffPerPixel = diff / (width*height);
+  fprintf(stderr, "Took %ld cycles to process, or %ld cycles per pixel\n", diff, diff/(width*height));
+
+    return 0;    
 }

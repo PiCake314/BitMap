@@ -99,7 +99,6 @@ void Mapper::loadFile(){
     int r;
     int g;
     int b;
-
     std::string garbage;
     
     // RGB arr[s.height*s.width];
@@ -125,10 +124,10 @@ void Mapper::fillWhite(){
 }
 
 
-void Mapper::fillColor(int r, int g, int b){
+void Mapper::fillColor(RGB color){
     for(int i=0; i<m_s.height; i++)
         for(int j=0; j<m_s.width; j++)
-            *(m_map + i * m_s.width + j) = RGB(r, g, b);
+            *(m_map + i * m_s.width + j) = color;
 }
 
 
@@ -156,14 +155,60 @@ void Mapper::randomizeGrey(){
 }
 
 
-void Mapper::drawRect(std::string alignment, RGB color, int top, int left, float height, float width){
+void Mapper::drawLine(Point p1, Point p2, RGB color, bool thick){
+    if(p2.y - p1.y != 0){
+        float slope = float(p2.x-p1.x)/float(p2.y-p1.y);
+        float b = float(p1.x) - float(slope*p1.y);
+
+        for(int i=0; i<m_s.height; i++)
+            for(int j=0; j<m_s.width; j++)
+                if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick)
+                    if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x) && 
+                    j >= (p1.y<p2.y?p1.y:p2.y) && j <= (p1.y>p2.y?p1.y:p2.y))
+                        m_map[i*m_s.width + j] = color;
+    }
+    else{
+        for(int i=m_s.height-1; i>=0; i--)
+            if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x))
+                m_map[i*m_s.width + int(p1.y)] = color;
+            
+
+    }
+
+
+    setState();
+}
+
+
+void Mapper::drawTri(Point p1, Point p2, Point p3, RGB color, bool thick){
+    drawLine(p1, p2, color, thick);
+    drawLine(p2, p3, color, thick);
+    drawLine(p3, p1, color, thick);
+}
+
+
+void Mapper::drawMulti(std::vector<Point> points, RGB color, bool thick){
+    assert(points.size() >= 2);
+    for(int i=0; i<points.size()-1; i++)
+        drawLine(points[i], points[i+1], color, thick);
+}
+
+
+void Mapper::drawRect(float top, float  left, float height, float width, RGB color, std::string alignment){
     // int small_side = height < width ? height : width;
     // int tall_side = height > width ? height : width;
-    // if(height < 1)
-    //     height = height * m_s.height;
+
+    if(height < 1)
+        height *= m_s.height;
     
-    // if(width < 1)
-    //     width = width * m_s.width;
+    if(width < 1)
+        width *= m_s.width;
+
+    if(top < 1)
+        top *= m_s.height;
+
+    if(left < 1)
+        left *= m_s.width;
 
 
 
@@ -213,7 +258,7 @@ void Mapper::drawRect(std::string alignment, RGB color, int top, int left, float
 }
 
 
-void Mapper::drawCircle(std::string alignment, RGB color, int r, int top, int left){
+void Mapper::drawCircle(int top, int left, int r, RGB color, std::string alignment){
     if(alignment == "center"){
         top = (m_s.height/2) - r;
         left = (m_s.width/2) - r;
