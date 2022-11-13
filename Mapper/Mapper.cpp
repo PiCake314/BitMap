@@ -84,8 +84,8 @@ void Mapper::loadFile(){
     std::string spaces;
 
     std::getline(fin, P);
-    fin >> h;
     fin >> w;
+    fin >> h;
     std::getline(fin, spaces);
     std::getline(fin, M);
 
@@ -128,6 +128,8 @@ void Mapper::fillColor(RGB color){
     for(int i=0; i<m_s.height; i++)
         for(int j=0; j<m_s.width; j++)
             *(m_map + i * m_s.width + j) = color;
+    
+    setState();
 }
 
 
@@ -157,23 +159,20 @@ void Mapper::randomizeGrey(){
 
 void Mapper::drawLine(Point p1, Point p2, RGB color, bool thick){
     if(p2.y - p1.y != 0){
-        float slope = float(p2.x-p1.x)/float(p2.y-p1.y);
-        float b = float(p1.x) - float(slope*p1.y);
+        float slope = (p2.x-p1.x)/(p2.y-p1.y);
+        float b = p1.x - slope*p1.y;
 
         for(int i=0; i<m_s.height; i++)
             for(int j=0; j<m_s.width; j++)
                 if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick)
                     if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x) && 
-                    j >= (p1.y<p2.y?p1.y:p2.y) && j <= (p1.y>p2.y?p1.y:p2.y))
+                       j >= (p1.y<p2.y?p1.y:p2.y) && j <= (p1.y>p2.y?p1.y:p2.y))
                         m_map[i*m_s.width + j] = color;
     }
-    else{
+    else
         for(int i=m_s.height-1; i>=0; i--)
             if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x))
                 m_map[i*m_s.width + int(p1.y)] = color;
-            
-
-    }
 
 
     setState();
@@ -181,9 +180,50 @@ void Mapper::drawLine(Point p1, Point p2, RGB color, bool thick){
 
 
 void Mapper::drawTri(Point p1, Point p2, Point p3, RGB color, bool thick){
-    drawLine(p1, p2, color, thick);
-    drawLine(p2, p3, color, thick);
-    drawLine(p3, p1, color, thick);
+
+    // setState();
+}
+
+
+void Mapper::drawFourPoints(Point points[], RGB color, bool thick){
+    Point p1 = points[0];
+    Point p2 = points[1];
+    Point p3 = points[2];
+    Point p4 = points[3];
+
+    float slope1 = (p2.x-p1.x)/(p2.y-p1.y);
+    float b1 = p1.x - slope1*p1.y;
+
+    float slope2 = (p3.x-p2.x)/(p3.y-p2.y);
+    float b2 = p2.x - slope2*p2.y;
+
+    float slope3 = (p4.x-p3.x)/(p4.y-p3.y);
+    float b3 = p3.x - slope3*p3.y;
+
+    float slope4 = (p1.x-p4.x)/(p1.y-p4.y);
+    float b4 = p4.x - slope4*p4.y;
+
+    if(p1.y == p4.y);
+
+
+
+    if(p2.y == p3.y);
+
+    std::cout << p1.y << std::endl;
+    std::cout << p4.y << std::endl;
+
+    for(int i=0; i<m_s.height; i++)
+        for(int j=0; j<m_s.width; j++)
+            if(
+                i >= int(slope1*j + b1)+thick &&
+                (p2.y == p3.y ? j <= p2.y : i >= int(slope2*j + b2)+thick) &&
+                i <= int(slope3*j + b3)+thick &&
+                (p1.y == p4.y ? j >= p1.y : i <= int(slope4*j + b4)+thick)
+            )
+                    m_map[i*m_s.width + j] = color;
+
+
+    setState();
 }
 
 
@@ -191,12 +231,19 @@ void Mapper::drawMulti(std::vector<Point> points, RGB color, bool thick){
     assert(points.size() >= 2);
     for(int i=0; i<points.size()-1; i++)
         drawLine(points[i], points[i+1], color, thick);
+
+
+    setState();
 }
 
 
+/*
+    height/width: negative values will result in them being 10% of the height.
+*/
 void Mapper::drawRect(float top, float  left, float height, float width, RGB color, std::string alignment){
-    // int small_side = height < width ? height : width;
-    // int tall_side = height > width ? height : width;
+    if(height < 0) height = m_s.height/10;
+    
+    if(width < 0) width = m_s.height/10;
 
     if(height < 1)
         height *= m_s.height;
@@ -209,7 +256,6 @@ void Mapper::drawRect(float top, float  left, float height, float width, RGB col
 
     if(left < 1)
         left *= m_s.width;
-
 
 
     if(alignment == "center"){
@@ -258,7 +304,12 @@ void Mapper::drawRect(float top, float  left, float height, float width, RGB col
 }
 
 
-void Mapper::drawCircle(int top, int left, int r, RGB color, std::string alignment){
+/*
+    r: negative values will result in them being 10% of the height.
+*/
+void Mapper::drawCircle(int top, int left, int r, RGB color, bool filled, bool inverted, std::string alignment){
+    if(r < 0) r = m_s.height/10;
+    
     if(alignment == "center"){
         top = (m_s.height/2) - r;
         left = (m_s.width/2) - r;
@@ -287,11 +338,25 @@ void Mapper::drawCircle(int top, int left, int r, RGB color, std::string alignme
     int topMid = top+r;
     int leftMid = left+r;
 
+    if(inverted){
+        color.red = 255 - color.red;
+        color.green = 255 - color.green;
+        color.blue = 255 - color.blue;
+    }
 
-    for(int i=(top>=0?top:0); i<top+2*r; i++)
-        for(int j=(left>=0?left:0); j<left+2*r; j++)
-            if((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r)
-                if(i*m_s.width + j >= 0 && i*m_s.width + j < m_s.height*m_s.width)
+    if(filled){
+        for(int i=(top>=0?top:0); i<(top+2*r<m_s.height?top+2*r:m_s.height); i++)
+            for(int j=(left>=0?left:0); j<(left+2*r<m_s.width?left+2*r:m_s.width); j++)
+                if((inverted? -1 : 1)*((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r)) <= r*r*((inverted? -1 : 1)))
+                        m_map[i*m_s.width + j] = color;
+    }
+    else
+        for(int i=(top>=0?top:0); i<(top+2*r<m_s.height?top+2*r:m_s.height); i++)
+            for(int j=(left>=0?left:0); j<(left+2*r<m_s.width?left+2*r:m_s.width); j++)
+                if(
+                    (i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) >= r*r - r &&
+                    (i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r + r
+                )
                     m_map[i*m_s.width + j] = color;
 
     // for(int i=top; i<top+2*r; i++){
@@ -304,6 +369,59 @@ void Mapper::drawCircle(int top, int left, int r, RGB color, std::string alignme
 
     setState();
 }
+
+/*
+    r1/r2: negative values will result in them being 10% of the height.
+*/
+void Mapper::drawEllipse(int top, int left, int r1, int r2, RGB color, bool filled, bool inverted, std::string alignment){
+    if(r1 < 0) r1 = m_s.height/10;
+    
+    if(r2 < 0) r2 = m_s.height/10;
+    
+    if(alignment == "center"){
+        top = (m_s.height/2) - r1;
+        left = (m_s.width/2) - r2;
+    }
+
+    if(alignment == "top"){
+        top = 0;
+        left = (m_s.width/2) - r2;
+    }
+
+    if(alignment == "bottom"){
+        top = m_s.height - 2*r1;
+        left = (m_s.width/2) - r2;
+    }
+
+    if(alignment == "left"){
+        top = (m_s.height/2) - r1;
+        left = 0;
+    }
+
+    if(alignment == "right"){
+        top = (m_s.height/2) - r1;
+        left = m_s.width - 2*r2;
+    }
+
+
+    if(filled){
+        for(int i=(top>=0?top:0); i<(top+2*r1<m_s.height?top+2*r1:m_s.height); i++)
+            for(int j=(left>=0?left:0); j<=(left+2*r2<m_s.width?left+2*r2:m_s.width); j++)
+                if((inverted? -1 : 1)*((i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2)) < r1*r2*((inverted? -1 : 1)))
+                        m_map[i*m_s.width + j] = color;
+    }
+    else
+        for(int i=(top>=0?top:0); i<(top+2*r1<m_s.height?top+2*r1:m_s.height); i++)
+            for(int j=(left>=0?left:0); j<(left+2*r2<m_s.width?left+2*r2:m_s.width); j++)
+                if(
+                    (i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2) >= r1*r1 - r1 &&
+                    (i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2) <= r2*r2 + r2
+                )
+                    m_map[i*m_s.width + j] = color;
+
+    setState();
+}
+
 
 void Mapper::setInfo(){
     std::ofstream fout(m_filename, std::ios::trunc);

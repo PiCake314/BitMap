@@ -18,14 +18,19 @@ struct RGB{
     int green;
     int blue;
 
-    RGB(){
-        red = 0;
-        green = 0;
-        blue = 0;
-    }
+    RGB():
+    red(0),
+    green(0),
+    blue(0){}
+
+
+    RGB(int v):
+    red(v),
+    green(v),
+    blue(v){}
 
     RGB(int r, int g, int b){
-        red =r;
+        red = r;
         green = g;
         blue = b;
     }
@@ -77,11 +82,15 @@ class Mapper{
 
         void drawTri(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), RGB = RGB(), bool thick = false);
 
+        void drawFourPoints(Point[], RGB = RGB(), bool thick = false);
+
         void drawMulti(std::vector<Point>, RGB = RGB(), bool thick = false);
 
-        void drawRect(float top = 0, float left = 0, float height = 10, float width = 10, RGB  = RGB(), std::string alignment = "none");
+        void drawRect(float top = 0, float left = 0, float height = -1, float width = -1, RGB  = RGB(), std::string alignment = "none");
 
-        void drawCircle(int top = 0, int left = 0, int r = 10, RGB = RGB(), std::string alignment = "none");
+        void drawCircle(int top = 0, int left = 0, int r = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
+
+        void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
         
         void setInfo();
         void setState();
