@@ -3,19 +3,12 @@
 
 
 void drawKuwaitFlag(Mapper &m, int h, int w){
-    m.drawRect(0, 0, 0.33, 0, RGB(120, 200, 0), "width");
-    m.drawRect(0.67, 0, 0.33, 0, RGB(255, 0, 0), "width");
-    // m.drawCircle(0, -h/2, h/2, RGB(0, 0, 0));
-
-    // m.drawMulti({Point(0, 0),
-    //              Point(h/3, w/4),
-    //              Point(2*h/3, w/4),
-    //              Point(h, 0),
-                 
-    //   });
-
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
-    m.drawFourPoints(Ps);
+
+
+    m.drawRect(0, 0, 0.3333, 0, RGB(50, 150, 0), "width");
+    m.drawRect(0.6666, 0, 0.5, 0, RGB(255, 0, 0), "width");
+    m.drawFourPoints(Ps, RGB());
 }
 
 
@@ -34,6 +27,42 @@ void drawSmileyFace(Mapper &m, int height){
     m.drawMulti(smile, RGB(), true);
 }
 
+
+RGB Red(){
+    return RGB(255, 0, 0);
+}
+
+RGB Green(){
+    return RGB(0, 255, 0);
+}
+
+RGB Blue(){
+    return RGB(0, 0, 255);
+}
+
+
+int getValue(RGB c, std::vector<RGB> cl){
+  int s = cl.size();
+
+  for(int i=0; i<s; i++)
+    if(c == cl[i]) return i;
+
+  return 0;
+}
+
+
+RGB getColor(Mapper &m, int x, int y, std::vector<RGB> cl){
+  
+  int n = 0;
+  for(int i=-1; i<=1; i++)
+    n += getValue(m.getColorAt(Point(x-1, y+i)), cl);
+
+
+  int mod = cl.size();
+
+  return cl[n%mod];
+}
+
 int main(int argc, char** argv){
     if(argc < 2){
         std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
@@ -42,17 +71,24 @@ int main(int argc, char** argv){
   long long cycStart, cycStop;
   cycStart = rdtscll();
 
-    int height = 250, width = 500;
-    Mapper m("output.ppm", "P3", height, width, 255, argv[1]);
+    int height = 1000, width = height*2 + 1;
+    Mapper m("fract.ppm", "P3", height, width, 255, argv[1]);
+    RGB def = RGB();
+    m.fillColor(def);
+    m.isSet(false);
 
 
-    // m.drawCircle(0, 0, 50, RGB(150, 0, 200), true, false, "center");
+    std::vector<RGB> color_list = {def,
+      RGB(200, 150, 0), RGB(130, 0, 170), RGB(150, 20, 0), RGB(20, 150, 150), RGB(0, 200, 100)};
 
-    drawKuwaitFlag(m, height, width);
-    // Point Ps[] = {Point(20, 30), Point(50, 220), Point(190, 230), Point(180,30)};
-    // m.drawFourPoints(Ps);
-  
+    m.drawAt(Point(0, height), color_list[1]);
 
+    for(int i=1; i<height; i++)
+      for(int j=1; j<width-1; j++)
+        m.drawAt(Point(i, j), getColor(m, i, j, color_list));
+
+
+    m.setState();
 
   cycStop = rdtscll();
   long diff = cycStop - cycStart;

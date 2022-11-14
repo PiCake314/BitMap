@@ -2,55 +2,14 @@
 
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
 
+#include "../Structs/Size.hpp"
+#include "../Structs/RGB.hpp"
+#include "../Structs/Point.hpp"
 
-struct size{
-    int height;
-    int width;
-};
-
-struct RGB{
-    int red;
-    int green;
-    int blue;
-
-    RGB():
-    red(0),
-    green(0),
-    blue(0){}
-
-
-    RGB(int v):
-    red(v),
-    green(v),
-    blue(v){}
-
-    RGB(int r, int g, int b){
-        red = r;
-        green = g;
-        blue = b;
-    }
-
-    std::string Pixel(){
-        std::stringstream s;
-        s << red << " " << green << " " << blue;
-        return s.str();
-    }
-};
-
-
-struct Point{
-    float x;
-    float y;
-
-    Point() : x(0), y(0) {}
-    Point(float x_, float y_) : x(x_), y(y_) {};
-
-};
 
 class Mapper{
     private:
@@ -59,12 +18,18 @@ class Mapper{
         size m_s;
         int m_max;
         RGB *m_map;
+        bool set_state = true;
 
+        void setInfo();
 
     public:
         // Mapper();
         Mapper(std::string = "output.ppm", std::string = "P3", int h = 100, int w = 100, int m = 255, std::string = "reset");
         ~Mapper();
+
+        void isSet(bool);
+
+        bool getIsSet();
 
         void resetFile();
 
@@ -78,6 +43,10 @@ class Mapper{
 
         void randomizeGrey();
 
+        RGB getColorAt(Point = Point());
+
+        void drawAt(Point = Point(), RGB = RGB());
+
         void drawLine(Point p1 = Point(), Point p2 = Point(), RGB = RGB(), bool thick = false);
 
         void drawTri(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), RGB = RGB(), bool thick = false);
@@ -86,13 +55,22 @@ class Mapper{
 
         void drawMulti(std::vector<Point>, RGB = RGB(), bool thick = false);
 
+
+        /*
+            height/width: negative values will result in them being 10% of the height.
+        */
         void drawRect(float top = 0, float left = 0, float height = -1, float width = -1, RGB  = RGB(), std::string alignment = "none");
 
+        /*
+            r: negative values will result in them being 10% of the height.
+        */
         void drawCircle(int top = 0, int left = 0, int r = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
 
-        void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
-        
-        void setInfo();
-        void setState();
 
+        /*
+            r1/r2: negative values will result in them being 10% of the height.
+        */
+        void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
+
+        void setState();
 };

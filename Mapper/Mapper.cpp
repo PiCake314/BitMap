@@ -34,6 +34,47 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
     return (isNumber(h) && isNumber(w) && isNumber(m) && isValidP(p) &&  isValidHeight(std::stoi(h)) && isValidWidth(std::stoi(w)) && isValidMax(std::stoi(m)));
 }
 
+// Point findTopLeft(Point Ps[]){
+//     Point ret = Ps[0];
+//     for(int i=1; i<4; i++)
+//         if(Ps[i].x + Ps[i].y < ret.x + ret.y)
+//             ret = Ps[i];
+
+//     return ret;
+// }
+
+// Point findTopRight(Point Ps[]){
+//     Point ret = Ps[0];
+//     for(int i=1; i<4; i++)
+//         if(Ps[i].x < ret.x && Ps[i].y > ret.y)
+//             ret = Ps[i];
+
+//     return ret;
+// }
+
+// Point findBottomRight(Point Ps[]){
+//     Point tl = findTopLeft(Ps);
+
+//     Point ret = Ps[0];
+//     for(int i=1; i<4; i++)
+//         if(Ps[i].x + Ps[i].y > ret.x + ret.y)
+//             ret = Ps[i];
+
+//     return ret;
+// }
+
+// Point findBottomLeft(Point Ps[]){
+//     Point ret = Ps[0];
+//     for(int i=1; i<4; i++)
+//         if(Ps[i].x > ret.x && Ps[i].y < ret.y)
+//             ret = Ps[i];
+
+//     return ret;
+// }
+
+// void orderFourPoints(Point Ps[]){
+//     Ps[0] = findTopLeft(Ps), Ps[1] = findTopRight(Ps), Ps[2] = findBottomRight(Ps), Ps[3] = findBottomLeft(Ps);
+// }
 
 /*==============================================================================================*/
 
@@ -54,6 +95,16 @@ Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std:
 
 Mapper::~Mapper(){
     delete[] m_map;
+}
+
+
+void Mapper::isSet(bool s){
+    set_state = s;
+}
+
+
+bool Mapper::getIsSet(){
+    return set_state;
 }
 
 
@@ -157,6 +208,22 @@ void Mapper::randomizeGrey(){
 }
 
 
+RGB Mapper::getColorAt(Point p){
+    if(p.x >= 0 && p.x < m_s.height && p.y >= 0 && p.y < m_s.width)
+        return *(m_map + int(p.x * m_s.width + p.y));
+
+    return RGB();
+}
+
+
+void Mapper::drawAt(Point p, RGB color){
+    if(p.x >= 0 && p.x < m_s.height && p.y >= 0 && p.y < m_s.width)
+        m_map[int(p.x*m_s.width + p.y)] = color;
+
+    if(set_state) setState();
+}
+
+
 void Mapper::drawLine(Point p1, Point p2, RGB color, bool thick){
     if(p2.y - p1.y != 0){
         float slope = (p2.x-p1.x)/(p2.y-p1.y);
@@ -186,6 +253,9 @@ void Mapper::drawTri(Point p1, Point p2, Point p3, RGB color, bool thick){
 
 
 void Mapper::drawFourPoints(Point points[], RGB color, bool thick){
+
+    // orderFourPoints(points);
+
     Point p1 = points[0];
     Point p2 = points[1];
     Point p3 = points[2];
@@ -202,15 +272,6 @@ void Mapper::drawFourPoints(Point points[], RGB color, bool thick){
 
     float slope4 = (p1.x-p4.x)/(p1.y-p4.y);
     float b4 = p4.x - slope4*p4.y;
-
-    if(p1.y == p4.y);
-
-
-
-    if(p2.y == p3.y);
-
-    std::cout << p1.y << std::endl;
-    std::cout << p4.y << std::endl;
 
     for(int i=0; i<m_s.height; i++)
         for(int j=0; j<m_s.width; j++)
@@ -237,9 +298,6 @@ void Mapper::drawMulti(std::vector<Point> points, RGB color, bool thick){
 }
 
 
-/*
-    height/width: negative values will result in them being 10% of the height.
-*/
 void Mapper::drawRect(float top, float  left, float height, float width, RGB color, std::string alignment){
     if(height < 0) height = m_s.height/10;
     
@@ -304,9 +362,6 @@ void Mapper::drawRect(float top, float  left, float height, float width, RGB col
 }
 
 
-/*
-    r: negative values will result in them being 10% of the height.
-*/
 void Mapper::drawCircle(int top, int left, int r, RGB color, bool filled, bool inverted, std::string alignment){
     if(r < 0) r = m_s.height/10;
     
@@ -370,9 +425,7 @@ void Mapper::drawCircle(int top, int left, int r, RGB color, bool filled, bool i
     setState();
 }
 
-/*
-    r1/r2: negative values will result in them being 10% of the height.
-*/
+
 void Mapper::drawEllipse(int top, int left, int r1, int r2, RGB color, bool filled, bool inverted, std::string alignment){
     if(r1 < 0) r1 = m_s.height/10;
     
@@ -424,7 +477,8 @@ void Mapper::drawEllipse(int top, int left, int r1, int r2, RGB color, bool fill
 
 
 void Mapper::setInfo(){
-    std::ofstream fout(m_filename, std::ios::trunc);
+    std::string fn = "images/" + m_filename;
+    std::ofstream fout(fn, std::ios::trunc);
 
     assert(fout.is_open() == true);
     assert(areValid(m_filename, m_pType, m_s.height, m_s.width, m_max) == true);
@@ -438,8 +492,8 @@ void Mapper::setInfo(){
 
 void Mapper::setState(){
     setInfo();
-
-    std::ofstream fout(m_filename, std::ios::app);
+    std::string fn = "images/" + m_filename;
+    std::ofstream fout(fn, std::ios::app);
 
     for(int i=0; i<m_s.height; i++){
         for(int j=0; j<m_s.width; j++)
