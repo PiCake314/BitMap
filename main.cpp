@@ -7,7 +7,7 @@ void drawKuwaitFlag(Mapper &m, int h, int w){
 
 
     m.drawRect(0, 0, 0.3333, 0, RGB(50, 150, 0), "width");
-    m.drawRect(0.6666, 0, 0.5, 0, RGB(255, 0, 0), "width");
+    m.drawRect(0.6666, 0, 0.33333, 0, RGB(255, 0, 0), "width");
     m.drawFourPoints(Ps, RGB());
 }
 
@@ -63,16 +63,8 @@ RGB getColor(Mapper &m, int x, int y, std::vector<RGB> cl){
   return cl[n%mod];
 }
 
-int main(int argc, char** argv){
-    if(argc < 2){
-        std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
-        return 0;
-    }
-  long long cycStart, cycStop;
-  cycStart = rdtscll();
 
-    int height = 1000, width = height*2 + 1;
-    Mapper m("fract.ppm", "P3", height, width, 255, argv[1]);
+void frac(Mapper &m, int height, int width){
     RGB def = RGB();
     m.fillColor(def);
     m.isSet(false);
@@ -89,6 +81,28 @@ int main(int argc, char** argv){
 
 
     m.setState();
+}
+
+
+int main(int argc, char** argv){
+    if(argc < 2){
+        std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
+        return 0;
+    }
+  long long cycStart, cycStop;
+  cycStart = rdtscll();
+
+    int height = 10000, width = 10000;
+    Mapper m = Mapper("output.ppm", "P3", height, width, 255, argv[1]);
+    m.isSet(false);
+
+
+    m.bezianCruve(Point(height/2, height/10), Point(height/2, 9*height/10), Point(height/10, height/2), RGB(), 0.001);
+
+
+    m.setState();
+
+
 
   cycStop = rdtscll();
   long diff = cycStop - cycStart;

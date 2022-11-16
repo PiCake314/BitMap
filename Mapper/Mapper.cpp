@@ -76,6 +76,14 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
 //     Ps[0] = findTopLeft(Ps), Ps[1] = findTopRight(Ps), Ps[2] = findBottomRight(Ps), Ps[3] = findBottomLeft(Ps);
 // }
 
+
+Point lerp(Point p1, Point p2, float dt){
+    int x =  p1.x + (p2.x-p1.x)*dt;
+    int y =  p1.y + (p2.y-p1.y)*dt;
+
+    return Point(x, y);
+}
+
 /*==============================================================================================*/
 
 Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std::string type){
@@ -86,6 +94,8 @@ Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std:
     m_s.height = height;
     m_s.width = width;
     m_max = m;
+    m_set_state = true;
+
     if(type == "load")
         loadFile();
     else
@@ -99,12 +109,12 @@ Mapper::~Mapper(){
 
 
 void Mapper::isSet(bool s){
-    set_state = s;
+    m_set_state = s;
 }
 
 
 bool Mapper::getIsSet(){
-    return set_state;
+    return m_set_state;
 }
 
 
@@ -119,7 +129,7 @@ void Mapper::resetFile(){
     m_map = new RGB[m_s.height * m_s.width];
 
     fillWhite();
-    setState();
+    if(m_set_state) setState();
 }
 
 void Mapper::loadFile(){
@@ -171,7 +181,7 @@ void Mapper::fillWhite(){
         for(int j=0; j<m_s.width; j++)
             m_map[i*m_s.width + j] = RGB(255, 255, 255);
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -180,7 +190,7 @@ void Mapper::fillColor(RGB color){
         for(int j=0; j<m_s.width; j++)
             *(m_map + i * m_s.width + j) = color;
     
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -191,7 +201,7 @@ void Mapper::randomize(){
         for(int j=0; j<m_s.width; j++)
             *(m_map + i * m_s.width + j) = RGB(rand()%256, rand()%256, rand()%256);
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -204,7 +214,7 @@ void Mapper::randomizeGrey(){
             *(m_map + i * m_s.width + j) = RGB(c, c, c);
         }
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -220,7 +230,7 @@ void Mapper::drawAt(Point p, RGB color){
     if(p.x >= 0 && p.x < m_s.height && p.y >= 0 && p.y < m_s.width)
         m_map[int(p.x*m_s.width + p.y)] = color;
 
-    if(set_state) setState();
+    if(m_set_state) setState();
 }
 
 
@@ -242,7 +252,7 @@ void Mapper::drawLine(Point p1, Point p2, RGB color, bool thick){
                 m_map[i*m_s.width + int(p1.y)] = color;
 
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -284,7 +294,7 @@ void Mapper::drawFourPoints(Point points[], RGB color, bool thick){
                     m_map[i*m_s.width + j] = color;
 
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -294,7 +304,7 @@ void Mapper::drawMulti(std::vector<Point> points, RGB color, bool thick){
         drawLine(points[i], points[i+1], color, thick);
 
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -358,7 +368,7 @@ void Mapper::drawRect(float top, float  left, float height, float width, RGB col
             if(i*m_s.width + j >= 0 && i*m_s.width + j < m_s.height * m_s.width)
                 m_map[i*m_s.width + j] = color;
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -422,7 +432,7 @@ void Mapper::drawCircle(int top, int left, int r, RGB color, bool filled, bool i
     //     }
     // }
 
-    setState();
+    if(m_set_state) setState();
 }
 
 
@@ -472,7 +482,33 @@ void Mapper::drawEllipse(int top, int left, int r1, int r2, RGB color, bool fill
                 )
                     m_map[i*m_s.width + j] = color;
 
-    setState();
+    if(m_set_state) setState();
+}
+
+
+void Mapper::bezianCruve(Point p1, Point p2, Point c, RGB color, float dt){
+    Point l1;
+    Point l2;
+
+    Point draw;
+
+    Point prev = p1;
+    for(float a = dt; a < 1+dt; a+=dt){
+        l1 = lerp(p1, c, a);
+        l2 = lerp(c, p2, a);
+        draw = lerp(l1, l2, a);
+
+        std::cout << "Point: " << draw.x << ", " << draw.y << std::endl;
+        
+        for(int i = 0; i < m_s.height; i++)
+            for(int j = 0; j < m_s.width; j++)
+                if(i == draw.x && j == draw.y){
+                    drawLine(prev, draw, color);
+                    prev = draw;
+                }
+    }
+
+    if(m_set_state) setState();
 }
 
 

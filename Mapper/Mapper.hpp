@@ -18,7 +18,7 @@ class Mapper{
         size m_s;
         int m_max;
         RGB *m_map;
-        bool set_state = true;
+        bool m_set_state;
 
         void setInfo();
 
@@ -71,6 +71,10 @@ class Mapper{
             r1/r2: negative values will result in them being 10% of the height.
         */
         void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
+
+
+        void bezianCruve(Point, Point, Point, RGB = RGB(), float dt = 0.1);
+
 
         void setState();
 };
