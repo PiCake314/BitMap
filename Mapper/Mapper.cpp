@@ -486,27 +486,90 @@ void Mapper::drawEllipse(int top, int left, int r1, int r2, RGB color, bool fill
 }
 
 
-void Mapper::bezianCruve(Point p1, Point p2, Point c, RGB color, float dt){
+void Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, RGB color, bool thick){
     Point l1;
     Point l2;
 
-    Point draw;
-
+    Point curr;
     Point prev = p1;
-    for(float a = dt; a < 1+dt; a+=dt){
+
+    bool s = m_set_state;
+    m_set_state = false;
+    for(float a = 0; a < 1+dt/2; a += dt){
         l1 = lerp(p1, c, a);
         l2 = lerp(c, p2, a);
-        draw = lerp(l1, l2, a);
-
-        std::cout << "Point: " << draw.x << ", " << draw.y << std::endl;
-        
-        for(int i = 0; i < m_s.height; i++)
-            for(int j = 0; j < m_s.width; j++)
-                if(i == draw.x && j == draw.y){
-                    drawLine(prev, draw, color);
-                    prev = draw;
-                }
+        curr = lerp(l1, l2, a);
+    
+        drawLine(prev, curr, color, thick);
+        prev = curr;
     }
+    m_set_state = s;
+
+    if(m_set_state) setState();
+}
+
+
+void Mapper::bezierCubicCurve(Point pts[], float dt, RGB color, bool thick){
+    Point l1;
+    Point l2;
+    Point l3;
+
+    Point ll1;
+    Point ll2;
+
+    Point curr;
+    Point prev = pts[0];
+
+    bool s = m_set_state;
+    m_set_state = false;
+    for(float a = 0; a < 1+dt/2; a += dt){
+        l1 = lerp(pts[0], pts[1], a);
+        l2 = lerp(pts[1], pts[2], a);
+        l3 = lerp(pts[2], pts[3], a);
+        ll1 = lerp(l1, l2, a);
+        ll2 = lerp(l2, l3, a);
+
+        curr = lerp(ll1, ll2, a);
+
+        std::cout << curr << std::endl;
+    
+        drawLine(prev, curr, color, thick);
+        prev = curr;
+    }
+    m_set_state = s;
+
+    if(m_set_state) setState();
+}
+
+
+void Mapper::bezierMultiCurve(std::vector<Point> pts, float dt, RGB color, bool thick){
+    assert(pts.size() >= 2);
+
+    int l = pts.size();
+    
+    Point curr;
+    Point prev = pts[0];
+
+    bool s = m_set_state;
+    m_set_state = false;
+    for(float a = 0; a < 1+dt/2; a += dt){
+        std::vector<std::vector<Point>> lerpVec = {pts};
+        for(int i = 1; i < l; i++){
+            if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
+            for(int j = 1; j < l + 1 - i; j++){
+                drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], RGB(200, 150, 0));
+                lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], a));
+            }
+        }
+
+        curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], a);
+        std::cout << curr << std::endl;
+    
+        drawLine(prev, curr, color, thick);
+        prev = curr;
+    }
+    m_set_state = s;
+
 
     if(m_set_state) setState();
 }
@@ -533,7 +596,7 @@ void Mapper::setState(){
 
     for(int i=0; i<m_s.height; i++){
         for(int j=0; j<m_s.width; j++)
-            fout << m_map[i*m_s.width + j].Pixel() << " ";
+            fout << m_map[i*m_s.width + j] << " ";
         fout << '\n';
     }
 }

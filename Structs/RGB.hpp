@@ -25,15 +25,14 @@ struct RGB{
         blue = b;
     }
 
-
-    std::string Pixel(){
-        std::stringstream s;
-        s << red << " " << green << " " << blue;
-        return s.str();
-    }
-
-
     bool operator==(RGB rgb){
         return this->red == rgb.red && this->green == rgb.green && this->blue == rgb.blue;
     }
+
+    friend std::ostream& operator << (std::ostream &os, const RGB &c){
+        return (os << c.red << " " << c.green << " " << c.blue);
+    }
 };
+
+
+

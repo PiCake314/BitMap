@@ -73,7 +73,13 @@ class Mapper{
         void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, RGB = RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
 
 
-        void bezianCruve(Point, Point, Point, RGB = RGB(), float dt = 0.1);
+        void bezierQuadCurve(Point, Point, Point, float = 0.1, RGB = RGB(), bool thick = false);
+
+
+        void bezierCubicCurve(Point[], float = 0.1, RGB = RGB(), bool thick = false);
+
+
+        void bezierMultiCurve(std::vector<Point>, float = 0.1, RGB = RGB(), bool thick = false);
 
 
         void setState();
