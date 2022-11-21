@@ -6,6 +6,8 @@
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
+#include <cmath>
+#include <cassert>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -44,9 +46,9 @@ namespace map{
             Mapper(std::string = "output.ppm", std::string = "P3", int h = 100, int w = 100, int m = 255, std::string = "reset");
             ~Mapper();
 
-            void isSet(bool);
+            void doSet();
 
-            bool getIsSet();
+            void noSet();
 
             void resetFile();
 
@@ -73,19 +75,48 @@ namespace map{
             void drawMulti(std::vector<Point>, clr::RGB = clr::RGB(), bool thick = false);
 
 
-            /*
-                height/width: negative values will result in them being 10% of the height.
-            */
-            void drawRect(float top = 0, float left = 0, float height = -1, float width = -1, clr::RGB  = clr::RGB(), std::string alignment = "none");
 
-            /*
-                r: negative values will result in them being 10% of the height.
-            */
-            void drawCircle(int top = 0, int left = 0, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
+            /**
+             * @param height/width: negative values will result in them being 10% of the height.
+             */
+            void drawRect(float top = 0, float left = 0, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, std::string alignment = "none");
+
+
+
+            /**
+             * @param r: negative values will result in them being 10% of the height.
+             * @param alignment: "center"/"top"/"bottom"/"left"/"right"
+             */
+
+            /**
+             * @brief 
+             * 
+             * @param r: negative values will result in them being 10% of the height.
+             * @param alignment: "center"/"top"/"bottom"/"left"/"right"
+             * @param
+             * @param
+             * @param
+             * @param
+             * @param
+             */
+            void drawCircle(int top = 0, int left = 0, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, std::string alignment = "none");
+
 
 
             /*
                 r1/r2: negative values will result in them being 10% of the height.
+            */
+
+           /**
+            * @brief meow
+            * 
+            * @param r1/r2: negative values will result in them being 10% of the height.
+            * @param
+            * @param
+            * @param
+            * @param
+            * @param
+            * @param
             */
             void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
 
@@ -100,6 +131,11 @@ namespace map{
 
 
             void fold(Fold);
+
+            /*
+                Distance between 2 points!
+            */
+            int dist(Point, Point);
 
 
             void setState();

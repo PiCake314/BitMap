@@ -1,5 +1,4 @@
 #include "Mapper.hpp"
-#include <cassert>
 
 
 using namespace map;
@@ -105,34 +104,32 @@ Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std:
 }
 
 
+
 map::Mapper::~Mapper(){
     delete[] m_map;
 }
 
 
-void map::Mapper::isSet(bool s){
-    m_set_state = s;
+
+void Mapper::doSet(){
+    m_set_state = true;
 }
 
 
-bool map::Mapper::getIsSet(){
-    return m_set_state;
+
+void Mapper::noSet(){
+    m_set_state = false;
 }
+
 
 
 void map::Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
-    // m_pType = "P3";
-    // m_size.height = 500;
-    // m_size.width = 500;
-    // m_max = 255;
-
-    // clr::RGB arr[10000];
     m_map = new clr::RGB[m_size.height * m_size.width];
-
     fillWhite();
-    if(m_set_state) setState();
 }
+
+
 
 void map::Mapper::loadFile(){
     std::cout << "LOAD!" << std::endl;
@@ -188,6 +185,8 @@ void map::Mapper::loadFile(){
     fin.close();
 }
 
+
+
 void map::Mapper::fillWhite(){
     for(int i=0; i<m_size.height; i++)
         for(int j=0; j<m_size.width; j++)
@@ -195,6 +194,7 @@ void map::Mapper::fillWhite(){
 
     if(m_set_state) setState();
 }
+
 
 
 void map::Mapper::fillColor(clr::RGB color){
@@ -206,6 +206,7 @@ void map::Mapper::fillColor(clr::RGB color){
 }
 
 
+
 void map::Mapper::randomize(){
     srand(time(NULL));
 
@@ -215,6 +216,7 @@ void map::Mapper::randomize(){
 
     if(m_set_state) setState();
 }
+
 
 
 void map::Mapper::randomizeGrey(){
@@ -230,6 +232,7 @@ void map::Mapper::randomizeGrey(){
 }
 
 
+
 clr::RGB map::Mapper::getColorAt(Point p){
     if(p.x >= 0 && p.x < m_size.height && p.y >= 0 && p.y < m_size.width)
         return *(m_map + int(p.x * m_size.width + p.y));
@@ -238,12 +241,14 @@ clr::RGB map::Mapper::getColorAt(Point p){
 }
 
 
+
 void map::Mapper::drawAt(Point p, clr::RGB color){
     if(p.x >= 0 && p.x < m_size.height && p.y >= 0 && p.y < m_size.width)
         m_map[int(p.x*m_size.width + p.y)] = color;
 
     if(m_set_state) setState();
 }
+
 
 
 void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
@@ -268,10 +273,20 @@ void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
 }
 
 
-void map::Mapper::drawTri(Point p1, Point p2, Point p3, clr::RGB color, bool thick){
 
-    // setState();
+void map::Mapper::drawTri(Point p1, Point p2, Point p3, clr::RGB color, bool thick){
+    bool s = m_set_state;
+    m_set_state = false;
+
+    drawLine(p1, p2, color, thick);
+    drawLine(p2, p3, color, thick);
+    drawLine(p1, p3, color, thick);
+
+    m_set_state = s;
+
+    if(m_set_state) setState();
 }
+
 
 
 void map::Mapper::drawFourPoints(Point points[], clr::RGB color, bool thick){
@@ -310,6 +325,7 @@ void map::Mapper::drawFourPoints(Point points[], clr::RGB color, bool thick){
 }
 
 
+
 void map::Mapper::drawMulti(std::vector<Point> points, clr::RGB color, bool thick){
     assert(points.size() >= 2);
     for(int i=0; i<points.size()-1; i++)
@@ -320,7 +336,8 @@ void map::Mapper::drawMulti(std::vector<Point> points, clr::RGB color, bool thic
 }
 
 
-void map::Mapper::drawRect(float top, float  left, float height, float width, clr::RGB color, std::string alignment){
+
+void map::Mapper::drawRect(float top, float  left, float height, float width, clr::RGB color, bool filled, bool thick , std::string alignment){
     if(height < 0) height = m_size.height/10;
     
     if(width < 0) width = m_size.height/10;
@@ -375,16 +392,28 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
         top = 0;
     }
 
-    for(int i = (top>=0?top:0); i<(top+height<m_size.height?top+height:m_size.height); i++)
-        for(int j=(left>=0?left:0); j<(left+width<m_size.width?left+width:m_size.width); ++j)
-            if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.height * m_size.width)
-                m_map[i*m_size.width + j] = color;
+
+    if(filled){
+        for(int i = (top>=0?top:0); i<(top+height<m_size.height?top+height:m_size.height); i++)
+            for(int j=(left>=0?left:0); j<(left+width<m_size.width?left+width:m_size.width); ++j)
+                if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.height * m_size.width)
+                    m_map[i*m_size.width + j] = color;
+    }
+    else{
+        drawLine(Point(top - height/2, left - width/2), Point(top - height/2, left + width/2), color, thick);
+        drawLine(Point(top - height/2, left + width/2), Point(top + height/2, left + width/2), color, thick);
+        drawLine(Point(top + height/2, left + width/2), Point(top + height/2, left - width/2), color, thick);
+        drawLine(Point(top + height/2, left - width/2), Point(top - height/2, left - width/2), color, thick);
+    }
 
     if(m_set_state) setState();
 }
 
 
-void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool filled, bool inverted, std::string alignment){
+
+void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool filled, bool inverted, int thickness, std::string alignment){
+    thickness = thickness < 2 ? 2 : thickness;
+
     if(r < 0) r = m_size.height/10;
     
     if(alignment == "center"){
@@ -421,18 +450,30 @@ void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool fill
         color.blue = 255 - color.blue;
     }
 
-    if(filled){
-        for(int i=(top>=0?top:0); i<(top+2*r<m_size.height?top+2*r:m_size.height); i++)
-            for(int j=(left>=0?left:0); j<(left+2*r<m_size.width?left+2*r:m_size.width); j++)
-                if((inverted? -1 : 1)*((i-top-r)*(i-top-r) + (j-left-r)*(j-left-r)) <= r*r*((inverted? -1 : 1)))
+    int iBeg = top-r >= 0 ? top-r : 0;
+    int jBeg = left-r >= 0 ? left-r : 0;
+
+    int iLim = top + 2*r < m_size.height ? top + 2*r : m_size.height;
+    int jLim = left + 2*r < m_size.width ? left + 2*r : m_size.width;
+
+    if(inverted){
+        for(int i = 0; i < m_size.height; i++)
+            for(int j = 0; j < m_size.width; j++)
+                if(-((i-top)*(i-top) + (j-left)*(j-left)) <= -r*r)
+                    m_map[i*m_size.width + j] = color;
+    }
+    else if(filled){
+        for(int i = iBeg; i < iLim; i++)
+            for(int j = jBeg; j < jLim; j++)
+                if(((i-top)*(i-top) + (j-left)*(j-left)) <= r*r)
                         m_map[i*m_size.width + j] = color;
     }
     else
-        for(int i=(top>=0?top:0); i<(top+2*r<m_size.height?top+2*r:m_size.height); i++)
-            for(int j=(left>=0?left:0); j<(left+2*r<m_size.width?left+2*r:m_size.width); j++)
+        for(int i = iBeg; i < iLim; i++)
+            for(int j = jBeg; j < jLim; j++)
                 if(
-                    (i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) >= r*r - r &&
-                    (i-top-r)*(i-top-r) + (j-left-r)*(j-left-r) <= r*r + r
+                    (i-top)*(i-top) + (j-left)*(j-left) >= r*r - thickness*r &&
+                    (i-top)*(i-top) + (j-left)*(j-left) <= r*r + r
                 )
                     m_map[i*m_size.width + j] = color;
 
@@ -446,6 +487,7 @@ void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool fill
 
     if(m_set_state) setState();
 }
+
 
 
 void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color, bool filled, bool inverted, std::string alignment){
@@ -498,6 +540,7 @@ void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color,
 }
 
 
+
 void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, clr::RGB color, bool thick){
     Point l1;
     Point l2;
@@ -519,6 +562,7 @@ void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, clr::RG
 
     if(m_set_state) setState();
 }
+
 
 
 // void map::Mapper::bezierCubicCurve(Point pts[], float dt, clr::RGB color, bool thick){
@@ -552,6 +596,7 @@ void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, clr::RG
 
 //     if(m_set_state) setState();
 // }
+
 
 
 void map::Mapper::bezierMultiCurve(std::vector<Point> pts, float dt, clr::RGB color, bool thick){
@@ -619,6 +664,13 @@ void map::Mapper::fold(Fold f){
 
 
 
+
+int Mapper::dist(Point p1, Point p2){
+    return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
+}
+
+
+
 //================================================
 
 void map::Mapper::setInfo(){
@@ -635,6 +687,8 @@ void map::Mapper::setInfo(){
 
     fout.close();
 }
+
+
 
 void map::Mapper::setState(){
     setInfo();
