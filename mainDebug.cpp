@@ -2,6 +2,50 @@
 #include "rdtsc.h"
 
 
+int getValue(clr::RGB c, std::vector<clr::RGB> cl){
+  int s = cl.size();
+
+  for(int i=0; i<s; i++)
+    if(c == cl[i]) return i;
+
+  return 0;
+}
+
+
+clr::RGB getColor(map::Mapper &m, int x, int y, std::vector<clr::RGB> cl){
+  
+  int n = 0;
+  for(int i=-1; i<=1; i++)
+    n += getValue(m.getColorAt(Point(x-1, y+i)), cl);
+
+
+  int mod = cl.size();
+
+  return cl[n%mod];
+}
+
+
+void frac(map::Mapper &m, int height, int width){
+    clr::RGB def = clr::RGB();
+    m.fillColor(def);
+    m.setState();
+
+
+    std::vector<clr::RGB> color_list = {def,
+      clr::RGB(200, 150, 0), clr::RGB(130, 0, 170), clr::RGB(150, 20, 0),
+      clr::RGB(20, 150, 150), clr::RGB(0, 200, 100)};
+
+    m.drawAt(Point(0, height), color_list[1]);
+
+    for(int i=1; i<height; i++)
+      for(int j=1; j<width-1; j++)
+        m.drawAt(Point(i, j), getColor(m, i, j, color_list));
+
+
+    m.setState();
+}
+
+
 void circRec(map::Mapper &m, int x, int y, int r){
     m.drawCircle(x, y, r, clr::RGB(200, 150, 0), false);
 
@@ -14,15 +58,9 @@ void circRec(map::Mapper &m, int x, int y, int r){
 
 void triRec(map::Mapper &m, Point p1, Point p2, Point p3, int n){
     m.drawTri(p1, p2, p3, clr::GREEN);
-    // std::cin.get();
 
-    std::cout << m.dist(p1, p2) << std::endl;
     if(p1.x < 720){
       p1.x += 10, p2.x -= 10, p3.x -= 10;
-
-      std::cout << "N: " << n << std::endl;
-      std::cout << "P1.X: " << p1.x << ", " << "P2.X: " << p2.x << std::endl;
-
       p2.y += 5, p3.y -= 5;
       triRec(m, p1, p2, p3, n+1);
     }
@@ -30,44 +68,50 @@ void triRec(map::Mapper &m, Point p1, Point p2, Point p3, int n){
 
 
 void rectRec(map::Mapper &m, int t, int l, int side){
-    m.drawRect(t, l, side, side, clr::BLUE);
+    m.drawRect(t, l, side, side, clr::BLUE, false);
 
-    if(side > 2){
-      rectRec(m, t + 10, l - 10, side*.75);
-      rectRec(m, t + 10, l + 10, side*.75);
+    if(side > 50){
+      rectRec(m, t - 100, l - 100, side*.75);
+      rectRec(m, t - 100, l + 100, side*.75);
+      rectRec(m, t + 100, l - 100, side*.75);
+      rectRec(m, t + 100, l + 100, side*.75);
     }
 }
 
 
+void drawKuwaitFlag(map::Mapper &m, int h, int w){
+    Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
+
+    m.drawRect(1.0/6, 0, 0.3333, 0, clr::RGB(50, 150, 0), true, 1, "width");
+    m.drawRect(5.0/6, 0, 0.33333, 0, clr::RGB(255, 0, 0), true, false, "width");
+    m.drawFourPoints(Ps, clr::RGB());
+}
+
+
+
 int main(int argc, char** argv){
-    if(argc < 2){
-        std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
-        return 0;
-    }
+    using String = std::string;
+
+    // if(argc < 2){
+    //     std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
+    //     return 0;
+    // }
+
+    int height = 500, width = 500;
+    String arg = argc > 1 ? argv[1] : "r";
+    map::Mapper m = map::Mapper("output.ppm", "P3", height, width, 255, arg);
+
+
   long long cycStart, cycStop;
   cycStart = rdtscll();
 
-    int height = 1080, width = 2160;
-    map::Mapper m = map::Mapper("s4.ppm", "P3", height, width, 255, argv[1]);
-
-    m.fillColor();
-
-    m.noSet();
-    // m.drawRect(0, 0, -1, -1, clr::BLUE, false, false, "");
-    circRec(m, height/2, width/2, height/2);
-    m.setState();
-
-
-
-    // m.drawCircle(height/2, width/2, -1, clr::RED, 1, false, 10);
-    // triRec(m, Point(height/10, width/2), Point(height*9/10, width/10), Point(height*9/10, width*9/10), 1);
-
-
+  m.fillColor();
+  m.bezierMultiCurve({Point(height, 0), Point(height, width), Point(0, width)}, 0.1, clr::RGB(255, 0, 0));
 
   cycStop = rdtscll();
   long diff = cycStop - cycStart;
   long diffPerPixel = diff / (width*height);
   fprintf(stderr, "Took %ld cycles to process, or %ld cycles per pixel\n", diff, diff/(width*height));
 
-    return 0;    
+    return 0;
 }

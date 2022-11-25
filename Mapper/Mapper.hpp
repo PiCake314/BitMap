@@ -17,19 +17,6 @@
 
 namespace map{
 
-    /* Copy the right side to left side.*/
-    const Fold r2l = "right";
-
-    /* Copy the left side to right side.*/
-    const Fold l2r = "left";
-
-    /* Copy the top side to bottom side.*/
-    const Fold t2b = "top";
-
-    /* Copy the bottom side to top side.*/
-    const Fold b2t = "bottom";
-
-
     class Mapper{
         private:
             std::string m_filename;
@@ -66,9 +53,9 @@ namespace map{
 
             void drawAt(Point = Point(), clr::RGB = clr::RGB());
 
-            void drawLine(Point p1 = Point(), Point p2 = Point(), clr::RGB = clr::RGB(), bool thick = false);
+            void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), bool thick = false);
 
-            void drawTri(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB = clr::RGB(), bool thick = false);
+            void drawTri(Point p1, Point p2, Point p3, clr::RGB = clr::RGB(), bool thick = false);
 
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
 
@@ -140,5 +127,21 @@ namespace map{
 
             void setState();
     };
+
+
+    //Fold Values
+
+
+    /* Copy the right side to left side.*/
+    const Fold r2l = "right";
+
+    /* Copy the left side to right side.*/
+    const Fold l2r = "left";
+
+    /* Copy the top side to bottom side.*/
+    const Fold t2b = "top";
+
+    /* Copy the bottom side to top side.*/
+    const Fold b2t = "bottom";
     
 }

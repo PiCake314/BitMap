@@ -145,16 +145,13 @@ void map::Mapper::loadFile(){
     std::string spaces;
 
     std::getline(fin, P);
-    std::cout << P << std::endl;
+    std::cout << "P: " << P << std::endl;
     fin >> w;
-    std::cout << w << std::endl;
+    std::cout << "W: " << w << std::endl;
     fin >> h;
-    std::cout << h << std::endl;
-    fin >> spaces;
-    std::getline(fin, spaces);
-    std::cout << spaces << std::endl;
-    std::getline(fin, M);
-    std::cout << M << std::endl;
+    std::cout << "H: " << h << std::endl;
+    fin >> M;
+    std::cout << "M: " << M << std::endl;
 
 
     std::cout << "Meow :3" << std::endl;
@@ -164,7 +161,7 @@ void map::Mapper::loadFile(){
     m_pType = P;
     m_size.height = std::stoi(h);
     m_size.width = std::stoi(w);
-    m_max = std::stod(M);
+    m_max = std::stoi(M);
 
     int r;
     int g;
@@ -177,7 +174,7 @@ void map::Mapper::loadFile(){
     for(int i = 0; i < m_size.height; i++){
         for(int j = 0; j < m_size.width; j++){
             fin >> r >> g >> b;
-            m_map[i*m_size.width + j] = clr::RGB(r, b, g);
+            m_map[i*m_size.width + j] = clr::RGB(r, g, b);
         }
         std::getline(fin, garbage);
     }
@@ -256,18 +253,27 @@ void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
         float slope = (p2.x-p1.x)/(p2.y-p1.y);
         float b = p1.x - slope*p1.y;
 
-        for(int i=0; i<m_size.height; i++)
-            for(int j=0; j<m_size.width; j++)
-                if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick)
-                    if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x) && 
-                       j >= (p1.y<p2.y?p1.y:p2.y) && j <= (p1.y>p2.y?p1.y:p2.y))
-                        m_map[i*m_size.width + j] = color;
-    }
-    else
-        for(int i=m_size.height-1; i>=0; i--)
-            if(i >= (p1.x<p2.x?p1.x:p2.x) && i <= (p1.x>p2.x?p1.x:p2.x))
-                m_map[i*m_size.width + int(p1.y)] = color;
+        int iStart = p1.x<p2.x?p1.x:p2.x;
+        int iEnd = p1.x>p2.x?p1.x:p2.x;
+        int jStart = p1.y<p2.y?p1.y:p2.y;
+        int jEnd = p1.y>p2.y?p1.y:p2.y;
 
+        for(int i = 0; i < m_size.height; i++)
+            for(int j = 0; j < m_size.width; j++)
+                if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick)
+                    if(i >= iStart && i <= iEnd && j >= jStart && j <= jEnd)
+                        if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.width * m_size.height)
+                            m_map[i*m_size.width + j] = color;
+    }
+    else{
+        int iStart = p1.x<p2.x?p1.x:p2.x;
+        int iEnd = p1.x>p2.x?p1.x:p2.x;
+
+        for(int i = m_size.height - 1; i >= 0; i--)
+            if(i >= iStart && i <= iEnd)
+                if(i*m_size.width + int(p1.y) >= 0 && i*m_size.width + int(p1.y) < m_size.width * m_size.height)
+                    m_map[i*m_size.width + int(p1.y)] = color;
+    }
 
     if(m_set_state) setState();
 }
@@ -310,8 +316,8 @@ void map::Mapper::drawFourPoints(Point points[], clr::RGB color, bool thick){
     float slope4 = (p1.x-p4.x)/(p1.y-p4.y);
     float b4 = p4.x - slope4*p4.y;
 
-    for(int i=0; i<m_size.height; i++)
-        for(int j=0; j<m_size.width; j++)
+    for(int i = 0; i < m_size.height; i++)
+        for(int j = 0; j < m_size.width; j++)
             if(
                 i >= int(slope1*j + b1)+thick &&
                 (p2.y == p3.y ? j <= p2.y : i >= int(slope2*j + b2)+thick) &&
@@ -360,10 +366,8 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
         left = (m_size.width-width)/2;
     }
     else if(alignment == "top-left"){
-        height = m_size.height/2;
-        width = m_size.width/2;
-        top = 0;
-        left = 0;
+        top = height/2;
+        left = width/2;
     }
     else if(alignment == "top-right"){
         height = m_size.height/2;
@@ -385,25 +389,49 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
     }
     else if(alignment == "width"){
         width = m_size.width;
-        left = 0;
+        left = m_size.width/2;
     }
     else if(alignment == "height"){
         height = m_size.height;
-        top = 0;
+        top = m_size.height/2;
     }
 
 
     if(filled){
-        for(int i = (top>=0?top:0); i<(top+height<m_size.height?top+height:m_size.height); i++)
-            for(int j=(left>=0?left:0); j<(left+width<m_size.width?left+width:m_size.width); ++j)
+        int iStart = top - height/2 - 1 >= 0 ? top - height/2 : 0;
+        int iLim = top + height/2 < m_size.height ? top + height/2 : m_size.height;
+
+        int jStart = left - width/2 - 1 >= 0 ? left - width/2 : 0;
+        int jLim = left + width/2 < m_size.width ? left + width/2 : m_size.width;
+
+        for(int i = iStart; i < iLim; i++)
+            for(int j = jStart; j < jLim; ++j)
                 if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.height * m_size.width)
                     m_map[i*m_size.width + j] = color;
     }
     else{
-        drawLine(Point(top - height/2, left - width/2), Point(top - height/2, left + width/2), color, thick);
-        drawLine(Point(top - height/2, left + width/2), Point(top + height/2, left + width/2), color, thick);
-        drawLine(Point(top + height/2, left + width/2), Point(top + height/2, left - width/2), color, thick);
-        drawLine(Point(top + height/2, left - width/2), Point(top - height/2, left - width/2), color, thick);
+        drawLine(
+            Point(top - height/2 - 1, left - width/2 - 1),
+            Point(top - height/2 - 1, left + width/2 - 1),
+        color, thick);
+
+
+        drawLine(
+            Point(top - height/2 - 1, left + width/2 - 1),
+            Point(top + height/2 - 1, left + width/2 - 1),
+        color, thick);
+
+
+        drawLine(
+            Point(top + height/2 - 1, left + width/2 - 1),
+            Point(top + height/2 - 1, left - width/2 - 1),
+        color, thick);
+
+
+        drawLine(
+            Point(top + height/2 - 1, left - width/2 - 1),
+            Point(top - height/2 - 1, left - width/2 - 1),
+        color, thick);
     }
 
     if(m_set_state) setState();
@@ -618,10 +646,8 @@ void map::Mapper::bezierMultiCurve(std::vector<Point> pts, float dt, clr::RGB co
                 lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], a));
             }
         }
-
         curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], a);
-        // std::cout << curr << std::endl;
-    
+
         drawLine(prev, curr, color, thick);
         prev = curr;
     }
@@ -664,14 +690,13 @@ void map::Mapper::fold(Fold f){
 
 
 
-
 int Mapper::dist(Point p1, Point p2){
     return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
 }
 
 
 
-//================================================
+/* --------------------------- Setup Functions --------------------------- */
 
 void map::Mapper::setInfo(){
     std::string fn = "images/" + m_filename;
