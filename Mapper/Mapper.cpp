@@ -87,14 +87,14 @@ Point lerp(Point p1, Point p2, float dt){
 
 /*==============================================================================================*/
 
-Mapper::Mapper(std::string fn, std::string p, int height, int width, int m, std::string type){
+Mapper::Mapper(std::string fn, int height, int width, std::string type){
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
     m_filename = fn;
-    m_pType = p;
+    m_pType = "P3";
     m_size.height = height;
     m_size.width = width;
-    m_max = m;
+    m_max = 255;
     m_set_state = true;
 
     if(type == "load")
@@ -439,38 +439,38 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
 
 
 
-void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool filled, bool inverted, int thickness, std::string alignment){
+void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, std::string alignment){
     thickness = thickness < 2 ? 2 : thickness;
 
     if(r < 0) r = m_size.height/10;
     
     if(alignment == "center"){
-        top = (m_size.height/2) - r;
-        left = (m_size.width/2) - r;
+        center.x = (m_size.height/2) - r;
+        center.y = (m_size.width/2) - r;
     }
 
     if(alignment == "top"){
-        top = 0;
-        left = (m_size.width/2) - r;
+        center.x = 0;
+        center.y = (m_size.width/2) - r;
     }
 
     if(alignment == "bottom"){
-        top = m_size.height - 2*r;
-        left = (m_size.width/2) - r;
+        center.x = m_size.height - 2*r;
+        center.y = (m_size.width/2) - r;
     }
 
     if(alignment == "left"){
-        top = (m_size.height/2) - r;
-        left = 0;
+        center.x = (m_size.height/2) - r;
+        center.y = 0;
     }
 
     if(alignment == "right"){
-        top = (m_size.height/2) - r;
-        left = m_size.width - 2*r;
+        center.x = (m_size.height/2) - r;
+        center.y = m_size.width - 2*r;
     }
 
-    int topMid = top+r;
-    int leftMid = left+r;
+    int topMid = center.x+r;
+    int leftMid = center.y+r;
 
     if(inverted){
         color.red = 255 - color.red;
@@ -478,30 +478,30 @@ void map::Mapper::drawCircle(int top, int left, int r, clr::RGB color, bool fill
         color.blue = 255 - color.blue;
     }
 
-    int iBeg = top-r >= 0 ? top-r : 0;
-    int jBeg = left-r >= 0 ? left-r : 0;
+    int iBeg = center.x-r >= 0 ? center.x-r : 0;
+    int jBeg = center.y-r >= 0 ? center.y-r : 0;
 
-    int iLim = top + 2*r < m_size.height ? top + 2*r : m_size.height;
-    int jLim = left + 2*r < m_size.width ? left + 2*r : m_size.width;
+    int iLim = center.x + 2*r < m_size.height ? center.x + 2*r : m_size.height;
+    int jLim = center.y + 2*r < m_size.width ? center.y + 2*r : m_size.width;
 
     if(inverted){
         for(int i = 0; i < m_size.height; i++)
             for(int j = 0; j < m_size.width; j++)
-                if(-((i-top)*(i-top) + (j-left)*(j-left)) <= -r*r)
+                if(-((i-center.x)*(i-center.x) + (j-center.y)*(j-center.y)) <= -r*r)
                     m_map[i*m_size.width + j] = color;
     }
     else if(filled){
         for(int i = iBeg; i < iLim; i++)
             for(int j = jBeg; j < jLim; j++)
-                if(((i-top)*(i-top) + (j-left)*(j-left)) <= r*r)
+                if(((i-center.x)*(i-center.x) + (j-center.y)*(j-center.y)) <= r*r)
                         m_map[i*m_size.width + j] = color;
     }
     else
         for(int i = iBeg; i < iLim; i++)
             for(int j = jBeg; j < jLim; j++)
                 if(
-                    (i-top)*(i-top) + (j-left)*(j-left) >= r*r - thickness*r &&
-                    (i-top)*(i-top) + (j-left)*(j-left) <= r*r + r
+                    (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) >= r*r - thickness*r &&
+                    (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) <= r*r + r
                 )
                     m_map[i*m_size.width + j] = color;
 
@@ -590,40 +590,6 @@ void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, clr::RG
 
     if(m_set_state) setState();
 }
-
-
-
-// void map::Mapper::bezierCubicCurve(Point pts[], float dt, clr::RGB color, bool thick){
-//     Point l1;
-//     Point l2;
-//     Point l3;
-
-//     Point ll1;
-//     Point ll2;
-
-//     Point curr;
-//     Point prev = pts[0];
-
-//     bool s = m_set_state;
-//     m_set_state = false;
-//     for(float a = 0; a < 1+dt/2; a += dt){
-//         l1 = lerp(pts[0], pts[1], a);
-//         l2 = lerp(pts[1], pts[2], a);
-//         l3 = lerp(pts[2], pts[3], a);
-//         ll1 = lerp(l1, l2, a);
-//         ll2 = lerp(l2, l3, a);
-
-//         curr = lerp(ll1, ll2, a);
-
-//         std::cout << curr << std::endl;
-    
-//         drawLine(prev, curr, color, thick);
-//         prev = curr;
-//     }
-//     m_set_state = s;
-
-//     if(m_set_state) setState();
-// }
 
 
 

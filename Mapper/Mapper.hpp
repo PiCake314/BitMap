@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <stdio.h>
-#include <time.h>
-#include <cmath>
 #include <cassert>
 
 #include "../Structs/Size.hpp"
@@ -30,7 +27,7 @@ namespace map{
 
         public:
             // Mapper();
-            Mapper(std::string = "output.ppm", std::string = "P3", int h = 100, int w = 100, int m = 255, std::string = "reset");
+            Mapper(std::string = "output.ppm", int h = 100, int w = 100, std::string = "reset");
             ~Mapper();
 
             void doSet();
@@ -86,7 +83,7 @@ namespace map{
              * @param
              * @param
              */
-            void drawCircle(int top = 0, int left = 0, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, std::string alignment = "none");
+            void drawCircle(Point = Point(), int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, std::string alignment = "none");
 
 
 
