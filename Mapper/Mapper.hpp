@@ -63,7 +63,7 @@ namespace map{
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
-            void drawRect(float top = 0, float left = 0, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, std::string alignment = "none");
+            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, std::string alignment = "none");
 
 
 

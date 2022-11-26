@@ -343,7 +343,7 @@ void map::Mapper::drawMulti(std::vector<Point> points, clr::RGB color, bool thic
 
 
 
-void map::Mapper::drawRect(float top, float  left, float height, float width, clr::RGB color, bool filled, bool thick , std::string alignment){
+void map::Mapper::drawRect(Point center, float height, float width, clr::RGB color, bool filled, bool thick , std::string alignment){
     if(height < 0) height = m_size.height/10;
     
     if(width < 0) width = m_size.height/10;
@@ -354,55 +354,55 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
     if(width < 1)
         width *= m_size.width;
 
-    if(top < 1)
-        top *= m_size.height;
+    if(center.x < 1)
+        center.x *= m_size.height;
 
-    if(left < 1)
-        left *= m_size.width;
+    if(center.y < 1)
+        center.y *= m_size.width;
 
 
     if(alignment == "center"){
-        top = (m_size.height-height)/2;
-        left = (m_size.width-width)/2;
+        center.x = (m_size.height-height)/2;
+        center.y = (m_size.width-width)/2;
     }
     else if(alignment == "top-left"){
-        top = height/2;
-        left = width/2;
+        center.x = height/2;
+        center.y = width/2;
     }
     else if(alignment == "top-right"){
         height = m_size.height/2;
         width = m_size.width/2;
-        top = 0;
-        left = m_size.width-width;
+        center.x = 0;
+        center.y = m_size.width-width;
     }
     else if(alignment == "bottom-left"){
         height = m_size.height/2;
         width = m_size.width/2;
-        top = m_size.height-height;
-        left = 0;
+        center.x = m_size.height-height;
+        center.y = 0;
     }
     else if(alignment == "bottom-right"){
         height = m_size.height/2;
         width = m_size.width/2;
-        top = m_size.height-height;
-        left = m_size.width-width;
+        center.x = m_size.height-height;
+        center.y = m_size.width-width;
     }
     else if(alignment == "width"){
         width = m_size.width;
-        left = m_size.width/2;
+        center.y = m_size.width/2;
     }
     else if(alignment == "height"){
         height = m_size.height;
-        top = m_size.height/2;
+        center.x = m_size.height/2;
     }
 
 
     if(filled){
-        int iStart = top - height/2 - 1 >= 0 ? top - height/2 : 0;
-        int iLim = top + height/2 < m_size.height ? top + height/2 : m_size.height;
+        int iStart = center.x - height/2 - 1 >= 0 ? center.x - height/2 : 0;
+        int iLim = center.x + height/2 < m_size.height ? center.x + height/2 : m_size.height;
 
-        int jStart = left - width/2 - 1 >= 0 ? left - width/2 : 0;
-        int jLim = left + width/2 < m_size.width ? left + width/2 : m_size.width;
+        int jStart = center.y - width/2 - 1 >= 0 ? center.y - width/2 : 0;
+        int jLim = center.y + width/2 < m_size.width ? center.y + width/2 : m_size.width;
 
         for(int i = iStart; i < iLim; i++)
             for(int j = jStart; j < jLim; ++j)
@@ -411,26 +411,26 @@ void map::Mapper::drawRect(float top, float  left, float height, float width, cl
     }
     else{
         drawLine(
-            Point(top - height/2 - 1, left - width/2 - 1),
-            Point(top - height/2 - 1, left + width/2 - 1),
+            Point(center.x - height/2 - 1, center.y - width/2 - 1),
+            Point(center.x - height/2 - 1, center.y + width/2 - 1),
         color, thick);
 
 
         drawLine(
-            Point(top - height/2 - 1, left + width/2 - 1),
-            Point(top + height/2 - 1, left + width/2 - 1),
+            Point(center.x - height/2 - 1, center.y + width/2 - 1),
+            Point(center.x + height/2 - 1, center.y + width/2 - 1),
         color, thick);
 
 
         drawLine(
-            Point(top + height/2 - 1, left + width/2 - 1),
-            Point(top + height/2 - 1, left - width/2 - 1),
+            Point(center.x + height/2 - 1, center.y + width/2 - 1),
+            Point(center.x + height/2 - 1, center.y - width/2 - 1),
         color, thick);
 
 
         drawLine(
-            Point(top + height/2 - 1, left - width/2 - 1),
-            Point(top - height/2 - 1, left - width/2 - 1),
+            Point(center.x + height/2 - 1, center.y - width/2 - 1),
+            Point(center.x - height/2 - 1, center.y - width/2 - 1),
         color, thick);
     }
 

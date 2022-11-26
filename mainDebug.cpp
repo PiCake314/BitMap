@@ -2,6 +2,8 @@
 #include "rdtsc.h"
 
 
+
+/* ---------------------- Fractal example starts here! ---------------------- */
 int getValue(clr::RGB c, std::vector<clr::RGB> cl){
   int s = cl.size();
 
@@ -13,7 +15,6 @@ int getValue(clr::RGB c, std::vector<clr::RGB> cl){
 
 
 clr::RGB getColor(map::Mapper &m, int x, int y, std::vector<clr::RGB> cl){
-  
   int n = 0;
   for(int i=-1; i<=1; i++)
     n += getValue(m.getColorAt(Point(x-1, y+i)), cl);
@@ -25,7 +26,7 @@ clr::RGB getColor(map::Mapper &m, int x, int y, std::vector<clr::RGB> cl){
 }
 
 
-void frac(map::Mapper &m, int height, int width){
+void fract(map::Mapper &m, int height, int width){
     clr::RGB def = clr::RGB();
     m.fillColor(def);
     m.setState();
@@ -46,8 +47,10 @@ void frac(map::Mapper &m, int height, int width){
 }
 
 
+
+/* ------------------------ Circle Recursion example ------------------------ */
 void circRec(map::Mapper &m, int x, int y, int r){
-    m.drawCircle(x, y, r, clr::RGB(200, 150, 0), false);
+    m.drawCircle(Point(x, y), r, clr::RGB(200, 150, 0), false);
 
     if(r > 10){
       circRec(m, x, y + 50, r*.75);
@@ -56,6 +59,7 @@ void circRec(map::Mapper &m, int x, int y, int r){
 }
 
 
+/* ----------------------- Triangle Recursion example ----------------------- */
 void triRec(map::Mapper &m, Point p1, Point p2, Point p3, int n){
     m.drawTri(p1, p2, p3, clr::GREEN);
 
@@ -67,8 +71,9 @@ void triRec(map::Mapper &m, Point p1, Point p2, Point p3, int n){
 }
 
 
+/* ----------------------- Rectangle Recursion example ---------------------- */
 void rectRec(map::Mapper &m, int t, int l, int side){
-    m.drawRect(t, l, side, side, clr::BLUE, false);
+    m.drawRect(Point(t, l), side, side, clr::BLUE, false);
 
     if(side > 50){
       rectRec(m, t - 100, l - 100, side*.75);
@@ -79,11 +84,12 @@ void rectRec(map::Mapper &m, int t, int l, int side){
 }
 
 
+/* ------------------------------- Kuwait flag ------------------------------ */
 void drawKuwaitFlag(map::Mapper &m, int h, int w){
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
 
-    m.drawRect(1.0/6, 0, 0.3333, 0, clr::RGB(50, 150, 0), true, 1, "width");
-    m.drawRect(5.0/6, 0, 0.33333, 0, clr::RGB(255, 0, 0), true, false, "width");
+    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, "width");
+    m.drawRect(Point(5.0/6, 0), 0.33333, 0, clr::RGB(255, 0, 0), true, false, "width");
     m.drawFourPoints(Ps, clr::RGB());
 }
 
@@ -91,22 +97,23 @@ void drawKuwaitFlag(map::Mapper &m, int h, int w){
 
 int main(int argc, char** argv){
     using String = std::string;
+    using std::cout, std::cin;
 
-    // if(argc < 2){
-    //     std::cerr << "\033[31mUsage: ./main + <command> (reset/load)" << std::endl;
-    //     return 0;
-    // }
 
     int height = 500, width = 500;
     String arg = argc > 1 ? argv[1] : "r";
-    map::Mapper m = map::Mapper("output.ppm", "P3", height, width, 255, arg);
-
+    map::Mapper m = map::Mapper("output.ppm", height, width, arg);
 
   long long cycStart, cycStop;
   cycStart = rdtscll();
 
-  m.fillColor();
-  m.bezierMultiCurve({Point(height, 0), Point(height, width), Point(0, width)}, 0.1, clr::RGB(255, 0, 0));
+  /* --------------------------- Put your code here --------------------------- */
+
+
+
+
+
+  /* -------------------------------------------------------------------------- */
 
   cycStop = rdtscll();
   long diff = cycStop - cycStart;
