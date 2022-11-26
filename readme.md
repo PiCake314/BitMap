@@ -9,7 +9,7 @@ mapper.drawCircle();
     1. Point
     2. RGB
     3. Fold
-2.Namespcaes
+2. Namespcaes
     1. map
     2. clr
 3. Library Functions
