@@ -89,9 +89,10 @@ void drawKuwaitFlag(map::Mapper &m, int h, int w){
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
 
     m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, "width");
-    m.drawRect(Point(5.0/6, 0), 0.33333, 0, clr::RGB(255, 0, 0), true, false, "width");
+    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, "width");
     m.drawFourPoints(Ps, clr::RGB());
 }
+
 
 
 
@@ -100,7 +101,7 @@ int main(int argc, char** argv){
     using std::cout, std::cin;
 
 
-    int height = 500, width = 500;
+    int height = 500, width = 1000;
     String arg = argc > 1 ? argv[1] : "r";
     map::Mapper m = map::Mapper("output.ppm", height, width, arg);
 
@@ -109,9 +110,7 @@ int main(int argc, char** argv){
 
   /* --------------------------- Put your code here --------------------------- */
 
-
-
-
+    drawKuwaitFlag(m, height, width);
 
   /* -------------------------------------------------------------------------- */
 

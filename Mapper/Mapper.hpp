@@ -60,61 +60,47 @@ namespace map{
             void drawMulti(std::vector<Point>, clr::RGB = clr::RGB(), bool thick = false);
 
 
-
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
             void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, std::string alignment = "none");
 
 
-
             /**
              * @param r: negative values will result in them being 10% of the height.
              * @param alignment: "center"/"top"/"bottom"/"left"/"right"
              */
 
             /**
-             * @brief 
-             * 
              * @param r: negative values will result in them being 10% of the height.
              * @param alignment: "center"/"top"/"bottom"/"left"/"right"
-             * @param
-             * @param
-             * @param
-             * @param
-             * @param
              */
             void drawCircle(Point = Point(), int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, std::string alignment = "none");
 
 
-
-            /*
-                r1/r2: negative values will result in them being 10% of the height.
-            */
-
            /**
-            * @brief meow
-            * 
             * @param r1/r2: negative values will result in them being 10% of the height.
-            * @param
-            * @param
-            * @param
-            * @param
-            * @param
-            * @param
             */
             void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
 
 
-            void bezierQuadCurve(Point, Point, Point, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
+            /**
+             * @brief Creates a bezian curve that goes from p1 to p3 curved by p2.
+             */
+            void bezierQuadCurve(Point p1, Point p2, Point p3, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
 
 
-            // void bezierCubicCurve(Point[], float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
-
-
+            /**
+             * @brief Creates a bezian curve from a vector of points
+             */
             void bezierMultiCurve(std::vector<Point>, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
 
 
+            /**
+             * @brief Folds the canvas on itself (i.e. Copys the top half to the bottom half with t2b)
+             * 
+             * @param Fold: use one of the provided constants (l2r, r2l, t2b, b2t)
+             */
             void fold(Fold);
 
             /*
@@ -129,7 +115,6 @@ namespace map{
 
     //Fold Values
 
-
     /* Copy the right side to left side.*/
     const Fold r2l = "right";
 
@@ -141,5 +126,5 @@ namespace map{
 
     /* Copy the bottom side to top side.*/
     const Fold b2t = "bottom";
-    
+
 }

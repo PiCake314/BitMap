@@ -1,2 +1,2 @@
 Mapper: mainDebug.cpp Mapper/Mapper.cpp
-	g++ -std=c++17 -o main mainDebug.cpp Mapper/Mapper.cpp -O3 && ./main r
+	g++ -std=c++17 -o main mainDebug.cpp Mapper/Mapper.cpp -O3 && ./main r && convert images/output.ppm images/output.png
