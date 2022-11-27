@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cmath>
 #include <cassert>
 
 #include "../Structs/Size.hpp"
