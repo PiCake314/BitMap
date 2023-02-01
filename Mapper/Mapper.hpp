@@ -14,6 +14,13 @@
 
 
 namespace map{
+        enum Fold{
+            r2l = 0,
+            l2r,
+            t2b,
+            b2t
+        };
+
 
     class Mapper{
         private:
@@ -115,16 +122,16 @@ namespace map{
 
     //Fold Values
 
-    /* Copy the right side to left side.*/
-    const Fold r2l = "right";
+    // /* Copy the right side to left side.*/
+    // const Fold r2l = "right";
 
-    /* Copy the left side to right side.*/
-    const Fold l2r = "left";
+    // /* Copy the left side to right side.*/
+    // const Fold l2r = "left";
 
-    /* Copy the top side to bottom side.*/
-    const Fold t2b = "top";
+    // /* Copy the top side to bottom side.*/
+    // const Fold t2b = "top";
 
-    /* Copy the bottom side to top side.*/
-    const Fold b2t = "bottom";
+    // /* Copy the bottom side to top side.*/
+    // const Fold b2t = "bottom";
 
 }

@@ -1,11 +1,11 @@
-#include <iostream>
+// #include <iostream>
 
-struct Fold{
-    std::string s;
+// struct Fold{
+//     std::string s;
 
-    Fold(const char c[]) : s(c) {}
+//     Fold(const char c[]) : s(c) {}
 
-    bool operator == (Fold f){
-        return s == f.s;
-    }
-};
+//     bool operator == (Fold f){
+//         return s == f.s;
+//     }
+// };

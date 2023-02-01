@@ -101,16 +101,27 @@ int main(int argc, char** argv){
     using std::cout, std::cin;
 
 
-    int height = 500, width = 1000;
+    int height = 128, width = 128;
     String arg = argc > 1 ? argv[1] : "r";
-    map::Mapper m = map::Mapper("output.ppm", height, width, arg);
+    map::Mapper m = map::Mapper("debug.ppm", height, width, arg);
 
   long long cycStart, cycStop;
   cycStart = rdtscll();
 
   /* --------------------------- Put your code here --------------------------- */
 
-    drawKuwaitFlag(m, height, width);
+    m.fillWhite();
+    m.noSet();
+
+    bool flag = false;
+    for(int offX = 0; offX < height; offX += height/8){
+      flag = !flag;
+      for(int offY = 0; offY < width; offY += width/8){
+        if(flag) m.drawRect({offX + height/16, offY + width/16}, height/8, width/8);
+        flag = !flag;
+      }
+    }
+    m.setState();
 
   /* -------------------------------------------------------------------------- */
 

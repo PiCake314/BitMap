@@ -629,26 +629,32 @@ void map::Mapper::fold(Fold f){
     // bool evenH = m_size.height % 2 == 0;
     // bool evenW = m_size.width % 2 == 0;
 
-    if(f == map::l2r)
-        for(int i = 0; i < m_size.height; i++)
-            for(int j = 0; j < m_size.width/2; j++)
-                m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
+    switch (f){
+        case map::l2r:
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width/2; j++)
+                    m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
+            break;
 
+        case map::r2l:
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width/2; j++)
+                    m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
+            break;
 
-    if(f == map::r2l)
-        for(int i = 0; i < m_size.height; i++)
-            for(int j = 0; j < m_size.width/2; j++)
-            m_map[i*m_size.width + j] = m_map[(i+1)*m_size.width - j];
+        case map::t2b:
 
-    if(f == map::t2b)
-        for(int i = 0; i < m_size.height/2; i++)
-            for(int j = 0; j < m_size.width; j++)
-                m_map[((m_size.height/2)*m_size.width) + i*m_size.width + j] = m_map[((m_size.height/2)*m_size.width) - i*m_size.width - j];
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width/2; j++)
+                    m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
+            break;
 
-    if(f == map::b2t)
-        for(int i = 0; i < m_size.height/2; i++)
-            for(int j = 0; j < m_size.width; j++)
-                m_map[i*m_size.width + j] = m_map[(m_size.height*m_size.width) - i*m_size.width - j];
+        case map::b2t:
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width/2; j++)
+                    m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
+            break;
+    }
 
 
     if(m_set_state) setState();
