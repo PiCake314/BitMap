@@ -21,6 +21,31 @@ namespace map{
             b2t
         };
 
+        enum Alignment{
+            none = -1,
+            center = 0,
+            top,
+            bottom,
+            left,
+            right
+        };
+
+        enum RectAlignment{
+            none = -1,
+            center = 0,
+            top,
+            bottom,
+            left,
+            right,
+
+            top_left = 5,
+            top_right,
+            bottom_left,
+            bottom_right,
+            width,
+            height
+        };
+
 
     class Mapper{
         private:
@@ -70,25 +95,20 @@ namespace map{
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
-            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, std::string alignment = "none");
+            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
 
 
             /**
              * @param r: negative values will result in them being 10% of the height.
-             * @param alignment: "center"/"top"/"bottom"/"left"/"right"
+             * @param alignment: sets the alignment of the shape.
              */
-
-            /**
-             * @param r: negative values will result in them being 10% of the height.
-             * @param alignment: "center"/"top"/"bottom"/"left"/"right"
-             */
-            void drawCircle(Point = Point(), int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, std::string alignment = "none");
+            void drawCircle(Point = Point(), int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
 
 
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
-            void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, std::string alignment = "none");
+            void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
 
 
             /**
@@ -118,20 +138,5 @@ namespace map{
 
             void setState();
     };
-
-
-    //Fold Values
-
-    // /* Copy the right side to left side.*/
-    // const Fold r2l = "right";
-
-    // /* Copy the left side to right side.*/
-    // const Fold l2r = "left";
-
-    // /* Copy the top side to bottom side.*/
-    // const Fold t2b = "top";
-
-    // /* Copy the bottom side to top side.*/
-    // const Fold b2t = "bottom";
 
 }

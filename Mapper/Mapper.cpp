@@ -343,7 +343,7 @@ void map::Mapper::drawMulti(std::vector<Point> points, clr::RGB color, bool thic
 
 
 
-void map::Mapper::drawRect(Point center, float height, float width, clr::RGB color, bool filled, bool thick , std::string alignment){
+void map::Mapper::drawRect(Point center, float height, float width, clr::RGB color, bool filled, bool thick , RectAlignment alignment){
     if(height < 0) height = m_size.height/10;
     
     if(width < 0) width = m_size.height/10;
@@ -361,39 +361,47 @@ void map::Mapper::drawRect(Point center, float height, float width, clr::RGB col
         center.y *= m_size.width;
 
 
-    if(alignment == "center"){
-        center.x = (m_size.height-height)/2;
-        center.y = (m_size.width-width)/2;
-    }
-    else if(alignment == "top-left"){
-        center.x = height/2;
-        center.y = width/2;
-    }
-    else if(alignment == "top-right"){
-        height = m_size.height/2;
-        width = m_size.width/2;
-        center.x = 0;
-        center.y = m_size.width-width;
-    }
-    else if(alignment == "bottom-left"){
-        height = m_size.height/2;
-        width = m_size.width/2;
-        center.x = m_size.height-height;
-        center.y = 0;
-    }
-    else if(alignment == "bottom-right"){
-        height = m_size.height/2;
-        width = m_size.width/2;
-        center.x = m_size.height-height;
-        center.y = m_size.width-width;
-    }
-    else if(alignment == "width"){
-        width = m_size.width;
-        center.y = m_size.width/2;
-    }
-    else if(alignment == "height"){
-        height = m_size.height;
-        center.x = m_size.height/2;
+    switch (alignment){
+        case RectAlignment::center:
+            center.x = (m_size.height-height)/2;
+            center.y = (m_size.width-width)/2;
+            break;
+
+        case RectAlignment::top_left:
+            center.x = height/2;
+            center.y = width/2;
+            break;
+
+        case RectAlignment::top_right:
+            height = m_size.height/2;
+            width = m_size.width/2;
+            center.x = 0;
+            center.y = m_size.width-width;
+            break;
+
+        case RectAlignment::bottom_left:
+            height = m_size.height/2;
+            width = m_size.width/2;
+            center.x = m_size.height-height;
+            center.y = 0;
+            break;
+
+        case RectAlignment::bottom_right:
+            height = m_size.height/2;
+            width = m_size.width/2;
+            center.x = m_size.height-height;
+            center.y = m_size.width-width;
+            break;
+
+        case RectAlignment::width:
+            width = m_size.width;
+            center.y = m_size.width/2;
+            break;
+        
+        case RectAlignment::height:
+            height = m_size.height;
+            center.x = m_size.height/2;
+            break;
     }
 
 
@@ -439,35 +447,38 @@ void map::Mapper::drawRect(Point center, float height, float width, clr::RGB col
 
 
 
-void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, std::string alignment){
+void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
     thickness = thickness < 2 ? 2 : thickness;
 
     if(r < 0) r = m_size.height/10;
-    
-    if(alignment == "center"){
-        center.x = (m_size.height/2) - r;
-        center.y = (m_size.width/2) - r;
+
+    switch (alignment){
+        case Alignment::center:
+            center.x = (m_size.height/2) - r;
+            center.y = (m_size.width/2) - r;
+            break;
+
+        case Alignment::top:
+            center.x = 0;
+            center.y = (m_size.width/2) - r;
+            break;
+
+        case Alignment::bottom:
+            center.x = m_size.height - 2*r;
+            center.y = (m_size.width/2) - r;
+            break;
+
+        case Alignment::left:
+            center.x = (m_size.height/2) - r;
+            center.y = 0;
+            break;
+
+        case Alignment::right:
+            center.x = (m_size.height/2) - r;
+            center.y = m_size.width - 2*r;
+            break;
     }
 
-    if(alignment == "top"){
-        center.x = 0;
-        center.y = (m_size.width/2) - r;
-    }
-
-    if(alignment == "bottom"){
-        center.x = m_size.height - 2*r;
-        center.y = (m_size.width/2) - r;
-    }
-
-    if(alignment == "left"){
-        center.x = (m_size.height/2) - r;
-        center.y = 0;
-    }
-
-    if(alignment == "right"){
-        center.x = (m_size.height/2) - r;
-        center.y = m_size.width - 2*r;
-    }
 
     int topMid = center.x+r;
     int leftMid = center.y+r;
@@ -518,34 +529,36 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
 
 
 
-void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color, bool filled, bool inverted, std::string alignment){
+void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color, bool filled, bool inverted, Alignment alignment){
     if(r1 < 0) r1 = m_size.height/10;
     
     if(r2 < 0) r2 = m_size.height/10;
-    
-    if(alignment == "center"){
-        top = (m_size.height/2) - r1;
-        left = (m_size.width/2) - r2;
-    }
 
-    if(alignment == "top"){
-        top = 0;
-        left = (m_size.width/2) - r2;
-    }
+    switch (alignment){
+        case Alignment::center:
+            top = (m_size.height/2) - r1;
+            left = (m_size.width/2) - r2;
+            break;
 
-    if(alignment == "bottom"){
-        top = m_size.height - 2*r1;
-        left = (m_size.width/2) - r2;
-    }
+        case Alignment::top:
+            top = 0;
+            left = (m_size.width/2) - r2;
+            break;
 
-    if(alignment == "left"){
-        top = (m_size.height/2) - r1;
-        left = 0;
-    }
+        case Alignment::bottom:
+            top = m_size.height - 2*r1;
+            left = (m_size.width/2) - r2;
+            break;
 
-    if(alignment == "right"){
-        top = (m_size.height/2) - r1;
-        left = m_size.width - 2*r2;
+        case Alignment::left:
+            top = (m_size.height/2) - r1;
+            left = 0;
+            break;
+
+        case Alignment::right:
+            top = (m_size.height/2) - r1;
+            left = m_size.width - 2*r2;
+            break;
     }
 
 

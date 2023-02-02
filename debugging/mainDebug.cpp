@@ -88,9 +88,26 @@ void rectRec(map::Mapper &m, int t, int l, int side){
 void drawKuwaitFlag(map::Mapper &m, int h, int w){
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
 
-    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, "width");
-    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, "width");
+    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, map::RectAlignment::width);
+    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, map::RectAlignment::width);
     m.drawFourPoints(Ps, clr::RGB());
+}
+
+
+/* ------------------------------- Chess board ------------------------------ */
+void draeChessBoard(map::Mapper &m, int h, int w){
+  m.noSet();
+
+  bool flag = false;
+  for(int offX = 0; offX < h; offX += h/8){
+    flag = !flag;
+    for(int offY = 0; offY < w; offY += w/8){
+      if(flag) m.drawRect({offX + h/16, offY + w/16}, h/8, w/8);
+      flag = !flag;
+    }
+  }
+  m.setState();
+
 }
 
 
@@ -101,7 +118,7 @@ int main(int argc, char** argv){
     using std::cout, std::cin;
 
 
-    int height = 128, width = 128;
+    int height = 1024, width = 1024;
     String arg = argc > 1 ? argv[1] : "r";
     map::Mapper m = map::Mapper("debug.ppm", height, width, arg);
 
@@ -110,18 +127,9 @@ int main(int argc, char** argv){
 
   /* --------------------------- Put your code here --------------------------- */
 
-    m.fillWhite();
-    m.noSet();
-
-    bool flag = false;
-    for(int offX = 0; offX < height; offX += height/8){
-      flag = !flag;
-      for(int offY = 0; offY < width; offY += width/8){
-        if(flag) m.drawRect({offX + height/16, offY + width/16}, height/8, width/8);
-        flag = !flag;
-      }
-    }
-    m.setState();
+  m.bezierMultiCurve({{0, 0}, {0, width/2}, {height, width/2}, {height, 0}, {0, 0}}, 0.01, clr::RGB(254, 194, 236), true);
+  m.fold(map::Fold::l2r);
+  m.drawEllipse(150, 400, 350, 112, clr::RGB(254, 194, 236), true, false, map::Alignment::center);
 
   /* -------------------------------------------------------------------------- */
 
