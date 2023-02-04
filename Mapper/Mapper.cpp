@@ -87,7 +87,7 @@ Point lerp(Point p1, Point p2, float dt){
 
 /*==============================================================================================*/
 
-Mapper::Mapper(std::string fn, int height, int width, std::string type){
+Mapper::Mapper(std::string fn, int height, int width, Type type){
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
     m_filename = fn;
@@ -97,7 +97,7 @@ Mapper::Mapper(std::string fn, int height, int width, std::string type){
     m_max = 255;
     m_set_state = true;
 
-    if(type == "load")
+    if(type == Type::load)
         loadFile();
     else
         resetFile();

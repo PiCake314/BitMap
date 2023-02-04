@@ -46,6 +46,11 @@ namespace map{
             height
         };
 
+        enum Type{
+            reset = 0,
+            load = 1
+        };
+
 
     class Mapper{
         private:
@@ -60,7 +65,7 @@ namespace map{
 
         public:
             // Mapper();
-            Mapper(std::string = "output.ppm", int h = 100, int w = 100, std::string = "reset");
+            Mapper(std::string = "output.ppm", int h = 100, int w = 100, Type = Type::reset);
             ~Mapper();
 
             void doSet();

@@ -119,7 +119,7 @@ int main(int argc, char** argv){
 
 
     int height = 1024, width = 1024;
-    String arg = argc > 1 ? argv[1] : "r";
+    map::Type arg = argc > 1 ? (argv[1] == "r" || argv[1] == "reset"? map::Type::reset : map::Type::load) : map::Type::reset;
     map::Mapper m = map::Mapper("debug.ppm", height, width, arg);
 
   long long cycStart, cycStop;
