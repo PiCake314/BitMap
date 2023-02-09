@@ -12,39 +12,39 @@
 #include "../Structs/Point.hpp"
 #include "../Structs/Fold.hpp"
 
+enum Fold{
+    r2l = 0,
+    l2r,
+    t2b,
+    b2t
+};
+
+enum Alignment{
+    none = -1,
+    center = 0,
+    top,
+    bottom,
+    left,
+    right
+};
+
+enum RectAlignment{
+    Rnone = -1,
+    Rcenter = 0,
+    Rtop,
+    Rbottom,
+    Rleft,
+    Rright,
+
+    Rtop_left = 5,
+    Rtop_right,
+    Rbottom_left,
+    Rbottom_right,
+    Rwidth,
+    Rheight
+};
 
 namespace map{
-        enum Fold{
-            r2l = 0,
-            l2r,
-            t2b,
-            b2t
-        };
-
-        enum Alignment{
-            none = -1,
-            center = 0,
-            top,
-            bottom,
-            left,
-            right
-        };
-
-        enum RectAlignment{
-            none = -1,
-            center = 0,
-            top,
-            bottom,
-            left,
-            right,
-
-            top_left = 5,
-            top_right,
-            bottom_left,
-            bottom_right,
-            width,
-            height
-        };
 
         enum Type{
             reset = 0,
@@ -100,7 +100,7 @@ namespace map{
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
-            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
+            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::Rnone);
 
 
             /**

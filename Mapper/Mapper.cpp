@@ -362,43 +362,43 @@ void map::Mapper::drawRect(Point center, float height, float width, clr::RGB col
 
 
     switch (alignment){
-        case RectAlignment::center:
+        case RectAlignment::Rcenter:
             center.x = (m_size.height-height)/2;
             center.y = (m_size.width-width)/2;
             break;
 
-        case RectAlignment::top_left:
+        case RectAlignment::Rtop_left:
             center.x = height/2;
             center.y = width/2;
             break;
 
-        case RectAlignment::top_right:
+        case RectAlignment::Rtop_right:
             height = m_size.height/2;
             width = m_size.width/2;
             center.x = 0;
             center.y = m_size.width-width;
             break;
 
-        case RectAlignment::bottom_left:
+        case RectAlignment::Rbottom_left:
             height = m_size.height/2;
             width = m_size.width/2;
             center.x = m_size.height-height;
             center.y = 0;
             break;
 
-        case RectAlignment::bottom_right:
+        case RectAlignment::Rbottom_right:
             height = m_size.height/2;
             width = m_size.width/2;
             center.x = m_size.height-height;
             center.y = m_size.width-width;
             break;
 
-        case RectAlignment::width:
+        case RectAlignment::Rwidth:
             width = m_size.width;
             center.y = m_size.width/2;
             break;
         
-        case RectAlignment::height:
+        case RectAlignment::Rheight:
             height = m_size.height;
             center.x = m_size.height/2;
             break;
@@ -643,26 +643,26 @@ void map::Mapper::fold(Fold f){
     // bool evenW = m_size.width % 2 == 0;
 
     switch (f){
-        case map::l2r:
+        case Fold::l2r:
             for(int i = 0; i < m_size.height; i++)
                 for(int j = 0; j < m_size.width/2; j++)
                     m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
             break;
 
-        case map::r2l:
+        case Fold::r2l:
             for(int i = 0; i < m_size.height; i++)
                 for(int j = 0; j < m_size.width/2; j++)
                     m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
             break;
 
-        case map::t2b:
+        case Fold::t2b:
 
             for(int i = 0; i < m_size.height; i++)
                 for(int j = 0; j < m_size.width/2; j++)
                     m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];
             break;
 
-        case map::b2t:
+        case Fold::b2t:
             for(int i = 0; i < m_size.height; i++)
                 for(int j = 0; j < m_size.width/2; j++)
                     m_map[(i+1)*m_size.width - j] = m_map[i*m_size.width + j];

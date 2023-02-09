@@ -1,5 +1,5 @@
 #include "../Mapper/Mapper.hpp"
-#include "rdtsc.h"
+// #include "rdtsc.h"
 
 
 
@@ -88,8 +88,8 @@ void rectRec(map::Mapper &m, int t, int l, int side){
 void drawKuwaitFlag(map::Mapper &m, int h, int w){
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
 
-    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, map::RectAlignment::width);
-    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, map::RectAlignment::width);
+    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, RectAlignment::Rwidth);
+    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, RectAlignment::Rwidth);
     m.drawFourPoints(Ps, clr::RGB());
 }
 
@@ -119,24 +119,24 @@ int main(int argc, char** argv){
 
 
     int height = 1024, width = 1024;
-    map::Type arg = argc > 1 ? (argv[1] == "r" || argv[1] == "reset"? map::Type::reset : map::Type::load) : map::Type::reset;
+    map::Type arg = argc > 1 ? (std::string(argv[1]) == "r" || std::string(argv[1]) == "reset"? map::Type::reset : map::Type::load) : map::Type::reset;
     map::Mapper m = map::Mapper("debug.ppm", height, width, arg);
 
-  long long cycStart, cycStop;
-  cycStart = rdtscll();
+  // long long cycStart, cycStop;
+  // cycStart = rdtscll();
 
   /* --------------------------- Put your code here --------------------------- */
 
   m.bezierMultiCurve({{0, 0}, {0, width/2}, {height, width/2}, {height, 0}, {0, 0}}, 0.01, clr::RGB(254, 194, 236), true);
-  m.fold(map::Fold::l2r);
-  m.drawEllipse(150, 400, 350, 112, clr::RGB(254, 194, 236), true, false, map::Alignment::center);
+  m.fold(Fold::l2r);
+  m.drawEllipse(150, 400, 350, 112, clr::RGB(254, 194, 236), true, false, Alignment::center);
 
   /* -------------------------------------------------------------------------- */
 
-  cycStop = rdtscll();
-  long diff = cycStop - cycStart;
-  long diffPerPixel = diff / (width*height);
-  fprintf(stderr, "Took %ld cycles to process, or %ld cycles per pixel\n", diff, diff/(width*height));
+  // cycStop = rdtscll();
+  // long diff = cycStop - cycStart;
+  // long diffPerPixel = diff / (width*height);
+  // fprintf(stderr, "Took %ld cycles to process, or %ld cycles per pixel\n", diff, diff/(width*height));
 
     return 0;
 }
