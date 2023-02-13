@@ -111,8 +111,6 @@ void draeChessBoard(map::Mapper &m, int h, int w){
 }
 
 
-
-
 int main(int argc, char** argv){
     using String = std::string;
     using std::cout, std::cin;
@@ -120,16 +118,46 @@ int main(int argc, char** argv){
 
     int height = 1024, width = 1024;
     map::Type arg = argc > 1 ? (std::string(argv[1]) == "r" || std::string(argv[1]) == "reset"? map::Type::reset : map::Type::load) : map::Type::reset;
-    map::Mapper m = map::Mapper("debug.ppm", height, width, arg);
+    map::Mapper m = map::Mapper("Mandelbrot.ppm", height, width, arg);
 
   // long long cycStart, cycStop;
   // cycStart = rdtscll();
 
   /* --------------------------- Put your code here --------------------------- */
+  const int  MAX_BOUND = 1000;
 
-  m.bezierMultiCurve({{0, 0}, {0, width/2}, {height, width/2}, {height, 0}, {0, 0}}, 0.01, clr::RGB(254, 194, 236), true);
-  m.fold(Fold::l2r);
-  m.drawEllipse(150, 400, 350, 112, clr::RGB(254, 194, 236), true, false, Alignment::center);
+  const float minR = -1.5f, maxR = .7f;
+  const float minI = -1, maxI = 1;
+
+
+  m.fillWhite();
+  m.noSet();
+
+	for(int i = 0; i < height; i++){
+		for(int j = 0; j < width; j++){
+
+      double cr = j * ((maxR - minR)/ width) + minR;
+      double ci = i * ((maxI - minI)/height) + minI;
+
+      Complex z;
+
+      double zr = 0, zi = 0;
+
+      int n = 0;
+      for(n = 0; n < MAX_BOUND && z.mag() < 2; n++){
+        double temp = zr * zr - zi * zi + cr;
+        zi = 2.0 * zr * zi + ci;
+        zr = temp;
+        z = Complex(zr, zi);
+      }
+
+			int color = (n % 256);
+      m.drawAt({j, i} ,clr::RGB(color, color, color));
+		}
+	}
+
+  // m.rotate(Rotate::ccw);
+  m.setState();
 
   /* -------------------------------------------------------------------------- */
 

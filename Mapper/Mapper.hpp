@@ -11,12 +11,19 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Fold.hpp"
+#include "../Structs/Complex.hpp"
 
 enum Fold{
     r2l = 0,
     l2r,
     t2b,
     b2t
+};
+
+enum Rotate{
+    cw = 0,
+    ccw,
+    flip
 };
 
 enum Alignment{
@@ -134,6 +141,9 @@ namespace map{
              * @param Fold: use one of the provided constants (l2r, r2l, t2b, b2t)
              */
             void fold(Fold);
+
+
+            void rotate(Rotate);
 
             /*
                 Distance between 2 points!

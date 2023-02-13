@@ -621,7 +621,7 @@ void map::Mapper::bezierMultiCurve(std::vector<Point> pts, float dt, clr::RGB co
         for(int i = 1; i < l; i++){
             if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
             for(int j = 1; j < l + 1 - i; j++){
-                // drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], clr::RGB(200, 150, 0));
+                drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], clr::RGB(200, 150, 0));
                 lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], a));
             }
         }
@@ -673,6 +673,42 @@ void map::Mapper::fold(Fold f){
     if(m_set_state) setState();
 }
 
+
+// Not done!
+void Mapper::rotate(Rotate rt){
+    switch(rt){
+
+        case Rotate::cw:{
+            std::vector<clr::RGB> temp(m_map, m_map+m_size.width*m_size.height);
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width; j++){
+                    m_map[i*m_size.width + j] = temp[(m_size.height-1-j)*m_size.width + i];
+                }
+                if(m_set_state) setState();
+            break;
+        }
+
+        case Rotate::ccw:{
+            std::vector<clr::RGB> temp(m_map, m_map+m_size.width*m_size.height);
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width; j++){
+                    m_map[i*m_size.width + j] = temp[j*m_size.width + (m_size.width-1-i)];
+                }
+                if(m_set_state) setState();
+            break;
+        }
+
+        case Rotate::flip:{
+            std::vector<clr::RGB> temp(m_map, m_map+m_size.width*m_size.height);
+            for(int i = 0; i < m_size.height; i++)
+                for(int j = 0; j < m_size.width; j++){
+                    m_map[i*m_size.width + j] = temp[(m_size.height-1-i)*m_size.width + (m_size.width-1-j)];
+                }
+                if(m_set_state) setState();
+            break;
+        }
+    }
+}
 
 
 int Mapper::dist(Point p1, Point p2){
