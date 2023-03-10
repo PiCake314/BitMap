@@ -110,54 +110,152 @@ void draeChessBoard(map::Mapper &m, int h, int w){
 
 }
 
+/* -------------------------------- MandelBrot ------------------------------ */
+
+void MandelBrot(map::Mapper &m, int height, int width){
+  const int  MAX_BOUND = 255;
+
+  const float minR = -2, maxR = 2;
+  const float minI = -2, maxI = 2;
+  // int c = 1;
+
+  clr::RGB rainbow[7] = {
+    clr::RGB(148, 0, 211),
+    clr::RGB(75, 0, 130),
+    clr::RGB(0, 0, 255),
+    clr::RGB(0, 255, 0),
+    clr::RGB(255, 255, 0),
+    clr::RGB(255, 127, 0),
+    clr::RGB(255, 0, 0)
+  };
+
+  m.noSet();
+  m.fillWhite();
+
+	for(int i = 0; i < height; i++){
+		for(int j = 0; j < width; j++){
+
+      double cr = i * ((maxR - minR)/width) + minR;
+      double ci = j * ((maxI - minI)/height) + minI;
+
+      Complex z;
+
+      int n;
+      for(n = 0; n < MAX_BOUND && z.mag() < 2; n++)
+        z = z * z + Complex(cr, ci);
+
+
+      // use with MAX_BOUND = 10
+			// int RGBValue = (n % 256);
+      // if(n < 3) m.drawAt({j, i} , clr::RGB(0, 0, 0));
+      // else if(n < 10) m.drawAt({j, i} , rainbow[n-3]);
+      // else m.drawAt({j, i} , clr::RGB(RGBValue, RGBValue, RGBValue));
+      // m.drawAt({j, i} , clr::RGB(n*25, n*25, n*25));
+      // m.drawAt({j, i} , rainbow[n%7]);
+      // m.drawAt({j, i} , clr::RGB(n, n, n));
+
+      // if(n == MAX_BOUND) m.drawAt({j, i} , clr::RGB(255, 255, 255));
+      // else m.drawAt({j, i});
+
+		}
+	}
+  m.setState();
+
+}
+
+
+void julia(map::Mapper &m, int height, int width){
+  const int  MAX_BOUND = 140;
+
+  const float minR = -2, maxR = 2;
+  const float minI = -2, maxI = 2;
+
+  clr::RGB rainbow[7] = {
+    clr::RGB(148, 0, 211),
+    clr::RGB(75, 0, 130),
+    clr::RGB(0, 0, 255),
+    clr::RGB(0, 255, 0),
+    clr::RGB(255, 255, 0),
+    clr::RGB(255, 127, 0),
+    clr::RGB(255, 0, 0)
+  };
+
+  m.noSet();
+  m.fillWhite();
+
+	for(int i = 0; i < height; i++){
+		for(int j = 0; j < width; j++){
+
+      double cr = i * ((maxR - minR)/width) + minR;
+      double ci = j * ((maxI - minI)/height) + minI;
+      Complex c((i * ((maxR - minR)/width) + minR), (j * ((maxI - minI)/height) + minI));
+
+      // −0.7269 + 0.1889
+      c = Complex(-0.7269, .1889);
+
+      Complex z;
+      z = Complex(cr, ci);
+
+      int n;
+      for(n = 0; n < MAX_BOUND && z.mag() < 2; n++)
+        z = z * z + c;
+
+
+
+      if(n == MAX_BOUND) m.drawAt({j, i} , clr::RGB(255, 255, 255));
+      else m.drawAt({j, i});
+
+		}
+	}
+  m.setState();
+}
+
+
+void findPi(){
+  Complex epsilon(0, .01);
+  Complex c = (Complex(-.75, 0) + epsilon);
+
+  Complex z;
+  long long n;
+  for(n = 0; z.R < 2; n++) z = (z * z) + c;
+  
+
+  std::cout << "π: " << n << std::endl;
+}
+
+void setPlane(map::Mapper &m, int height, int width){
+  m.drawLine({height/2, 0}, {height/2, width}, clr::RGB(), true);
+  m.drawLine({0, width/2}, {height, width/2}, clr::RGB(), true);
+}
+
+void drawHeart(map::Mapper &m){
+  double (*func)(double, double) = [](double x, double y){
+    return (((x*x)/1000 + (y*y)/1000 - 10) *((x*x)/1000 + (y*y)/1000 - 10) *((x*x)/1000 + (y*y)/1000 - 10));
+  };
+
+  double (*res)(double, double) = [](double x, double y){
+    return ((x*x*y*y*y)/10000000);
+  };
+
+  m.plotXY(func, res, clr::RED);
+}
+
 
 int main(int argc, char** argv){
     using String = std::string;
     using std::cout, std::cin;
 
 
-    int height = 1024, width = 1024;
+    int height = 300, width = 300;
     map::Type arg = argc > 1 ? (std::string(argv[1]) == "r" || std::string(argv[1]) == "reset"? map::Type::reset : map::Type::load) : map::Type::reset;
-    map::Mapper m = map::Mapper("Mandelbrot.ppm", height, width, arg);
+    map::Mapper m = map::Mapper("Graph.ppm", height, width, arg);
 
   // long long cycStart, cycStop;
   // cycStart = rdtscll();
 
   /* --------------------------- Put your code here --------------------------- */
-  const int  MAX_BOUND = 1000;
 
-  const float minR = -1.5f, maxR = .7f;
-  const float minI = -1, maxI = 1;
-
-
-  m.fillWhite();
-  m.noSet();
-
-	for(int i = 0; i < height; i++){
-		for(int j = 0; j < width; j++){
-
-      double cr = j * ((maxR - minR)/ width) + minR;
-      double ci = i * ((maxI - minI)/height) + minI;
-
-      Complex z;
-
-      double zr = 0, zi = 0;
-
-      int n = 0;
-      for(n = 0; n < MAX_BOUND && z.mag() < 2; n++){
-        double temp = zr * zr - zi * zi + cr;
-        zi = 2.0 * zr * zi + ci;
-        zr = temp;
-        z = Complex(zr, zi);
-      }
-
-			int color = (n % 256);
-      m.drawAt({j, i} ,clr::RGB(color, color, color));
-		}
-	}
-
-  // m.rotate(Rotate::ccw);
-  m.setState();
+  drawHeart(m);
 
   /* -------------------------------------------------------------------------- */
 

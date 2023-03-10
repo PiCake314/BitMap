@@ -2,23 +2,17 @@
 #include <cmath>
 
 struct Complex{
-    int R;
-    int I;
+    double R;
+    double I;
 
     Complex() : R(0), I(0) {}
-    Complex(int r, int i) : R(r), I(i) {};
+    Complex(double r, double i) : R(r), I(i) {};
 
-    Complex operator+(const Complex &other){
+    Complex operator+(Complex other){
         return Complex(R + other.R, I + other. I);
     }
 
-    void operator+=(int r){
-        R += r;
-    }
-
-    // Complex operator -(const Complex &other);
-
-    Complex operator*(const Complex &other){
+    Complex operator*(Complex other){
         return Complex(R*other.R - I*other.I, I*other.R + R*other.I);
     }
 

@@ -63,10 +63,13 @@ namespace map{
         private:
             std::string m_filename;
             std::string m_pType;
-            size m_size;
+            Size m_size;
             int m_max;
             clr::RGB *m_map;
             bool m_set_state;
+
+            int m_xCenter;
+            int m_yCenter;
 
             void setInfo();
 
@@ -133,6 +136,15 @@ namespace map{
              * @brief Creates a bezian curve from a vector of points
              */
             void bezierMultiCurve(std::vector<Point>, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
+
+
+            void plot(int(*)(int), clr::RGB = clr::RGB(), bool thick = false);
+
+
+            void plotXY(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB());
+            
+            
+            void plotIfTrue(bool (*)(int, int), clr::RGB = clr::RGB());
 
 
             /**
