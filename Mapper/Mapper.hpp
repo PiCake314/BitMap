@@ -10,46 +10,10 @@
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
-#include "../Structs/Fold.hpp"
 #include "../Structs/Complex.hpp"
 
-enum Fold{
-    r2l = 0,
-    l2r,
-    t2b,
-    b2t
-};
+#define PATH "output/"
 
-enum Rotate{
-    cw = 0,
-    ccw,
-    flip
-};
-
-enum Alignment{
-    none = -1,
-    center = 0,
-    top,
-    bottom,
-    left,
-    right
-};
-
-enum RectAlignment{
-    Rnone = -1,
-    Rcenter = 0,
-    Rtop,
-    Rbottom,
-    Rleft,
-    Rright,
-
-    Rtop_left = 5,
-    Rtop_right,
-    Rbottom_left,
-    Rbottom_right,
-    Rwidth,
-    Rheight
-};
 
 namespace map{
 
@@ -85,6 +49,10 @@ namespace map{
             void resetFile();
 
             void loadFile();
+
+            void setState();
+
+            void setFile(std::string);
 
             void fillWhite();
 
@@ -163,7 +131,60 @@ namespace map{
             int dist(Point, Point);
 
 
-            void setState();
+            // void move()
+
     };
 
 }
+
+
+
+enum Fold{
+    r2l = 0,
+    l2r,
+    t2b,
+    b2t
+};
+
+enum Rotate{
+    cw = 0,
+    ccw,
+    flip
+};
+
+enum Alignment{
+    none = -1,
+    center = 0,
+    top,
+    bottom,
+    left,
+    right
+};
+
+enum RectAlignment{
+    Rnone = -1,
+    Rcenter = 0,
+    Rtop,
+    Rbottom,
+    Rleft,
+    Rright,
+
+    Rtop_left = 5,
+    Rtop_right,
+    Rbottom_left,
+    Rbottom_right,
+    Rwidth,
+    Rheight
+};
+
+
+enum Object{
+    line = 0,
+    rect,
+    circle,
+    ellipse,
+    bezier,
+    plot,
+    plotXY,
+    plotIfTrue,
+};

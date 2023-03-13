@@ -48,7 +48,7 @@ void map::Mapper::loadFile(){
     std::string w;
     std::string M;
     
-    std::string filename = "images/" + m_filename;
+    std::string filename = PATH + m_filename;
     std::ifstream fin(filename);
     assert(fin.is_open() == true);
 
@@ -90,6 +90,12 @@ void map::Mapper::loadFile(){
     }
 
     fin.close();
+}
+
+
+
+void map::Mapper::setFile(std::string fn){
+    m_filename = fn;
 }
 
 
@@ -671,7 +677,7 @@ int Mapper::dist(Point p1, Point p2){
 /* --------------------------- Setup Functions --------------------------- */
 
 void map::Mapper::setInfo(){
-    std::string fn = "images/" + m_filename;
+    std::string fn = PATH + m_filename;
     std::ofstream fout(fn, std::ios::trunc);
 
     assert(fout.is_open() == true);
@@ -689,7 +695,7 @@ void map::Mapper::setInfo(){
 
 void map::Mapper::setState(){
     setInfo();
-    std::string fn = "images/" + m_filename;
+    std::string fn = PATH + m_filename;
     std::ofstream fout(fn, std::ios::app);
 
     for(int i=0; i<m_size.height; i++){
@@ -697,4 +703,6 @@ void map::Mapper::setState(){
             fout << m_map[i*m_size.width + j] << " ";
         fout << '\n';
     }
+
+    fout.close();
 }
