@@ -11,17 +11,18 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
+#include "../Structs/Shapes.hpp"
+
+#include "../Enums/Loadtype.cpp"
+#include "../Enums/Fold.cpp"
+#include "../Enums/Rotate.cpp"
+#include "../Enums/Alignment.cpp"
+#include "../Enums/RectAlignment.cpp"
 
 #define PATH "output/"
 
 
 namespace map{
-
-        enum Type{
-            reset = 0,
-            load = 1
-        };
-
 
     class Mapper{
         private:
@@ -39,7 +40,7 @@ namespace map{
 
         public:
             // Mapper();
-            Mapper(std::string = "output.ppm", int h = 100, int w = 100, Type = Type::reset);
+            Mapper(std::string = "output.ppm", int h = 100, int w = 100, Loadtype = Loadtype::reset);
             ~Mapper();
 
             void doSet();
@@ -94,6 +95,9 @@ namespace map{
             void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
 
 
+            void draw(const Shape&);
+
+
             /**
              * @brief Creates a bezian curve that goes from p1 to p3 curved by p2.
              */
@@ -130,61 +134,7 @@ namespace map{
             */
             int dist(Point, Point);
 
-
-            // void move()
-
     };
 
 }
 
-
-
-enum Fold{
-    r2l = 0,
-    l2r,
-    t2b,
-    b2t
-};
-
-enum Rotate{
-    cw = 0,
-    ccw,
-    flip
-};
-
-enum Alignment{
-    none = -1,
-    center = 0,
-    top,
-    bottom,
-    left,
-    right
-};
-
-enum RectAlignment{
-    Rnone = -1,
-    Rcenter = 0,
-    Rtop,
-    Rbottom,
-    Rleft,
-    Rright,
-
-    Rtop_left = 5,
-    Rtop_right,
-    Rbottom_left,
-    Rbottom_right,
-    Rwidth,
-    Rheight
-};
-
-
-enum Object{
-    line = 0,
-    rect,
-    circle,
-    ellipse,
-    bezier,
-    plot,
-    plotXY,
-    plotIfTrue,
-};
