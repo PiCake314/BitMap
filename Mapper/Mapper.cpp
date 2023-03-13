@@ -2,14 +2,14 @@
 #include "HelperFuncs.cpp"
 
 
-Mapper::Mapper(std::string fn, int height, int width, Loadtype type)
+Mapper::Mapper(std::string fn, int height, int width, Type type)
 : m_pType("P3"), m_size(height, width), m_max(255), m_set_state(true), m_xCenter(0), m_yCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
     m_filename = fn;
 
-    if(type == Loadtype::load) loadFile();
+    if(type == Type::load) loadFile();
     else resetFile();
 }
 
@@ -318,9 +318,6 @@ void map::Mapper::drawRect(Point center, float height, float width, clr::RGB col
             height = m_size.height;
             center.x = m_size.height/2;
             break;
-        
-        case RectAlignment::Rnone:
-            break;
     }
 
 
@@ -395,9 +392,6 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
         case Alignment::right:
             center.x = (m_size.height/2) - r;
             center.y = m_size.width - 2*r;
-            break;
-        
-        case Alignment::none:
             break;
     }
 
@@ -481,9 +475,6 @@ void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color,
             top = (m_size.height/2) - r1;
             left = m_size.width - 2*r2;
             break;
-        
-        case Alignment::none:
-            break;
     }
 
 
@@ -503,32 +494,6 @@ void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color,
                     m_map[i*m_size.width + j] = color;
 
     if(m_set_state) setState();
-}
-
-
-
-void map::Mapper::draw(const Shape &shape){
-    switch(shape.type){
-        case map::Shapetype::Line:
-            drawLine(shape.start, shape.end, shape.color, shape.thickness);
-            break;
-
-        case map::Shapetype::Circle:
-            drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
-            break;
-
-        case map::Shapetype::Rect:
-            drawRect(shape.center, shape.height, shape.width, shape.color, shape.filled, shape.thickness, shape.rectAlignment);
-            break;
-
-        case map::Shapetype::Ellipse:
-            drawEllipse(shape.center.x, shape.center.y, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
-            break;
-
-        default:
-            break;
-
-    }
 }
 
 
