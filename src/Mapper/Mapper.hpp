@@ -13,11 +13,11 @@
 #include "../Structs/Complex.hpp"
 #include "../Structs/Shapes.hpp"
 
-#include "../Enums/Loadtype.cpp"
-#include "../Enums/Fold.cpp"
-#include "../Enums/Rotate.cpp"
-#include "../Enums/Alignment.cpp"
-#include "../Enums/RectAlignment.cpp"
+#include "../Enums/Loadtype.hpp"
+#include "../Enums/Fold.hpp"
+#include "../Enums/Rotate.hpp"
+#include "../Enums/Alignment.hpp"
+#include "../Enums/RectAlignment.hpp"
 
 #define PATH "output/"
 

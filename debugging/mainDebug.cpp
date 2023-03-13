@@ -6,7 +6,7 @@
 int main(int argc, char** argv){
 
     std::string filename = "output.ppm";
-	int fps = 24;
+	int fps = 0;
 
     if(argc > 3){
 		filename = argv[3];
@@ -27,12 +27,10 @@ int main(int argc, char** argv){
 	
 	std::cout << "filename: " << filename << std::endl;
 
-	return 0;
-
 
     int height = 1000, width = 1000;
     map::Loadtype arg = argc > 1 ? (std::string(argv[1]) == "r" || std::string(argv[1]) == "reset"? map::Loadtype::reset : map::Loadtype::load) : map::Loadtype::reset;
-    map::Mapper m = map::Mapper(filename, height, width, arg);
+    map::Mapper m = map::Mapper("FirstVid/f1.ppm", height, width, arg);
 
 
 	// long long cycStart, cycStop;
@@ -40,23 +38,27 @@ int main(int argc, char** argv){
 
 	/* --------------------------- Put your code here --------------------------- */
 
+	std::cout << "FPS: " << fps << std::endl;
 
+	Circle c(50, Point(100, 100), clr::RGB(255, 0, 0), true);
 
-	m.draw(Circle(50, Point(100, 100), clr::RGB(255, 0, 0), true));
+	m.noSet();
+	for(int i = 0; i < fps; i++){
+		m.setFile("FirstVid/f" + std::to_string(i+1) + ".ppm");
 
-	// m.noSet();
-	// for(int i = 0; i < fps; i++){
-	// 	m.fillWhite();
-	// 	m.drawCircle(Point(100, 100 + i*(850/24)), 50, clr::RGB(255, 0, 0), true);
+		m.fillWhite();
+		c.center = Point(100, 100 + i*(850/24));
+		m.draw(c);
 
-	// 	m.setState();
-	// 	m.setFile("FirstVid/f" + std::to_string(i+2) + ".ppm");
-	// 	std::system(("convert images/FirstVid/f" + std::to_string(i+1) + ".ppm images/FirstVid/f" + std::to_string(i+1) + ".png").c_str());
-	// 	std::system(("rm images/FirstVid/f" + std::to_string(i+1) + ".ppm").c_str());
-	// }
+		m.setState();
+		std::system(("convert output/FirstVid/f" + std::to_string(i+1) + ".ppm output/FirstVid/f" + std::to_string(i+1) + ".png").c_str());
+		std::system(("rm output/FirstVid/f" + std::to_string(i+1) + ".ppm").c_str());
+	}
+
+	std::system(("ffmpeg -r 24 -f image2 -s 1000x1000 -i output/FirstVid/f%d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p output/" + filename).c_str());
+	std::system("rm output/FirstVid/f*.png");
 
 	/* -------------------------------------------------------------------------- */
-	// ffmpeg -r 24 -f image2 -s 1000x1000 -i images/FirstVid/f%d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p images/FirstVid/Res.mp4
 
 	// cycStop = rdtscll();
 	// long diff = cycStop - cycStart;

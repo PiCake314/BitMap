@@ -8,7 +8,7 @@ mapper: mains/main.cpp src/Mapper/Mapper.cpp
 	g++ -std=c++17 -o main mains/main.cpp src/Mapper/Mapper.cpp -O3 && ./main r && convert images/output.ppm images/output.png
 
 
-vidoedeb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
+videodeb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
 	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r video def$(filename) 0$(fps)
 
 

@@ -3,9 +3,9 @@
 #include "../Structs/Point.hpp"
 #include "../Structs/RGB.hpp"
 
-#include "../Enums/Alignment.cpp"
-#include "../Enums/RectAlignment.cpp"
-#include "../Enums/Shapetype.cpp"
+#include "../Enums/Alignment.hpp"
+#include "../Enums/RectAlignment.hpp"
+#include "../Enums/Shapetype.hpp"
 
 struct Shape{
     //  Shared
@@ -35,47 +35,26 @@ struct Shape{
 
 
 protected:
-    Shape(Point p, clr::RGB c, int t, map::Shapetype st)
-    : center(p), color(c), thickness(t), type(st) {}
+    Shape(Point p, clr::RGB c, int t, map::Shapetype st, map::Alignment a = map::Alignment::none, map::RectAlignment ra = map::RectAlignment::Rnone)
+    : center(p), color(c), thickness(t), type(st), alignment(a), rectAlignment(ra) {}
 };
 
 struct Line : /*protected*/ Shape{
     Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
     : Shape(Point(), c, t, map::Shapetype::Line){ start = s; end = e; }
-
-    void setStart(Point p){ start = p; }
-    void setEnd(Point p){ end = p; }
-
-    Point getStart(){ return start; }
-    Point getEnd(){ return end; }
 };
 
 struct Circle : /*protected*/ Shape{
-    Circle(int r, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool i = false, int t = false)
-    : Shape(p, c, t, map::Shapetype::Circle){ radius = r; filled = f; inverted = i; }
-
-    void setRadius(int r){ radius = r; }
-    int getRadius(){ return radius; }
+    Circle(int r, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool i = false, int t = false, map::Alignment a = map::Alignment::none)
+    : Shape(p, c, t, map::Shapetype::Circle, a){ radius = r; filled = f; inverted = i; }
 };
 
 struct Rect : /*protected*/ Shape{
-    Rect(int h = 0, int w = 0, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false)
-    : Shape(p, c, t, map::Shapetype::Rect){ height = h; width = w; }
-
-    void setHeight(int h){ height = h; }
-    void setWidth(int w){ width = w; }
-
-    int getHeight(){ return height; }
-    int getWidth(){ return width; }
+    Rect(int h = 0, int w = 0, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::RectAlignment ra = map::RectAlignment::Rnone)
+    : Shape(p, c, t, map::Shapetype::Rect, map::Alignment::none, ra){ height = h; width = w; }
 };
 
 struct Ellipse : /*protected*/ Shape{
-    Ellipse(int h, int w, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false)
-    : Shape(p, c, t, map::Shapetype::Ellipse){ r1 = h; r2 = w; }
-
-    void setR1(int r){ r1 = r; }
-    void setR2(int r){ r2 = r; }
-
-    int getR1(){ return r1; }
-    int getR2(){ return r2; }
+    Ellipse(int h, int w, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::Alignment a = map::Alignment::none)
+    : Shape(p, c, t, map::Shapetype::Ellipse, a){ r1 = h; r2 = w; }
 };
