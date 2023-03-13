@@ -1,4 +1,4 @@
-#include "../src/Mapper/Mapper.hpp"
+#include "../Mapper/Mapper.hpp"
 
 /* ---------------------- Fractal example starts here! ---------------------- */
 int getValue(clr::RGB c, std::vector<clr::RGB> cl){

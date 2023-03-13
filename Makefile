@@ -1,28 +1,19 @@
 
 
-deb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r
+deb: debugging/mainDebug.cpp Mapper/Mapper.cpp
+	g++ -std=c++20 -o main debugging/mainDebug.cpp Mapper/Mapper.cpp -O3 && ./main r
 
 
-mapper: mains/main.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++17 -o main mains/main.cpp src/Mapper/Mapper.cpp -O3 && ./main r && convert images/output.ppm images/output.png
+mapper: mains/main.cpp Mapper/Mapper.cpp
+	g++ -std=c++17 -o main mains/main.cpp Mapper/Mapper.cpp -O3 && ./main r && convert images/output.ppm images/output.png
 
 
-vidoedeb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r video def$(filename) 0$(fps)
+vidoeDebug: debugging/mainDebug.cpp Mapper/Mapper.cpp
+	g++ -std=c++20 -o main debugging/mainDebug.cpp Mapper/Mapper.cpp -O3 && ./main r
 
 
-image: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r image def$(filename)
-
-
-video: mains/main.cpp src/Mapper/Mapper.cpp
+video: mains/main.cpp Mapper/Mapper.cpp
 	echo $(var1)
-
-
-install:
-	brew install ImageMagick && brew install ffmpeg
-
 
 clean: 
 	rm main
