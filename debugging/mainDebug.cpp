@@ -10,15 +10,19 @@ int main(int argc, char** argv){
 
     if(argc > 3){
 		filename = argv[3];
-		if(filename == "def") filename = "output.ppm";
-		else filename = filename.substr(3);
-
 
 		if(std::string(argv[2]) == "video"){
 			assert(argc > 4);
 			fps = std::stoi(argv[4]);
 			if(fps == 0) fps = 24;
+
+			if(filename == "def") filename = "res.mp4";
+			else filename = filename.substr(3);
 		}
+		else if(filename == "def") filename = "output.ppm";
+		else filename = filename.substr(3);
+
+
     }
 
 	std::cout << "ARGC: " << argc << std::endl;
@@ -49,6 +53,7 @@ int main(int argc, char** argv){
 		m.fillWhite();
 		c.center = Point(100, 100 + i*(850/24));
 		m.draw(c);
+		m.rotate(map::Rotate::ccw);
 
 		m.setState();
 		std::system(("convert output/FirstVid/f" + std::to_string(i+1) + ".ppm output/FirstVid/f" + std::to_string(i+1) + ".png").c_str());

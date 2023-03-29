@@ -8,7 +8,7 @@
 #include "../Enums/Shapetype.hpp"
 
 struct Shape{
-    //  Shared
+    // Shared
     Point center;
     clr::RGB color;
     int thickness;
@@ -32,6 +32,16 @@ struct Shape{
     // Ellipse
     int r1;
     int r2;
+
+    // struct Line{
+    //     Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
+    //     : start(s), end(e), color(c), thickness(t) {}
+    //     Point start;
+    //     Point end;
+    //     clr::RGB color;
+    //     int thickness;
+    // };
+    
 
 
 protected:
