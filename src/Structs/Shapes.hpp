@@ -7,64 +7,55 @@
 #include "../Enums/RectAlignment.hpp"
 #include "../Enums/Shapetype.hpp"
 
-struct Shape{
-    // Shared
-    Point center;
-    clr::RGB color;
-    int thickness;
-    map::Shapetype type;
+namespace map{
+    struct Shape{
+        // Shared
+        Point center;
+        clr::RGB color;
+        int thickness;
+        // map::Shapetype type;
 
-    // Line
-    Point start;
-    Point end;
+        Shape(Point p = Point(), clr::RGB c = clr::RGB(), int t = 0)
+        : center(p), color(c), thickness(t) {}
+    };
 
-    // Circle
-    int radius;
-    bool filled;
-    bool inverted;
-    map::Alignment alignment;
-    
-    // Rect
-    int height;
-    int width;
-    map::RectAlignment rectAlignment;
+    struct Line : Shape{
+        Point start;
+        Point end;
 
-    // Ellipse
-    int r1;
-    int r2;
+        Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
+        : start(s), end(e), Shape(s, c, t) {}
+    };
 
-    // struct Line{
-    //     Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
-    //     : start(s), end(e), color(c), thickness(t) {}
-    //     Point start;
-    //     Point end;
-    //     clr::RGB color;
-    //     int thickness;
-    // };
-    
+    struct Circle : Shape{
+        int radius;
+        bool filled;
+        bool inverted;
+        map::Alignment alignment;
 
+        Circle(int r, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool i = false, int t = false, map::Alignment a = map::Alignment::none);
+    };
 
-protected:
-    Shape(Point p, clr::RGB c, int t, map::Shapetype st, map::Alignment a = map::Alignment::none, map::RectAlignment ra = map::RectAlignment::Rnone)
-    : center(p), color(c), thickness(t), type(st), alignment(a), rectAlignment(ra) {}
-};
+    struct Rect : Shape{
+        int height;
+        int width;
+        Point points[4];
+        bool filled;
+        map::RectAlignment rectAlignment;
 
-struct Line : /*protected*/ Shape{
-    Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
-    : Shape(Point(), c, t, map::Shapetype::Line){ start = s; end = e; }
-};
+        Rect(int h = 0, int w = 0, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment ra = map::RectAlignment::Rnone)
+        : height(h), width(w), filled(f), rectAlignment(ra), Shape(p, c, t) {
+            points[0] = Point(p.x - w/2, p.y - h/2);
+            points[1] = Point(p.x + w/2, p.y - h/2);
+            points[2] = Point(p.x + w/2, p.y + h/2);
+            points[3] = Point(p.x - w/2, p.y + h/2);
+        }
+    };
 
-struct Circle : /*protected*/ Shape{
-    Circle(int r, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool i = false, int t = false, map::Alignment a = map::Alignment::none)
-    : Shape(p, c, t, map::Shapetype::Circle, a){ radius = r; filled = f; inverted = i; }
-};
+    struct Ellipse : Shape{
+        int r1;
+        int r2;
 
-struct Rect : /*protected*/ Shape{
-    Rect(int h = 0, int w = 0, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::RectAlignment ra = map::RectAlignment::Rnone)
-    : Shape(p, c, t, map::Shapetype::Rect, map::Alignment::none, ra){ height = h; width = w; }
-};
-
-struct Ellipse : /*protected*/ Shape{
-    Ellipse(int h, int w, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::Alignment a = map::Alignment::none)
-    : Shape(p, c, t, map::Shapetype::Ellipse, a){ r1 = h; r2 = w; }
-};
+        Ellipse(int h, int w, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::Alignment a = map::Alignment::none);
+    };
+}
