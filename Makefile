@@ -1,7 +1,7 @@
 
 
 deb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r
+	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp  && ./main r
 
 
 mapper: mains/main.cpp src/Mapper/Mapper.cpp

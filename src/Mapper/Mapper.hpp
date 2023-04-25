@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cmath>
 #include <cassert>
+// #include <type_traits>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -20,6 +21,9 @@
 #include "../Enums/RectAlignment.hpp"
 
 #define PATH "output/"
+
+
+
 
 
 namespace map{
@@ -94,8 +98,10 @@ namespace map{
             */
             void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
 
-
-            void draw(const Shape&);
+            
+            template <class T>
+            requires std::is_base_of<Shape, T>::value
+            void draw(const T& shape);
 
 
             /**

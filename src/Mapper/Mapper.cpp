@@ -506,29 +506,50 @@ void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color,
 }
 
 
+template <class T>
+requires std::is_base_of<Shape, T>::value
+void map::Mapper::draw(const T &shape)
+{
 
-void map::Mapper::draw(const Shape &shape){
-    switch(shape.type){
-        case map::Shapetype::Line:
-            drawLine(shape.start, shape.end, shape.color, shape.thickness);
-            break;
-
-        case map::Shapetype::Circle:
-            drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
-            break;
-
-        case map::Shapetype::Rect:
-            drawRect(shape.center, shape.height, shape.width, shape.color, shape.filled, shape.thickness, shape.rectAlignment);
-            break;
-
-        case map::Shapetype::Ellipse:
-            drawEllipse(shape.center.x, shape.center.y, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
-            break;
-
-        default:
-            break;
-
+    if constexpr(std::is_same_v<T, Circle>){
+        drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.alignment);
     }
+    else if constexpr(std::is_same_v<T, map::Rect>){
+        drawRectangle(shape.top, shape.left, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
+    }
+    else if constexpr(std::is_same_v<T, map::Ellipse>){
+        drawEllipse(shape.top, shape.left, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
+    }
+    else if constexpr(std::is_same_v<T, map::Line>){
+        drawLine(shape.p1, shape.p2, shape.color, shape.thick);
+    }
+    // else if constexpr(std::is_same_v<T, Polygon>){
+    //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
+    // }
+    // else if constexpr(std::is_same_v<T, Text>){
+    //     drawText(shape.text, shape.top, shape.left, shape.color, shape.alignment);
+    // }
+    // else if constexpr(std::is_same_v<T, Image>){
+    //     drawImage(shape.img, shape.top, shape.left, shape.alignment);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierCurve>){
+    //     drawBezierCurve(shape.pts, shape.dt, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierQuadCurve>){
+    //     drawBezierQuadCurve(shape.p1, shape.p2, shape.c, shape.dt, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierMultiCurve>){
+    //     drawBezierMultiCurve(shape.pts, shape.dt, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierMultiQuadCurve>){
+    //     drawBezierMultiQuadCurve(shape.pts, shape.dt, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierMultiMultiCurve>){
+    //     drawBezierMultiMultiCurve(shape.pts, shape.dt, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, BezierMultiMultiQuadCurve>){
+    //     drawBezierMultiMultiQuadCurve(shape.pts, shape.dt, shape.color, shape.thick);
+    // }
 }
 
 
