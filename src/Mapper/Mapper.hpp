@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cmath>
 #include <cassert>
+#include <variant>
 // #include <type_traits>
 
 #include "../Structs/Size.hpp"
@@ -20,15 +21,18 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
-#define PATH "output/"
+// #define BECTOR "../../../../mylibs/Bector/Bector.hpp"
+// #include BECTOR
 
 
+#define OUTPUT_PATH "output/"
 
 
 
 namespace map{
 
     class Mapper{
+
         private:
             std::string m_filename;
             std::string m_pType;
@@ -83,25 +87,25 @@ namespace map{
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
-            void drawRect(Point = Point(), float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::Rnone);
+            void drawRect(Point center, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::Rnone);
 
 
             /**
              * @param r: negative values will result in them being 10% of the height.
              * @param alignment: sets the alignment of the shape.
              */
-            void drawCircle(Point = Point(), int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
+            void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
 
 
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
-            void drawEllipse(int top = 0, int left = 0, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
+            void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
 
             
-            template <class T>
-            requires std::is_base_of<Shape, T>::value
-            void draw(const T& shape);
+            // template <class T>
+            // requires std::is_base_of<Shape, T>::value
+            void draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse>);
 
 
             /**

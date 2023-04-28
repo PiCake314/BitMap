@@ -6,55 +6,82 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
+
 namespace map{
-    struct Shape{
-        // Shared
-        Point center;
-        clr::RGB color;
-        int thickness;
-
-        Shape(Point p = Point(), clr::RGB c = clr::RGB(), int t = 0)
-        : center(p), color(c), thickness(t) {}
+    enum ShapeType{
+        // none = -1,
+        line = 0,
+        circle,
+        rect,
+        triangle,
+        ellipse
     };
 
-    struct Line : Shape{
-        Point start;
-        Point end;
+    namespace shapes{
 
-        Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
-        : start(s), end(e), Shape(s, c, t) {}
-    };
+        struct Shape{
+            // Shared
+            Point center;
+            clr::RGB color;
+            int thickness;     
+            std::vector<Point> points;   
 
-    struct Circle : Shape{
-        int radius;
-        bool filled;
-        bool inverted;
-        map::Alignment alignment;
+            Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
+            : center(p), color(c), thickness(t), points(pts) {}
+        };
 
-        Circle(int r = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool i = false, int t = false, map::Alignment a = map::Alignment::none);
-    };
+        struct Line : Shape{
 
-    struct Rect : Shape{
-        int height;
-        int width;
-        Point points[4];
-        bool filled;
-        map::RectAlignment rectAlignment;
+            Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
+            : Shape(s, c, t, {s, e}) {}
 
-        Rect(int h = 1, int w = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment ra = map::RectAlignment::Rnone)
-        : height(h), width(w), filled(f), rectAlignment(ra), Shape(p, c, t) {
-            points[0] = Point(p.x - w/2, p.y - h/2);
-            points[1] = Point(p.x + w/2, p.y - h/2);
-            points[2] = Point(p.x + w/2, p.y + h/2);
-            points[3] = Point(p.x - w/2, p.y + h/2);
-        }
-    };
+            Point start() const{
+                return points[0];
+            }
 
-    struct Ellipse : Shape{
-        int r1;
-        int r2;
+            Point end() const{
+                return points[1];
+            }
+        };
 
-        Ellipse(int h = 1, int w = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool t = false, map::Alignment a = map::Alignment::none)
-        : r1(h), r2(w), Shape(p, c, t) {}
-    };
+        struct Circle : Shape{
+            int radius;
+            bool filled;
+            bool inverted;
+            map::Alignment alignment;
+
+            Circle(Point p, int r, clr::RGB c = clr::RGB(), bool filled = false, bool inverted = false, int thickness = false, map::Alignment alignment = map::Alignment::none)
+            : radius(r), filled(filled), inverted(inverted), alignment(alignment), Shape(p, c, thickness) {}
+        };
+
+        struct Rect : Shape{
+            int height;
+            int width;
+            bool filled;
+            map::RectAlignment rectAlignment;
+
+            Rect(int h = 1, int w = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
+            : height(h), width(w), filled(f), rectAlignment(rectAlignment),
+            Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}) {}
+        };
+
+        struct Triangle : Shape{
+            Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), bool t = false)
+            : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
+        };
+
+        struct Ellipse : Shape{
+            int r1;
+            int r2;
+            bool filled;
+            bool inverted;
+            map::Alignment alignment;
+
+            /**
+             * @param r2: negative values will result in them being the same as r1.
+            */
+            Ellipse(Point p, int r1, int r2 = -1, clr::RGB c = clr::RGB(), bool filled = false, bool inverted = false, int thickness = false, map::Alignment alignment = map::Alignment::none)
+            : r1(r1), r2(r2 < 0 ? r1 : r2), filled(filled), inverted(inverted), alignment(alignment), Shape(p, c, thickness) {}
+        };
+    }
 }

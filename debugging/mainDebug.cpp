@@ -32,9 +32,9 @@ int main(int argc, char** argv){
 	std::cout << "filename: " << filename << std::endl;
 
 
-    int height = 1000, width = 1000;
+    int height = 300, width = 300;
     map::Loadtype arg = argc > 1 ? (std::string(argv[1]) == "r" || std::string(argv[1]) == "reset"? map::Loadtype::reset : map::Loadtype::load) : map::Loadtype::reset;
-    map::Mapper m = map::Mapper("FirstVid/f1.ppm", height, width, arg);
+    map::Mapper m = map::Mapper(filename, height, width, arg);
 
 
 	// long long cycStart, cycStop;
@@ -42,7 +42,9 @@ int main(int argc, char** argv){
 
 	/* --------------------------- Put your code here --------------------------- */
 
-	
+	map::shapes::Ellipse e({150, 150}, 100, 150, map::clr::RGB(255, 0, 0), false, true);
+	m.draw(e);
+
 
 	/* -------------------------------------------------------------------------- */
 

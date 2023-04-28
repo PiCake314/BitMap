@@ -48,7 +48,7 @@ void map::Mapper::loadFile(){
     std::string w;
     std::string M;
     
-    std::string filename = PATH + m_filename;
+    std::string filename = OUTPUT_PATH + m_filename;
     std::ifstream fin(filename);
     assert(fin.is_open() == true);
 
@@ -166,27 +166,33 @@ void map::Mapper::drawAt(Point p, clr::RGB color){
 
 void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
     if(p2.y - p1.y != 0){
-        float slope = (p2.x-p1.x)/(p2.y-p1.y);
-        float b = p1.x - slope*p1.y;
+        float slope = (p2.y - p1.y) / (p2.x - p1.x);
+        float b = p1.y - slope * p1.x;
 
-        int iStart = p1.x<p2.x?p1.x:p2.x;
-        int iEnd = p1.x>p2.x?p1.x:p2.x;
-        int jStart = p1.y<p2.y?p1.y:p2.y;
-        int jEnd = p1.y>p2.y?p1.y:p2.y;
+        int i_start = std::min(p1.y, p2.y);
+        int i_end = std::max(p1.y, p2.y);
+        int j_start = std::min(p1.x, p2.x);
+        int j_end = std::max(p1.x, p2.x);
 
-        for(int i = 0; i < m_size.height; i++)
-            for(int j = 0; j < m_size.width; j++)
-                if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick)
-                    if(i >= iStart && i <= iEnd && j >= jStart && j <= jEnd)
-                        if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.width * m_size.height)
+        // for(auto [i, j] : outter_prod(i_start, i_end, j_start, j_end)){
+            for(int i = i_start; i < i_end; i++){
+                for(int j = j_start; j < j_end; j++){
+                    if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick){
+                        // if(i >= i_start && i <= i_end && j >= j_start && j <= j_end)
+                        if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.width * m_size.height){
                             m_map[i*m_size.width + j] = color;
+                        }
+                    }
+                }
+            }
+        // }
     }
     else{
-        int iStart = p1.x<p2.x?p1.x:p2.x;
-        int iEnd = p1.x>p2.x?p1.x:p2.x;
+        int i_start = p1.x<p2.x?p1.x:p2.x;
+        int i_end = p1.x>p2.x?p1.x:p2.x;
 
         for(int i = m_size.height - 1; i >= 0; i--)
-            if(i >= iStart && i <= iEnd)
+            if(i >= i_start && i <= i_end)
                 if(i*m_size.width + int(p1.y) >= 0 && i*m_size.width + int(p1.y) < m_size.width * m_size.height)
                     m_map[i*m_size.width + int(p1.y)] = color;
     }
@@ -262,6 +268,8 @@ void map::Mapper::drawMulti(std::vector<Point> points, clr::RGB color, bool thic
 void map::Mapper::drawRect(Point center, float height, float width, clr::RGB color, bool filled, bool thick , RectAlignment alignment){
     if(height < 0) height = m_size.height/10;
     
+
+
     if(width < 0) width = m_size.height/10;
 
     if(height < 1)
@@ -328,11 +336,11 @@ void map::Mapper::drawRect(Point center, float height, float width, clr::RGB col
         int iStart = center.x - height/2 - 1 >= 0 ? center.x - height/2 : 0;
         int iLim = center.x + height/2 < m_size.height ? center.x + height/2 : m_size.height;
 
-        int jStart = center.y - width/2 - 1 >= 0 ? center.y - width/2 : 0;
+        int j_start = center.y - width/2 - 1 >= 0 ? center.y - width/2 : 0;
         int jLim = center.y + width/2 < m_size.width ? center.y + width/2 : m_size.width;
 
         for(int i = iStart; i < iLim; i++)
-            for(int j = jStart; j < jLim; ++j)
+            for(int j = j_start; j < jLim; ++j)
                 if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.height * m_size.width)
                     m_map[i*m_size.width + j] = color;
     }
@@ -451,10 +459,14 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
 
 
 
-void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color, bool filled, bool inverted, Alignment alignment){
+void map::Mapper::drawEllipse(Point center, int r1, int r2, clr::RGB color, bool filled, bool inverted, Alignment alignment){
     if(r1 < 0) r1 = m_size.height/10;
     
     if(r2 < 0) r2 = m_size.height/10;
+
+    int top = center.y - r1;
+    int left = center.x - r2;
+
 
     switch (alignment){
         case Alignment::center:
@@ -487,42 +499,122 @@ void map::Mapper::drawEllipse(int top, int left, int r1, int r2, clr::RGB color,
     }
 
 
-    if(filled){
-        for(int i=(top>=0?top:0); i<(top+2*r1<m_size.height?top+2*r1:m_size.height); i++)
-            for(int j=(left>=0?left:0); j<=(left+2*r2<m_size.width?left+2*r2:m_size.width); j++)
-                if((inverted? -1 : 1)*((i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2)) < r1*r2*((inverted? -1 : 1)))
-                        m_map[i*m_size.width + j] = color;
+    // if(filled){
+    //     for(int i = 0; i < m_size.height; i++){
+    //         for(int j = 0; j < m_size.width; j++){
+    //             int inv = (inverted ? -1 : 1);
+    //             int equation = (std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2)) * inv;
+
+    //             if(equation < r1 * r2 * inv){
+    //                 m_map[i * m_size.width + j] = color;
+    //             }
+    //         }
+    //     }
+    // }
+    // else for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_size.height); i++){
+    //     for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_size.width); j++){
+    //         int equation = std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2);
+
+    //         if(equation >= r1 * r1 - r1 && equation <= r2 * r2 + r2){
+    //             m_map[i * m_size.width + j] = color;
+    //         }
+    //     }
+    // }
+    
+    if(filled && inverted){
+        for(int i = 0; i < m_size.height; i++){
+            for(int j = 0; j < m_size.width; j++){
+                int equation = (std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2)) * -1;
+
+                if(equation < r1 * r2 * -1){
+                    m_map[i * m_size.width + j] = color;
+                }
+            }
+        }
     }
-    else
-        for(int i=(top>=0?top:0); i<(top+2*r1<m_size.height?top+2*r1:m_size.height); i++)
-            for(int j=(left>=0?left:0); j<(left+2*r2<m_size.width?left+2*r2:m_size.width); j++)
-                if(
-                    (i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2) >= r1*r1 - r1 &&
-                    (i-top-r1)*(i-top-r1) + (j-left-r2)*(j-left-r2) <= r2*r2 + r2
-                )
-                    m_map[i*m_size.width + j] = color;
+    else if(filled){
+        for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_size.height); i++){
+            for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_size.width); j++){
+                int equation = (std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2));
+
+                if(equation < r1 * r2){
+                    m_map[i * m_size.width + j] = color;
+                }
+            }
+        }
+    }
+    else for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_size.height); i++){
+        for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_size.width); j++){
+            int equation = std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2);
+
+            if(equation >= r1 * r1 - r1 && equation <= r2 * r2 + r2){
+                m_map[i * m_size.width + j] = color;
+            }
+        }
+    }
+
 
     if(m_set_state) setState();
 }
 
 
-template <class T>
-requires std::is_base_of<Shape, T>::value
-void map::Mapper::draw(const T &shape)
-{
+// template <class T>
+// requires std::is_base_of<Shape, T>::value
+void map::Mapper::draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> s){
+    using namespace shapes;
 
-    if constexpr(std::is_same_v<T, Circle>){
-        drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.alignment);
+    switch (s.index()){
+
+        case ShapeType::line:{
+            auto shape = std::get<Line>(s);
+            drawLine(shape.start(), shape.end(), shape.color, shape.thickness);
+            break;
+        }
+
+        case ShapeType::circle:{
+            auto shape = std::get<Circle>(s);
+            drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
+            break;
+        }
+
+        case ShapeType::rect:{
+            auto shape = std::get<Rect>(s);
+            drawRect(shape.center, shape.height, shape.width, shape.color, shape.filled, shape.thickness, shape.rectAlignment);
+            break;
+        }
+
+        case ShapeType::triangle:{
+            auto shape = std::get<Triangle>(s);
+            drawTri(shape.points[0], shape.points[1], shape.points[2], shape.color, shape.thickness);
+            break;
+        }
+
+        case ShapeType::ellipse:{
+            auto shape = std::get<Ellipse>(s);
+            drawEllipse(shape.center, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
+            break;
+        }
+        
+        default:
+            break;
     }
-    else if constexpr(std::is_same_v<T, map::Rect>){
-        drawRectangle(shape.top, shape.left, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
-    }
-    else if constexpr(std::is_same_v<T, map::Ellipse>){
-        drawEllipse(shape.top, shape.left, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
-    }
-    else if constexpr(std::is_same_v<T, map::Line>){
-        drawLine(shape.p1, shape.p2, shape.color, shape.thick);
-    }
+
+
+    // if constexpr(std::is_same_v<T, Circle>){
+    //     drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.alignment);
+    // }
+    // else if constexpr(std::is_same_v<T, map::Rect>){
+    //     drawRect(shape.top, shape.left, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
+    // }
+    // else if constexpr(std::is_same_v<T, map::Ellipse>){
+    //     drawEllipse(shape.top, shape.left, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
+    // }
+    // else if constexpr(std::is_same_v<T, map::Line>){
+    //     drawLine(shape.p1, shape.p2, shape.color, shape.thick);
+    // }
+    // else if constexpr(std::is_same_v<T, map::Triangle>){
+    //     drawTri(shape.p1, shape.p2, shape.p3, shape.color, shape.filled);
+    // }
     // else if constexpr(std::is_same_v<T, Polygon>){
     //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
     // }
@@ -733,7 +825,7 @@ int Mapper::dist(Point p1, Point p2){
 /* --------------------------- Setup Functions --------------------------- */
 
 void map::Mapper::setInfo(){
-    std::string fn = PATH + m_filename;
+    std::string fn = OUTPUT_PATH + m_filename;
     std::ofstream fout(fn, std::ios::trunc);
 
     assert(fout.is_open() == true);
@@ -751,7 +843,7 @@ void map::Mapper::setInfo(){
 
 void map::Mapper::setState(){
     setInfo();
-    std::string fn = PATH + m_filename;
+    std::string fn = OUTPUT_PATH + m_filename;
     std::ofstream fout(fn, std::ios::app);
 
     for(int i=0; i<m_size.height; i++){
