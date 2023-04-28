@@ -1,4 +1,5 @@
-#include "../Mapper/Mapper.hpp"
+#include "../src/Mapper/Mapper.hpp"
+#include "../src/Enums/RectAlignment.hpp"
 
 /* ---------------------- Fractal example starts here! ---------------------- */
 int getValue(clr::RGB c, std::vector<clr::RGB> cl){
@@ -85,8 +86,8 @@ void rectRec(map::Mapper &m, int t, int l, int side){
 void drawKuwaitFlag(map::Mapper &m, int h, int w){
     Point Ps[] = {Point(0, 0), Point(h/3, w/4), Point(2*h/3, w/4), Point(h, 0)};
 
-    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, RectAlignment::Rwidth);
-    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, RectAlignment::Rwidth);
+    m.drawRect(Point(1.0/6, 0), 0.3333, 0, clr::RGB(50, 150, 0), true, 1, map::RectAlignment::Rwidth);
+    m.drawRect(Point(5.0/6, 0), 0.34, 0, clr::RGB(255, 0, 0), true, false, map::RectAlignment::Rwidth);
     m.drawFourPoints(Ps, clr::RGB());
 }
 
@@ -235,4 +236,32 @@ void drawHeart(map::Mapper &m){
   };
 
   m.plotXY(func, res, clr::RED);
+}
+
+
+
+// ------------------------------- Video -------------------------------- //
+int vid(map::Mapper &m, int fps, std::string filename){
+  
+
+	std::cout << "FPS: " << fps << std::endl;
+
+	Circle c(50, Point(100, 100), clr::RGB(255, 0, 0), true);
+
+	m.noSet();
+	for(int i = 0; i < fps; i++){
+		m.setFile("FirstVid/f" + std::to_string(i+1) + ".ppm");
+
+		m.fillWhite();
+		c.center = Point(100, 100 + i*(850/24));
+		m.draw(c);
+		m.rotate(map::Rotate::ccw);
+
+		m.setState();
+		std::system(("convert output/FirstVid/f" + std::to_string(i+1) + ".ppm output/FirstVid/f" + std::to_string(i+1) + ".png").c_str());
+		std::system(("rm output/FirstVid/f" + std::to_string(i+1) + ".ppm").c_str());
+	}
+
+	std::system(("ffmpeg -r 24 -f image2 -s 1000x1000 -i output/FirstVid/f%d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p output/" + filename).c_str());
+	std::system("rm output/FirstVid/f*.png");
 }

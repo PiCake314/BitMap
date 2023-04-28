@@ -83,3 +83,17 @@ Point lerp(Point p1, Point p2, float dt){
 
     return Point(x, y);
 }
+
+
+
+std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, int end2){
+    std::vector<std::pair<int, int>> ret((end1 - begin1) * (end2 - begin2));
+
+    for(int i = begin1; i < end1; i++){
+        for(int j = begin2; j < end2; j++){
+            ret.push_back(std::make_pair(i, j));
+        }
+    }
+
+    return ret;
+}
