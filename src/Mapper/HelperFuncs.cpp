@@ -1,6 +1,5 @@
 #include "Mapper.hpp"
 
-using namespace map;
 
 bool isNumber(std::string s){
     for(char &c : s)
@@ -32,6 +31,10 @@ bool areValid(std::string fn, std::string P, int h, int w, int M){
 
 bool areValidString(std::string p, std::string h, std::string w, std::string m){
     return (isNumber(h) && isNumber(w) && isNumber(m) && isValidP(p) &&  isValidHeight(std::stoi(h)) && isValidWidth(std::stoi(w)) && isValidMax(std::stoi(m)));
+}
+
+bool safePoint(map::Point p, Size s){
+    return p.y*s.height + p.x >= 0 && p.y*s.height + p.x < s.height*s.width;
 }
 
 // Point findTopLeft(Point Ps[]){
@@ -77,11 +80,11 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
 // }
 
 
-Point lerp(Point p1, Point p2, float dt){
+map::Point lerp(map::Point p1, map::Point p2, float dt){
     int x =  p1.x + (p2.x-p1.x)*dt;
     int y =  p1.y + (p2.y-p1.y)*dt;
 
-    return Point(x, y);
+    return map::Point(x, y);
 }
 
 

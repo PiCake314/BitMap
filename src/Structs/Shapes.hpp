@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <cmath>
+
 #include "../Structs/Point.hpp"
 #include "../Structs/RGB.hpp"
 
@@ -78,7 +81,7 @@ namespace map{
             bool filled;
             map::RectAlignment rectAlignment;
 
-            Rect(int h = 1, int w = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
+            Rect(Point p = Point(), int h = 1, int w = 1, clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
             : height(h), width(w), filled(f), rectAlignment(rectAlignment),
             Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}) {}
         };

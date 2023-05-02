@@ -17,7 +17,6 @@
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
-#include "../Enums/Rotate.hpp"
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
@@ -146,7 +145,7 @@ namespace map{
             void fold(Fold);
 
 
-            void rotate(Rotate);
+            void rotate(float);
 
             /*
                 Distance between 2 points!

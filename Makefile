@@ -4,8 +4,8 @@ deb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
 	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp  && ./main r image def$(filename) 0$(h) 0$(w)
 
 
-mapper: mains/main.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++17 -o main mains/main.cpp src/Mapper/Mapper.cpp -O3 && ./main r && convert images/output.ppm images/output.png
+# mapper: mains/main.cpp src/Mapper/Mapper.cpp
+# 	g++ -std=c++17 -o main mains/main.cpp src/Mapper/Mapper.cpp -O3 && ./main r && convert output/output.ppm images/output.png
 
 
 videodeb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp

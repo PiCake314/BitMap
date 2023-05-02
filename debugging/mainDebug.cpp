@@ -2,8 +2,72 @@
 // #include "funcs.cpp"
 // #include "rdtsc.h"
 
+void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug = false);
 
-void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug = false){
+int main(int argc, char **argv){
+	/* --------------------------- Meta Data --------------------------- */
+
+    std::string filename = "output.ppm";
+    int height = 500, width = 500;
+	int fps = 0;
+    map::Loadtype loadtype = map::Loadtype::reset;
+
+	setup(argc, argv, filename, height, width, fps, loadtype, true);
+
+    map::Mapper m = map::Mapper("output.ppm", height, width, loadtype);
+	m.setFPS(fps);
+
+
+	/* --------------------------- Put your code here --------------------------- */
+
+	using namespace map;
+	std::cout << "fps: " << fps << std::endl;
+	int seconds = 3;
+	int frames = fps * seconds;
+
+	std::string file;
+	map::shapes::Triangle t1({width/9.0, height/1.5}, {4*width/9.0, height/1.5}, {2*width/6.0, height/2.0}, map::clr::RGB(255, 0, 0), 3);
+	map::shapes::Triangle t2({2*width/6.0, height/6.0}, {4*width/6.0, height/6.0}, {3*width/6.0, height/9.0}, map::clr::RGB(255, 0, 0), 3);
+	map::shapes::Triangle t3({4*width/9.0, height/1.5}, {7*width/9.0, height/1.5}, {5*width/6.0, height/2.0}, map::clr::RGB(255, 0, 0), 3);
+
+
+	m.draw(t1);
+	m.draw(t2);
+	m.draw(t3);
+
+	for(int frame = 0; frame < frames; frame++){
+		float angle = 4*M_PI * (float(frame) / frames);
+
+		auto s1 = t1.rotate(angle);
+		auto s2 = t2.rotate(angle);
+		auto s3 = t3.rotate(angle);
+
+		m.draw(s1);
+		m.draw(s2);
+		m.draw(s3);
+
+		m.rotate(angle/2);
+
+		m.saveFrame(frame);
+
+		std::cout << frame << '/' << frames << '\n';
+
+		m.fillWhite();
+	}
+
+	m.render();
+	m.clearFrames();
+
+	/* -------------------------------------------------------------------------- */
+    return 0;
+}
+
+
+
+
+
+
+void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug){
 	if(argc > 1 && (std::string(argv[1]) == "l" || std::string(argv[1]) == "load"))
 		arg = map::Loadtype::load;
 
@@ -41,46 +105,3 @@ void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fp
 	}
 }
 
-
-int main(int argc, char **argv){
-	/* --------------------------- Meta Data --------------------------- */
-
-    std::string filename = "output.ppm";
-    int height = 500, width = 500;
-	int fps = 0;
-    map::Loadtype loadtype = map::Loadtype::reset;
-
-	setup(argc, argv, filename, height, width, fps, loadtype, true);
-
-    map::Mapper m = map::Mapper("output.ppm", height, width, loadtype);
-	m.setFPS(fps);
-
-
-	/* --------------------------- Put your code here --------------------------- */
-
-	std::cout << "fps: " << fps << std::endl;
-	int seconds = 2;
-	int frames = fps * seconds;
-
-	std::string file;
-	map::shapes::Triangle t({width/3.0, height/2.0}, {2*width/3.0, height/2.0}, {width/2.0, height/3.0}, map::clr::RGB(255, 0, 0), 3);
-
-	for(int frame = 0; frame < frames; frame++){
-		float angle = 2*M_PI * (float(frame) / frames);
-		auto s = t.rotate(angle);
-
-		m.draw(s);
-
-		m.saveFrame(frame);
-
-		std::cout << frame << '/' << frames << '\n';
-
-		m.fillWhite();
-	}
-
-	m.render();
-	m.clearFrames();
-
-	/* -------------------------------------------------------------------------- */
-    return 0;
-}
