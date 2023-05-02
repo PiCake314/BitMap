@@ -6,8 +6,21 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
+//! Remove
+// #define SHAPE_T std::variant<map::shapes::Line, map::shapes::Circle, map::shapes::Rect, map::shapes::Triangle, map::shapes::Ellipse>
+
+// using Shape_t = std::variant<
+//     map::shapes::Line,
+//     map::shapes::Circle,
+//     map::shapes::Rect,
+//     map::shapes::Triangle,
+//     map::shapes::Ellipse
+// >;
+
 
 namespace map{
+
+
     enum ShapeType{
         // none = -1,
         line = 0,
@@ -28,6 +41,11 @@ namespace map{
 
             Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
             : center(p), color(c), thickness(t), points(pts) {}
+
+
+            // virtual std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> rotate(float angle);
+
+
         };
 
         struct Line : Shape{
@@ -66,8 +84,26 @@ namespace map{
         };
 
         struct Triangle : Shape{
-            Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), bool t = false)
+            Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), int t = 0)
             : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
+
+
+            Triangle rotate(float angle){
+                Triangle t = *this;
+
+                double rotMatrix[2][2] = {
+                    {cos(angle), -sin(angle)},
+                    {sin(angle), cos(angle)}
+                };
+
+                for(auto &p : t.points){
+                    p -= t.center;
+                    p = {p.x * rotMatrix[0][0] + p.y * rotMatrix[0][1], p.x * rotMatrix[1][0] + p.y * rotMatrix[1][1]};
+                    p += t.center;
+                }
+
+                return t;
+            }
         };
 
         struct Ellipse : Shape{

@@ -26,7 +26,8 @@
 
 
 #define OUTPUT_PATH "output/"
-
+#define VIDEO_OUTPUT_PATH "output/vids/"
+#define VIDEO_TEMP_PATH "output/vids/temp/"
 
 
 namespace map{
@@ -35,10 +36,14 @@ namespace map{
 
         private:
             std::string m_filename;
-            std::string m_pType;
             Size m_size;
-            int m_max;
-            clr::RGB *m_map;
+
+            int m_FPS; // for video only
+
+            std::string m_pType; // Meta Data
+            int m_max; // Meta Data
+            clr::RGB *m_map; // The canvas (2D array of RGB values)
+
             bool m_set_state;
 
             int m_xCenter;
@@ -50,6 +55,10 @@ namespace map{
             // Mapper();
             Mapper(std::string = "output.ppm", int h = 100, int w = 100, Loadtype = Loadtype::reset);
             ~Mapper();
+
+            void setFPS(int);
+
+            int getFPS() const;
 
             void doSet();
 
@@ -75,9 +84,9 @@ namespace map{
 
             void drawAt(Point = Point(), clr::RGB = clr::RGB());
 
-            void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), bool thick = false);
+            void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
 
-            void drawTri(Point p1, Point p2, Point p3, clr::RGB = clr::RGB(), bool thick = false);
+            void drawTri(Point p1, Point p2, Point p3, clr::RGB = clr::RGB(), int thickness = 0);
 
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
 
@@ -105,7 +114,7 @@ namespace map{
             
             // template <class T>
             // requires std::is_base_of<Shape, T>::value
-            void draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse>);
+            void draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> shape);
 
 
             /**
@@ -117,7 +126,7 @@ namespace map{
             /**
              * @brief Creates a bezian curve from a vector of points
              */
-            void bezierMultiCurve(std::vector<Point>, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
+            void bezierCurve(std::vector<Point>, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
 
 
             void plot(int(*)(int), clr::RGB = clr::RGB(), bool thick = false);
@@ -141,8 +150,19 @@ namespace map{
 
             /*
                 Distance between 2 points!
+                ! Deprecated
             */
-            int dist(Point, Point);
+            // int dist(Point, Point);
+
+
+
+            // ----------------------- Video Related Functions -----------------------
+
+            void saveFrame(int frame) const;
+
+            void render(const std::string &output_file = "out.mp4") const;
+
+            void clearFrames() const;
 
     };
 

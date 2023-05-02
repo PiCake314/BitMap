@@ -13,7 +13,7 @@ void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fp
 
 		if(std::string(argv[2]) == "video"){
 			assert(argc > 4);
-			fps = std::stoi(argv[4]);
+			fps = std::stoi(argv[6]);
 			if(fps == 0) fps = 24;
 
 			if(filename == "def") filename = "res.mp4";
@@ -46,20 +46,40 @@ int main(int argc, char **argv){
 	/* --------------------------- Meta Data --------------------------- */
 
     std::string filename = "output.ppm";
-    int height = 300, width = 300;
+    int height = 500, width = 500;
 	int fps = 0;
     map::Loadtype loadtype = map::Loadtype::reset;
 
 	setup(argc, argv, filename, height, width, fps, loadtype, true);
 
-    map::Mapper m = map::Mapper(filename, height, width, loadtype);
+    map::Mapper m = map::Mapper("output.ppm", height, width, loadtype);
+	m.setFPS(fps);
 
 
 	/* --------------------------- Put your code here --------------------------- */
 
-	map::shapes::Ellipse e({150, 150}, 100, 150, map::clr::RGB(255, 0, 0), false, true, 1);
-	m.draw(e);
+	std::cout << "fps: " << fps << std::endl;
+	int seconds = 2;
+	int frames = fps * seconds;
 
+	std::string file;
+	map::shapes::Triangle t({width/3.0, height/2.0}, {2*width/3.0, height/2.0}, {width/2.0, height/3.0}, map::clr::RGB(255, 0, 0), 3);
+
+	for(int frame = 0; frame < frames; frame++){
+		float angle = 2*M_PI * (float(frame) / frames);
+		auto s = t.rotate(angle);
+
+		m.draw(s);
+
+		m.saveFrame(frame);
+
+		std::cout << frame << '/' << frames << '\n';
+
+		m.fillWhite();
+	}
+
+	m.render();
+	m.clearFrames();
 
 	/* -------------------------------------------------------------------------- */
     return 0;

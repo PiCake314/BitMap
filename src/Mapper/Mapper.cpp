@@ -20,6 +20,16 @@ map::Mapper::~Mapper(){
 }
 
 
+void map::Mapper::setFPS(int fps){
+    m_FPS = fps;
+}
+
+
+int map::Mapper::getFPS() const{
+    return m_FPS;
+}
+
+
 
 void Mapper::doSet(){
     m_set_state = true;
@@ -164,8 +174,8 @@ void map::Mapper::drawAt(Point p, clr::RGB color){
 
 
 
-void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
-    if(p2.y - p1.y != 0){
+void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, int thickness){
+    if(p2.x - p1.x != 0){
         float slope = (p2.y - p1.y) / (p2.x - p1.x);
         float b = p1.y - slope * p1.x;
 
@@ -174,10 +184,11 @@ void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
         int j_start = std::min(p1.x, p2.x);
         int j_end = std::max(p1.x, p2.x);
 
+
         // for(auto [i, j] : outter_prod(i_start, i_end, j_start, j_end)){
-            for(int i = i_start; i < i_end; i++){
-                for(int j = j_start; j < j_end; j++){
-                    if(i == int(slope*j + b) || i == int(slope*j + b)-thick || i == int(slope*j + b)+thick){
+            for(int i = i_start; i <= i_end; i++){
+                for(int j = j_start; j <= j_end; j++){
+                    if(i >= int(slope*j + b)-thickness && i <= int(slope*j + b)+thickness){
                         // if(i >= i_start && i <= i_end && j >= j_start && j <= j_end)
                         if(i*m_size.width + j >= 0 && i*m_size.width + j < m_size.width * m_size.height){
                             m_map[i*m_size.width + j] = color;
@@ -188,13 +199,14 @@ void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
         // }
     }
     else{
-        int i_start = p1.x<p2.x?p1.x:p2.x;
-        int i_end = p1.x>p2.x?p1.x:p2.x;
+        int i_start = std::min(p1.y, p2.y);
+        int i_end = std::max(p1.y, p2.y);
 
-        for(int i = m_size.height - 1; i >= 0; i--)
-            if(i >= i_start && i <= i_end)
-                if(i*m_size.width + int(p1.y) >= 0 && i*m_size.width + int(p1.y) < m_size.width * m_size.height)
-                    m_map[i*m_size.width + int(p1.y)] = color;
+        for(int i = i_start; i <= i_end; i++){
+            if(i*m_size.width + int(p1.y) >= 0 && i*m_size.width + int(p1.y) < m_size.width * m_size.height){
+                m_map[i*m_size.width + int(p1.x)] = color;
+            }
+        }
     }
 
     if(m_set_state) setState();
@@ -202,13 +214,13 @@ void map::Mapper::drawLine(Point p1, Point p2, clr::RGB color, bool thick){
 
 
 
-void map::Mapper::drawTri(Point p1, Point p2, Point p3, clr::RGB color, bool thick){
+void map::Mapper::drawTri(Point p1, Point p2, Point p3, clr::RGB color, int thickness){
     bool s = m_set_state;
     m_set_state = false;
 
-    drawLine(p1, p2, color, thick);
-    drawLine(p2, p3, color, thick);
-    drawLine(p1, p3, color, thick);
+    drawLine(p1, p2, color, thickness);
+    drawLine(p2, p3, color, thickness);
+    drawLine(p1, p3, color, thickness);
 
     m_set_state = s;
 
@@ -574,7 +586,7 @@ void map::Mapper::draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, 
     switch (s.index()){
 
         case ShapeType::line:{
-            auto shape = std::get<Line>(s);
+            shapes::Line shape = std::get<Line>(s);
             drawLine(shape.start(), shape.end(), shape.color, shape.thickness);
             break;
         }
@@ -678,7 +690,7 @@ void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, clr::RG
 
 
 
-void map::Mapper::bezierMultiCurve(std::vector<Point> pts, float dt, clr::RGB color, bool thick){
+void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, clr::RGB color, bool thick){
     assert(pts.size() >= 2);
 
     int l = pts.size();
@@ -824,8 +836,27 @@ void Mapper::rotate(Rotate rt){
 }
 
 
-int Mapper::dist(Point p1, Point p2){
-    return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
+// int Mapper::dist(Point p1, Point p2){
+//     return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
+// }
+
+
+
+// ----------------------- Video Related Functions ----------------------- //
+
+void map::Mapper::saveFrame(int frame) const{
+    std::string command = "convert " OUTPUT_PATH + m_filename + " " VIDEO_TEMP_PATH "out" + std::to_string(frame) + ".png";
+    std::system(command.c_str());
+}
+
+
+void map::Mapper::render(const std::string &output_file) const{
+	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH "out%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
+}
+
+
+void map::Mapper::clearFrames() const{
+    std::system("rm " VIDEO_TEMP_PATH "*.png");
 }
 
 
