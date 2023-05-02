@@ -428,7 +428,7 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
     if(inverted){
         for(int i = 0; i < m_size.height; i++)
             for(int j = 0; j < m_size.width; j++)
-                if(-((i-center.x)*(i-center.x) + (j-center.y)*(j-center.y)) <= -r*r)
+                if(-((i - center.x) * (i - center.x) + (j-center.y)*(j-center.y)) <= -r*r)
                     m_map[i*m_size.width + j] = color;
     }
     else if(filled){
@@ -459,7 +459,9 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
 
 
 
-void map::Mapper::drawEllipse(Point center, int r1, int r2, clr::RGB color, bool filled, bool inverted, Alignment alignment){
+void map::Mapper::drawEllipse(Point center, int r1, int r2, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+    float thick = float(thickness) / 100;
+
     if(r1 < 0) r1 = m_size.height/10;
     
     if(r2 < 0) r2 = m_size.height/10;
@@ -521,13 +523,15 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, clr::RGB color, bool
     //     }
     // }
     
-    if(filled && inverted){
+    if(inverted){
+        clr::RGB invColor = color.invert();
         for(int i = 0; i < m_size.height; i++){
             for(int j = 0; j < m_size.width; j++){
-                int equation = (std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2)) * -1;
+                float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
 
-                if(equation < r1 * r2 * -1){
-                    m_map[i * m_size.width + j] = color;
+
+                if(equation > 1){
+                    m_map[i * m_size.width + j] = invColor;
                 }
             }
         }
@@ -535,19 +539,23 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, clr::RGB color, bool
     else if(filled){
         for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_size.height); i++){
             for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_size.width); j++){
-                int equation = (std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2));
+                float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
 
-                if(equation < r1 * r2){
+                if(equation <= 1){
                     m_map[i * m_size.width + j] = color;
                 }
             }
         }
     }
-    else for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_size.height); i++){
-        for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_size.width); j++){
-            int equation = std::pow((i - top - r1), 2) + std::pow((j - left - r2), 2);
+    else for(int i = std::max(top, 0); i < std::min(top + 2 * r1 + 1,  m_size.height); i++){
+        for(int j = std::max(left, 0); j <= std::min(left + 2 * r2 + 1, m_size.width); j++){
+            float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
 
-            if(equation >= r1 * r1 - r1 && equation <= r2 * r2 + r2){
+            // if(equation >= r1 * r1 - r1 && equation <= r2 * r2 + r2){
+            //     m_map[i * m_size.width + j] = color;
+            // }
+
+            if(equation <= 1 + thick && equation >= 1 - thick){
                 m_map[i * m_size.width + j] = color;
             }
         }
@@ -591,7 +599,7 @@ void map::Mapper::draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, 
 
         case ShapeType::ellipse:{
             auto shape = std::get<Ellipse>(s);
-            drawEllipse(shape.center, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
+            drawEllipse(shape.center, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
             break;
         }
         

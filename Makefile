@@ -1,7 +1,7 @@
 
 
 deb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp  && ./main r
+	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp  && ./main r image def$(filename) 0$(h) 0$(w)
 
 
 mapper: mains/main.cpp src/Mapper/Mapper.cpp
@@ -9,7 +9,7 @@ mapper: mains/main.cpp src/Mapper/Mapper.cpp
 
 
 videodeb: debugging/mainDebug.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r video def$(filename) 0$(fps)
+	g++ -std=c++20 -o main debugging/mainDebug.cpp src/Mapper/Mapper.cpp -O3 && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
 
 
 image: debugging/mainDebug.cpp src/Mapper/Mapper.cpp

@@ -100,7 +100,7 @@ namespace map{
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
-            void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, Alignment alignment = Alignment::none);
+            void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
             
             // template <class T>
