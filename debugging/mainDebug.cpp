@@ -26,36 +26,21 @@ int main(int argc, char **argv){
 	int frames = fps * seconds;
 
 	std::string file;
-	map::shapes::Triangle t1({width/9.0, height/1.5}, {4*width/9.0, height/1.5}, {2*width/6.0, height/2.0}, map::clr::RGB(255, 0, 0), 3);
-	map::shapes::Triangle t2({2*width/6.0, height/6.0}, {4*width/6.0, height/6.0}, {3*width/6.0, height/9.0}, map::clr::RGB(255, 0, 0), 3);
-	map::shapes::Triangle t3({4*width/9.0, height/1.5}, {7*width/9.0, height/1.5}, {5*width/6.0, height/2.0}, map::clr::RGB(255, 0, 0), 3);
 
-
-	m.draw(t1);
-	m.draw(t2);
-	m.draw(t3);
-
+	shapes::Line l({width/2.f, 0.0}, {width/2.f, height/1.f}, clr::RGB(255, 0, 0), 1);
+	m.draw(l);
 	for(int frame = 0; frame < frames; frame++){
-		float angle = 4*M_PI * (float(frame) / frames);
+		float angle = 2*M_PI * (float(frame) / frames);
 
-		auto s1 = t1.rotate(angle);
-		auto s2 = t2.rotate(angle);
-		auto s3 = t3.rotate(angle);
+		m.draw(l.rotate(angle));
 
-		m.draw(s1);
-		m.draw(s2);
-		m.draw(s3);
 
-		m.rotate(angle/2);
-
+		std::cout << frame << '/' << frames << "fps\n";
 		m.saveFrame(frame);
-
-		std::cout << frame << '/' << frames << '\n';
-
 		m.fillWhite();
 	}
 
-	m.render();
+	m.render(filename);
 	m.clearFrames();
 
 	/* -------------------------------------------------------------------------- */

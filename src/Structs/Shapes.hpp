@@ -10,6 +10,10 @@
 #include "../Enums/RectAlignment.hpp"
 
 
+
+#define ROT_MAT (float[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
+
+
 namespace map{
 
     enum ShapeType{
@@ -35,9 +39,10 @@ namespace map{
 
         };
 
-        struct Line : Shape{
+        class Line : public  Shape{
+            public:
 
-            Line(Point p1, Point p2, clr::RGB color = clr::RGB(), int thickness)
+            Line(Point p1, Point p2, clr::RGB color = clr::RGB(), int thickness = 0)
             : Shape({(p1.x + p2.x)/2, (p1.y + p2.y)/2}, color, thickness, {p1, p2}) {}
 
             Point start() const{
@@ -46,6 +51,29 @@ namespace map{
 
             Point end() const{
                 return points[1];
+            }
+
+            Line rotate(float angle){
+                Line l = *this;
+
+                l.points[0] -= l.center;
+                l.points[0] = {
+                    l.points[0].x * ROT_MAT[0][0] + l.points[0].y * ROT_MAT[0][1],
+                    l.points[0].x * ROT_MAT[1][0] + l.points[0].y * ROT_MAT[1][1]
+                };
+
+                l.points[0] += l.center;
+
+
+                l.points[1] -= l.center;
+                l.points[1] = {
+                    l.points[1].x * ROT_MAT[0][0] + l.points[1].y * ROT_MAT[0][1],
+                    l.points[1].x * ROT_MAT[1][0] + l.points[1].y * ROT_MAT[1][1]
+                };
+
+                l.points[1] += l.center;
+
+                return l;
             }
         };
 
@@ -78,14 +106,9 @@ namespace map{
             Triangle rotate(float angle){
                 Triangle t = *this;
 
-                double rotMatrix[2][2] = {
-                    {cos(angle), -sin(angle)},
-                    {sin(angle), cos(angle)}
-                };
-
                 for(auto &p : t.points){
                     p -= t.center;
-                    p = {p.x * rotMatrix[0][0] + p.y * rotMatrix[0][1], p.x * rotMatrix[1][0] + p.y * rotMatrix[1][1]};
+                    p = {p.x * ROT_MAT[0][0] + p.y * ROT_MAT[0][1], p.x * ROT_MAT[1][0] + p.y * ROT_MAT[1][1]};
                     p += t.center;
                 }
 
