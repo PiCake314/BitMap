@@ -581,7 +581,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
 // template <class T>
 // requires std::is_base_of<Shape, T>::value
-void map::Mapper::draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> s){
+void map::Mapper::draw(Shape_t s){
     using namespace shapes;
 
     switch (s.index()){

@@ -29,7 +29,18 @@
 #define VIDEO_TEMP_PATH "output/vids/temp/"
 
 
+// A variant type of all the shapes
+using Shape_t = std::variant<
+    map::shapes::Line,
+    map::shapes::Circle,
+    map::shapes::Rect,
+    map::shapes::Triangle,
+    map::shapes::Ellipse
+>;
+
+
 namespace map{
+
 
     class Mapper{
 
@@ -113,7 +124,7 @@ namespace map{
             
             // template <class T>
             // requires std::is_base_of<Shape, T>::value
-            void draw(std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> shape);
+            void draw(Shape_t shape);
 
 
             /**

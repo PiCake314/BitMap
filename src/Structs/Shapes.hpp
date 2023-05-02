@@ -9,20 +9,8 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
-//! Remove
-// #define SHAPE_T std::variant<map::shapes::Line, map::shapes::Circle, map::shapes::Rect, map::shapes::Triangle, map::shapes::Ellipse>
-
-// using Shape_t = std::variant<
-//     map::shapes::Line,
-//     map::shapes::Circle,
-//     map::shapes::Rect,
-//     map::shapes::Triangle,
-//     map::shapes::Ellipse
-// >;
-
 
 namespace map{
-
 
     enum ShapeType{
         // none = -1,
@@ -45,16 +33,12 @@ namespace map{
             Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
             : center(p), color(c), thickness(t), points(pts) {}
 
-
-            // virtual std::variant<shapes::Line, shapes::Circle, shapes::Rect, shapes::Triangle, shapes::Ellipse> rotate(float angle);
-
-
         };
 
         struct Line : Shape{
 
-            Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
-            : Shape(s, c, t, {s, e}) {}
+            Line(Point p1, Point p2, clr::RGB color = clr::RGB(), int thickness)
+            : Shape({(p1.x + p2.x)/2, (p1.y + p2.y)/2}, color, thickness, {p1, p2}) {}
 
             Point start() const{
                 return points[0];
