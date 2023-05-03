@@ -10,8 +10,6 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
-#define Shape_type std::variant<map::shapes::Line, map::shapes::Circle, map::shapes::Rect, map::shapes::Triangle, map::shapes::Ellipse>
-
 
 #define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
 
@@ -40,8 +38,8 @@ namespace map{
             : center(p), color(c), thickness(t), points(pts) {}
 
 
-            virtual void rotate(float);
-            virtual Shape_type rotated(float);
+            // virtual void rotate(float) = 0;
+            // virtual Shape rotated(float) const = 0;
 
         };
 
@@ -59,7 +57,7 @@ namespace map{
                 return points[1];
             }
 
-            void rotate(float angle) override{
+            void rotate(float angle){
                 points[0] -= center;
                 points[0] = ROT_MAT * points[0];
                 points[0] += center;
@@ -70,7 +68,7 @@ namespace map{
                 points[1] += center;
             }
 
-            Shape_type rotated(float angle) override{
+            Line rotated(float angle){
                 Line l = *this;
                 l.rotate(angle);
                 return l;
@@ -103,7 +101,7 @@ namespace map{
             : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
 
 
-            void rotate(float angle) override{
+            void rotate(float angle){
                 for(auto &p : points){
                     p -= center;
                     p = ROT_MAT * p;
@@ -112,7 +110,7 @@ namespace map{
             }
 
 
-            Shape_type rotated(float angle) override{
+            Triangle rotated(float angle){
                 Triangle t = *this;
                 t.rotate(angle);
                 return t;

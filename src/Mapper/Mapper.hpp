@@ -37,7 +37,6 @@ using Shape_t = std::variant<
 
 namespace map{
 
-
     class Mapper{
 
         private:
