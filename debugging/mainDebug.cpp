@@ -2,7 +2,7 @@
 // #include "funcs.cpp"
 // #include "rdtsc.h"
 
-// 3
+// 5
 
 void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug = false);
 
