@@ -22,6 +22,10 @@ namespace map{
             RGB(int r, int g, int b):
             red(r), green(g), blue(b){}
 
+            RGB invert(){
+                return RGB(255 - red, 255 - green, 255 - blue);
+            }
+
             bool operator==(RGB rgb){
                 return red == rgb.red && green == rgb.green && blue == rgb.blue;
             }

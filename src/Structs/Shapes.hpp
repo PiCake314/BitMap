@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <cmath>
+
 #include "../Structs/Point.hpp"
 #include "../Structs/RGB.hpp"
 
@@ -7,7 +10,12 @@
 #include "../Enums/RectAlignment.hpp"
 
 
+
+#define ROT_MAT (float[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
+
+
 namespace map{
+
     enum ShapeType{
         // none = -1,
         line = 0,
@@ -28,12 +36,14 @@ namespace map{
 
             Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
             : center(p), color(c), thickness(t), points(pts) {}
+
         };
 
-        struct Line : Shape{
+        class Line : public  Shape{
+            public:
 
-            Line(Point s = Point(), Point e = Point(), clr::RGB c = clr::RGB(), bool t = false)
-            : Shape(s, c, t, {s, e}) {}
+            Line(Point p1, Point p2, clr::RGB color = clr::RGB(), int thickness = 0)
+            : Shape({(p1.x + p2.x)/2, (p1.y + p2.y)/2}, color, thickness, {p1, p2}) {}
 
             Point start() const{
                 return points[0];
@@ -41,6 +51,29 @@ namespace map{
 
             Point end() const{
                 return points[1];
+            }
+
+            Line rotate(float angle){
+                Line l = *this;
+
+                l.points[0] -= l.center;
+                l.points[0] = {
+                    l.points[0].x * ROT_MAT[0][0] + l.points[0].y * ROT_MAT[0][1],
+                    l.points[0].x * ROT_MAT[1][0] + l.points[0].y * ROT_MAT[1][1]
+                };
+
+                l.points[0] += l.center;
+
+
+                l.points[1] -= l.center;
+                l.points[1] = {
+                    l.points[1].x * ROT_MAT[0][0] + l.points[1].y * ROT_MAT[0][1],
+                    l.points[1].x * ROT_MAT[1][0] + l.points[1].y * ROT_MAT[1][1]
+                };
+
+                l.points[1] += l.center;
+
+                return l;
             }
         };
 
@@ -60,14 +93,27 @@ namespace map{
             bool filled;
             map::RectAlignment rectAlignment;
 
-            Rect(int h = 1, int w = 1, Point p = Point(), clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
+            Rect(Point p = Point(), int h = 1, int w = 1, clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
             : height(h), width(w), filled(f), rectAlignment(rectAlignment),
             Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}) {}
         };
 
         struct Triangle : Shape{
-            Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), bool t = false)
+            Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), int t = 0)
             : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
+
+
+            Triangle rotate(float angle){
+                Triangle t = *this;
+
+                for(auto &p : t.points){
+                    p -= t.center;
+                    p = {p.x * ROT_MAT[0][0] + p.y * ROT_MAT[0][1], p.x * ROT_MAT[1][0] + p.y * ROT_MAT[1][1]};
+                    p += t.center;
+                }
+
+                return t;
+            }
         };
 
         struct Ellipse : Shape{
