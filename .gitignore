@@ -1,2 +1,5 @@
 output/
 .vscode/
+main
+.DS_Store
+.gitignore
