@@ -2,16 +2,18 @@
 
 #include <vector>
 #include <cmath>
+#include <variant>
 
-#include "../Structs/Point.hpp"
-#include "../Structs/RGB.hpp"
+#include "Point.hpp"
+#include "RGB.hpp"
 
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
+#define Shape_type std::variant<map::shapes::Line, map::shapes::Circle, map::shapes::Rect, map::shapes::Triangle, map::shapes::Ellipse>
 
 
-#define ROT_MAT (float[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
+#define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
 
 
 namespace map{
@@ -37,6 +39,10 @@ namespace map{
             Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
             : center(p), color(c), thickness(t), points(pts) {}
 
+
+            virtual void rotate(float);
+            virtual Shape_type rotated(float);
+
         };
 
         class Line : public  Shape{
@@ -53,26 +59,20 @@ namespace map{
                 return points[1];
             }
 
-            Line rotate(float angle){
+            void rotate(float angle) override{
+                points[0] -= center;
+                points[0] = ROT_MAT * points[0];
+                points[0] += center;
+
+
+                points[1] -= center;
+                points[1] = ROT_MAT * points[1];
+                points[1] += center;
+            }
+
+            Shape_type rotated(float angle) override{
                 Line l = *this;
-
-                l.points[0] -= l.center;
-                l.points[0] = {
-                    l.points[0].x * ROT_MAT[0][0] + l.points[0].y * ROT_MAT[0][1],
-                    l.points[0].x * ROT_MAT[1][0] + l.points[0].y * ROT_MAT[1][1]
-                };
-
-                l.points[0] += l.center;
-
-
-                l.points[1] -= l.center;
-                l.points[1] = {
-                    l.points[1].x * ROT_MAT[0][0] + l.points[1].y * ROT_MAT[0][1],
-                    l.points[1].x * ROT_MAT[1][0] + l.points[1].y * ROT_MAT[1][1]
-                };
-
-                l.points[1] += l.center;
-
+                l.rotate(angle);
                 return l;
             }
         };
@@ -103,15 +103,18 @@ namespace map{
             : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
 
 
-            Triangle rotate(float angle){
-                Triangle t = *this;
-
-                for(auto &p : t.points){
-                    p -= t.center;
-                    p = {p.x * ROT_MAT[0][0] + p.y * ROT_MAT[0][1], p.x * ROT_MAT[1][0] + p.y * ROT_MAT[1][1]};
-                    p += t.center;
+            void rotate(float angle) override{
+                for(auto &p : points){
+                    p -= center;
+                    p = ROT_MAT * p;
+                    p += center;
                 }
+            }
 
+
+            Shape_type rotated(float angle) override{
+                Triangle t = *this;
+                t.rotate(angle);
                 return t;
             }
         };
@@ -131,3 +134,6 @@ namespace map{
         };
     }
 }
+
+
+#undef Shape_type

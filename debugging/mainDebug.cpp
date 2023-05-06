@@ -33,7 +33,8 @@ int main(int argc, char **argv){
 	for(int frame = 0; frame < frames; frame++){
 		float angle = 2*M_PI * (float(frame) / frames);
 
-		m.draw(l.rotate(angle));
+		auto s = l.rotated(angle);
+		m.draw(s);
 
 
 		std::cout << frame << '/' << frames << "fps\n";

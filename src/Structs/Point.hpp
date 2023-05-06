@@ -9,6 +9,13 @@ namespace map{
         Point(double x_, double y_) : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
+        friend Point operator * (double Matrix[2][2], Point p){
+            return {
+                p.x * Matrix[0][0] + p.y * Matrix[0][1],
+                p.x * Matrix[1][0] + p.y * Matrix[1][1]
+            };
+        }
+
         Point operator + (Point p){
             return {x + p.x, y + p.y};
         }

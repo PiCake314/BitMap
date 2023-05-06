@@ -238,30 +238,3 @@
 //   m.plotXY(func, res, map::clr::RED);
 // }
 
-
-
-// // ------------------------------- Video -------------------------------- //
-// int vid(map::Mapper &m, int fps, std::string filename){
-  
-
-// 	std::cout << "FPS: " << fps << std::endl;
-
-// 	map::shapes::Circle c(map::Point(100, 100), 50, map::clr::RGB(255, 0, 0), true);
-
-// 	m.noSet();
-// 	for(int i = 0; i < fps; i++){
-// 		m.setFile("FirstVid/f" + std::to_string(i+1) + ".ppm");
-
-// 		m.fillWhite();
-// 		c.center = map::Point(100, 100 + i*(850/24));
-// 		m.draw(c);
-// 		m.rotate(map::Rotate::ccw);
-
-// 		m.setState();
-// 		std::system(("convert output/FirstVid/f" + std::to_string(i+1) + ".ppm output/FirstVid/f" + std::to_string(i+1) + ".png").c_str());
-// 		std::system(("rm output/FirstVid/f" + std::to_string(i+1) + ".ppm").c_str());
-// 	}
-
-// 	std::system(("ffmpeg -r 24 -f image2 -s 1000x1000 -i output/FirstVid/f%d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p output/" + filename).c_str());
-// 	std::system("rm output/FirstVid/f*.png");
-// }

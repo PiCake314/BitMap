@@ -37,48 +37,6 @@ bool safePoint(map::Point p, Size s){
     return p.y*s.height + p.x >= 0 && p.y*s.height + p.x < s.height*s.width;
 }
 
-// Point findTopLeft(Point Ps[]){
-//     Point ret = Ps[0];
-//     for(int i=1; i<4; i++)
-//         if(Ps[i].x + Ps[i].y < ret.x + ret.y)
-//             ret = Ps[i];
-
-//     return ret;
-// }
-
-// Point findTopRight(Point Ps[]){
-//     Point ret = Ps[0];
-//     for(int i=1; i<4; i++)
-//         if(Ps[i].x < ret.x && Ps[i].y > ret.y)
-//             ret = Ps[i];
-
-//     return ret;
-// }
-
-// Point findBottomRight(Point Ps[]){
-//     Point tl = findTopLeft(Ps);
-
-//     Point ret = Ps[0];
-//     for(int i=1; i<4; i++)
-//         if(Ps[i].x + Ps[i].y > ret.x + ret.y)
-//             ret = Ps[i];
-
-//     return ret;
-// }
-
-// Point findBottomLeft(Point Ps[]){
-//     Point ret = Ps[0];
-//     for(int i=1; i<4; i++)
-//         if(Ps[i].x > ret.x && Ps[i].y < ret.y)
-//             ret = Ps[i];
-
-//     return ret;
-// }
-
-// void orderFourPoints(Point Ps[]){
-//     Ps[0] = findTopLeft(Ps), Ps[1] = findTopRight(Ps), Ps[2] = findBottomRight(Ps), Ps[3] = findBottomLeft(Ps);
-// }
-
 
 map::Point lerp(map::Point p1, map::Point p2, float dt){
     int x =  p1.x + (p2.x-p1.x)*dt;

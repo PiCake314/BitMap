@@ -20,16 +20,11 @@
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
-// #define BECTOR "../../../../mylibs/Bector/Bector.hpp"
-// #include BECTOR
-
 
 #define OUTPUT_PATH "output/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/temp/"
 
-
-// A variant type of all the shapes
 using Shape_t = std::variant<
     map::shapes::Line,
     map::shapes::Circle,
@@ -37,6 +32,7 @@ using Shape_t = std::variant<
     map::shapes::Triangle,
     map::shapes::Ellipse
 >;
+
 
 
 namespace map{
