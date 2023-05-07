@@ -23,7 +23,7 @@
 
 #define OUTPUT_PATH "output/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
-#define VIDEO_TEMP_PATH "output/vids/temp/"
+#define VIDEO_TEMP_PATH "output/vids/.temp/"
 
 using Shape_t = std::variant<
     map::shapes::Line,
@@ -40,19 +40,20 @@ namespace map{
     class Mapper{
 
         private:
-            std::string m_filename;
-            Size m_size;
+            std::string m_Filename;
+            std::ofstream m_File;
+            Size m_Size;
 
             int m_FPS; // for video only
 
-            std::string m_pType; // Meta Data
-            int m_max; // Meta Data
-            clr::RGB *m_map; // The canvas (2D array of RGB values)
+            std::string m_PType; // Meta Data
+            int m_Max; // Meta Data
+            clr::RGB *m_Map; // The canvas (2D array of RGB values)
 
-            bool m_set_state;
+            bool m_Set_state;
 
-            int m_xCenter;
-            int m_yCenter;
+            int m_XCenter;
+            int m_YCenter;
 
             void setInfo();
 
@@ -147,17 +148,15 @@ namespace map{
              * @brief Folds the canvas on itself (i.e. Copys the top half to the bottom half with t2b)
              * 
              * @param Fold: use one of the provided constants (l2r, r2l, t2b, b2t)
+             * ! Deprecated
              */
             void fold(Fold);
 
 
             void rotate(float);
 
-            /*
-                Distance between 2 points!
-                ! Deprecated
-            */
-            // int dist(Point, Point);
+
+            void move(Shape_t, Point);
 
 
 
