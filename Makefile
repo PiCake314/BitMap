@@ -20,9 +20,13 @@ video: mains/main.cpp src/Mapper/Mapper.cpp
 	echo $(var1)
 
 
-install:
-	brew install ImageMagick && brew install ffmpeg
+test:
+	make videodeb filename=test.mp4 h=100 w=100 fps=10 && rm main
 
 
 clean: 
 	rm main
+
+
+install:
+	brew install ImageMagick && brew install ffmpeg

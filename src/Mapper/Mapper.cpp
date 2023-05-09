@@ -3,7 +3,7 @@
 
 
 map::Mapper::Mapper(std::string fn, int height, int width, Loadtype type)
-: m_PType("P3"), m_Size(height, width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
+: m_PType("P3"), m_Size(height, width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(30), m_Current_frame(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -190,7 +190,8 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
                 for(int j = j_start; j <= j_end; j++){
                     if(i >= int(slope*j + b)-thickness && i <= int(slope*j + b)+thickness){
                         // if(i >= i_start && i <= i_end && j >= j_start && j <= j_end)
-                        if(i*m_Size.width + j >= 0 && i*m_Size.width + j < m_Size.width * m_Size.height){
+                        // if(i*m_Size.width + j >= 0 && i*m_Size.width + j < m_Size.width * m_Size.height){
+                        if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width){
                             m_Map[i*m_Size.width + j] = color;
                         }
                     }
@@ -203,7 +204,8 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
         int i_end = std::max(p1.y, p2.y);
 
         for(int i = i_start; i <= i_end; i++){
-            if(i*m_Size.width + int(p1.y) >= 0 && i*m_Size.width + int(p1.y) < m_Size.width * m_Size.height){
+            // if(i*m_Size.width + int(p1.y) >= 0 && i*m_Size.width + int(p1.y) < m_Size.width * m_Size.height){
+            if(i >= 0 && i < m_Size.height && int(p1.x) >= 0 && int(p1.x) < m_Size.width){
                 m_Map[i*m_Size.width + int(p1.x)] = color;
             }
         }
@@ -361,25 +363,29 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
         drawLine(
             Point(center.x - height/2 - 1, center.y - width/2 - 1),
             Point(center.x - height/2 - 1, center.y + width/2 - 1),
-        color, thick);
+            color, thick
+        );
 
 
         drawLine(
             Point(center.x - height/2 - 1, center.y + width/2 - 1),
             Point(center.x + height/2 - 1, center.y + width/2 - 1),
-        color, thick);
+            color, thick
+        );
 
 
         drawLine(
             Point(center.x + height/2 - 1, center.y + width/2 - 1),
             Point(center.x + height/2 - 1, center.y - width/2 - 1),
-        color, thick);
+            color, thick
+        );
 
 
         drawLine(
             Point(center.x + height/2 - 1, center.y - width/2 - 1),
             Point(center.x - height/2 - 1, center.y - width/2 - 1),
-        color, thick);
+            color, thick
+        );
     }
 
     if(m_Set_state) setState();
@@ -616,26 +622,12 @@ void map::Mapper::draw(Shape_t s){
             break;
         }
         
-        default:
-            break;
+        // default:
+        //     break;
     }
 
 
-    // if constexpr(std::is_same_v<T, Circle>){
-    //     drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.alignment);
-    // }
-    // else if constexpr(std::is_same_v<T, map::Rect>){
-    //     drawRect(shape.top, shape.left, shape.height, shape.width, shape.color, shape.filled, shape.inverted, shape.alignment);
-    // }
-    // else if constexpr(std::is_same_v<T, map::Ellipse>){
-    //     drawEllipse(shape.top, shape.left, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.alignment);
-    // }
-    // else if constexpr(std::is_same_v<T, map::Line>){
-    //     drawLine(shape.p1, shape.p2, shape.color, shape.thick);
-    // }
-    // else if constexpr(std::is_same_v<T, map::Triangle>){
-    //     drawTri(shape.p1, shape.p2, shape.p3, shape.color, shape.filled);
-    // }
+
     // else if constexpr(std::is_same_v<T, Polygon>){
     //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
     // }
@@ -648,46 +640,31 @@ void map::Mapper::draw(Shape_t s){
     // else if constexpr(std::is_same_v<T, BezierCurve>){
     //     drawBezierCurve(shape.pts, shape.dt, shape.color, shape.thick);
     // }
-    // else if constexpr(std::is_same_v<T, BezierQuadCurve>){
-    //     drawBezierQuadCurve(shape.p1, shape.p2, shape.c, shape.dt, shape.color, shape.thick);
-    // }
-    // else if constexpr(std::is_same_v<T, BezierMultiCurve>){
-    //     drawBezierMultiCurve(shape.pts, shape.dt, shape.color, shape.thick);
-    // }
-    // else if constexpr(std::is_same_v<T, BezierMultiQuadCurve>){
-    //     drawBezierMultiQuadCurve(shape.pts, shape.dt, shape.color, shape.thick);
-    // }
-    // else if constexpr(std::is_same_v<T, BezierMultiMultiCurve>){
-    //     drawBezierMultiMultiCurve(shape.pts, shape.dt, shape.color, shape.thick);
-    // }
-    // else if constexpr(std::is_same_v<T, BezierMultiMultiQuadCurve>){
-    //     drawBezierMultiMultiQuadCurve(shape.pts, shape.dt, shape.color, shape.thick);
-    // }
 }
 
 
 
-void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, map::clr::RGB color, bool thick){
-    Point l1;
-    Point l2;
+// void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, map::clr::RGB color, bool thick){
+//     Point l1;
+//     Point l2;
 
-    Point curr;
-    Point prev = p1;
+//     Point curr;
+//     Point prev = p1;
 
-    bool s = m_Set_state;
-    m_Set_state = false;
-    for(float a = 0; a < 1+dt/2; a += dt){
-        l1 = lerp(p1, c, a);
-        l2 = lerp(c, p2, a);
-        curr = lerp(l1, l2, a);
+//     bool s = m_Set_state;
+//     m_Set_state = false;
+//     for(float a = 0; a < 1+dt/2; a += dt){
+//         l1 = lerp(p1, c, a);
+//         l2 = lerp(c, p2, a);
+//         curr = lerp(l1, l2, a);
     
-        drawLine(prev, curr, color, thick);
-        prev = curr;
-    }
-    m_Set_state = s;
+//         drawLine(prev, curr, color, thick);
+//         prev = curr;
+//     }
+//     m_Set_state = s;
 
-    if(m_Set_state) setState();
-}
+//     if(m_Set_state) setState();
+// }
 
 
 
@@ -754,7 +731,6 @@ void map::Mapper::plotIfTrue(bool (*func)(int x, int y), map::clr::RGB color){
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             if (func(j, i)){
-                std::cout << "IN\n";
                 m_Map[i*m_Size.width + j] = color;
             }
         }
@@ -824,17 +800,43 @@ void map::Mapper::rotate(float angle){
 }
 
 
+void map::Mapper::move(Shape_t shape, Point shift, int seconds){
+    int frames = seconds * m_FPS;
+    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+
+    switch(shape.index()){
+        case ShapeType::line:{
+
+            auto &line = std::get<ShapeType::line>(shape);
+
+            for(double frame = 0; frame < frames; frame++){
+                copy(temp, m_Map);
+                line.shift(shift * (frame/frames));
+                draw(line);
+                saveFrame();
+                std::cout << frame << '/' << frames << '\n';
+            }
+
+            break;
+        }
+
+        
+    }
+
+}
+
+
 // int Mapper::dist(Point p1, Point p2){
 //     return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
 // }
 
 
-
 // ----------------------- Video Related Functions ----------------------- //
 
-void map::Mapper::saveFrame(int frame) const{
-    std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH "out" + std::to_string(frame) + ".png";
+void map::Mapper::saveFrame(){
+    std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH "out" + std::to_string(m_Current_frame) + ".png";
     std::system(command.c_str());
+    m_Current_frame++;
 }
 
 
@@ -868,7 +870,7 @@ void map::Mapper::setInfo(){
 
 
 
-void map::Mapper::setState(){
+void map::Mapper::setState(const std::vector<map::clr::RGB> &alt_map){
     setInfo();
     std::string fn = OUTPUT_PATH + m_Filename;
     std::ofstream fout(fn, std::ios::app);

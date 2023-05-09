@@ -41,10 +41,10 @@ namespace map{
 
         private:
             std::string m_Filename;
-            std::ofstream m_File;
             Size m_Size;
 
             int m_FPS; // for video only
+            int m_Current_frame; // for video only
 
             std::string m_PType; // Meta Data
             int m_Max; // Meta Data
@@ -74,7 +74,7 @@ namespace map{
 
             void loadFile();
 
-            void setState();
+            void setState(const std::vector<clr::RGB> & = {});
 
             void setFile(std::string);
 
@@ -123,10 +123,11 @@ namespace map{
             void draw(Shape_t shape);
 
 
-            /**
-             * @brief Creates a bezian curve that goes from p1 to p3 curved by p2.
-             */
-            void bezierQuadCurve(Point p1, Point p2, Point p3, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
+            // /**
+            //  * @brief Creates a bezian curve that goes from p1 to p3 curved by p2.
+            //  * ! Deprecated
+            //  */
+            // void bezierQuadCurve(Point p1, Point p2, Point p3, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
 
 
             /**
@@ -156,13 +157,13 @@ namespace map{
             void rotate(float);
 
 
-            void move(Shape_t, Point);
+            void move(Shape_t, Point, int seconds = 1);
 
 
 
             // ----------------------- Video Related Functions -----------------------
 
-            void saveFrame(int frame) const;
+            void saveFrame();
 
             void render(const std::string &output_file = "out.mp4") const;
 

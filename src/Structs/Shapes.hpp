@@ -57,6 +57,25 @@ namespace map{
                 return points[1];
             }
 
+            void start(Point p){
+                points[0] = p;
+
+                center = {(points[0].x + points[1].x)/2, (points[0].y + points[1].y)/2};
+            }
+
+            void end(Point p){
+                points[1] = p;
+
+                center = {(points[0].x + points[1].x)/2, (points[0].y + points[1].y)/2};
+            }
+
+            void setCenter(Point p){
+                center = p;
+
+                points[0] = {center.x - (points[1].x - center.x), center.y - (points[1].y - center.y)};
+                points[1] = {center.x + (points[1].x - center.x), center.y + (points[1].y - center.y)};
+            }
+
             void rotate(float angle){
                 points[0] -= center;
                 points[0] = ROT_MAT * points[0];
@@ -71,6 +90,19 @@ namespace map{
             Line rotated(float angle){
                 Line l = *this;
                 l.rotate(angle);
+                return l;
+            }
+
+            void shift(Point p){
+                points[0] += p;
+                points[1] += p;
+
+                center += p;
+            }
+
+            Line shifted(Point p){
+                Line l = *this;
+                l.shift(p);
                 return l;
             }
         };

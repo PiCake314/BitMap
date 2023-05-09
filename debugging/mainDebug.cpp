@@ -24,23 +24,13 @@ int main(int argc, char **argv){
 	using namespace map;
 	std::cout << "fps: " << fps << std::endl;
 	int seconds = 3;
-	int frames = fps * seconds;
-
-	std::string file;
-
-	shapes::Line l({width/2.f, 0.0}, {width/2.f, height/1.f}, clr::RGB(255, 0, 0), 1);
-	m.draw(l);
-	for(int frame = 0; frame < frames; frame++){
-		float angle = 2*M_PI * (float(frame) / frames);
-
-		auto s = l.rotated(angle);
-		m.draw(s);
 
 
-		std::cout << frame << '/' << frames << "fps\n";
-		m.saveFrame(frame);
-		m.fillWhite();
-	}
+	shapes::Line l({width/2.f, height/5.f}, {width/2.f, height/1.25f}, clr::RGB(255, 0, 0), 1);
+	Point shift{40, 40};
+
+	m.move(l, shift, seconds);
+
 
 	m.render(filename);
 	m.clearFrames();

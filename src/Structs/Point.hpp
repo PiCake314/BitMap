@@ -24,11 +24,11 @@ namespace map{
             return {x - p.x, y - p.y};
         }
 
-        Point operator * (float f){
+        Point operator * (double f){
             return {x * f, y * f};
         }
 
-        Point operator / (float f){
+        Point operator / (double f){
             return {x / f, y / f};
         }
 
@@ -40,11 +40,11 @@ namespace map{
             return *this = *this - p;
         }
 
-        Point operator *= (float f){
+        Point operator *= (double f){
             return *this = *this * f;
         }
 
-        Point operator /= (float f){
+        Point operator /= (double f){
             return *this = *this / f;
         }
 

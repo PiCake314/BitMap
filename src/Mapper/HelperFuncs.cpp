@@ -58,3 +58,11 @@ std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, i
 
     return ret;
 }
+
+
+
+void copy(const std::vector<map::clr::RGB> &src, map::clr::RGB *dest){
+    for(int i = 0; i < src.size(); i++){
+        dest[i] = src[i];
+    }
+}
