@@ -25,6 +25,8 @@
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/.temp/"
 
+#define DEGREES * M_PI / 180
+
 using Shape_t = std::variant<
     map::shapes::Line,
     map::shapes::Circle,
@@ -74,13 +76,14 @@ namespace map{
 
             void loadFile();
 
-            void setState(const std::vector<clr::RGB> & = {});
+            void setState();
 
             void setFile(std::string);
 
-            void fillWhite();
+            // ! Deprecated
+            // void fillWhite();
 
-            void fillColor(clr::RGB = clr::RGB());
+            void fill(clr::RGB = clr::WHITE);
 
             void randomize();
 
@@ -154,10 +157,20 @@ namespace map{
             void fold(Fold);
 
 
+            /**
+             * @brief Rotates the canvas by the given angle. (in radians)
+            */
             void rotate(float);
 
 
-            void move(Shape_t, Point, int seconds = 1);
+            /**
+             * @brief Moves the shape to the given point in the given time.
+             * ! Deprecated
+            */
+            // void move(Shape_t, Point, int seconds = 1);
+
+
+            void animate(Shape_t(*)(int, int), int seconds);
 
 
 

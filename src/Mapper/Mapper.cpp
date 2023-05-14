@@ -46,7 +46,7 @@ void map::Mapper::noSet(){
 void map::Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
     m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
-    fillWhite();
+    fill();
 }
 
 
@@ -110,17 +110,17 @@ void map::Mapper::setFile(std::string fn){
 
 
 
-void map::Mapper::fillWhite(){
-    for(int i=0; i<m_Size.height; i++)
-        for(int j=0; j<m_Size.width; j++)
-            m_Map[i*m_Size.width + j] = map::clr::RGB(255, 255, 255);
+// void map::Mapper::fillWhite(){
+//     for(int i=0; i<m_Size.height; i++)
+//         for(int j=0; j<m_Size.width; j++)
+//             m_Map[i*m_Size.width + j] = map::clr::RGB(255, 255, 255);
 
-    if(m_Set_state) setState();
-}
+//     if(m_Set_state) setState();
+// }
 
 
 
-void map::Mapper::fillColor(map::clr::RGB color){
+void map::Mapper::fill(map::clr::RGB color){
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
             *(m_Map + i * m_Size.width + j) = color;
@@ -131,7 +131,7 @@ void map::Mapper::fillColor(map::clr::RGB color){
 
 
 void map::Mapper::randomize(){
-    srand(time(NULL));
+    srand(time(0));
 
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
@@ -143,7 +143,7 @@ void map::Mapper::randomize(){
 
 
 void map::Mapper::randomizeGrey(){
-    srand(time(NULL));
+    srand(time(0));
 
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++){
@@ -188,10 +188,10 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
         // for(auto [i, j] : outter_prod(i_start, i_end, j_start, j_end)){
             for(int i = i_start; i <= i_end; i++){
                 for(int j = j_start; j <= j_end; j++){
-                    if(i >= int(slope*j + b)-thickness && i <= int(slope*j + b)+thickness){
+                    if(i >= int(slope*(j) + b) - (thickness/2) && i <= int(slope*(j+1) + b) + (thickness/2)){
                         // if(i >= i_start && i <= i_end && j >= j_start && j <= j_end)
                         // if(i*m_Size.width + j >= 0 && i*m_Size.width + j < m_Size.width * m_Size.height){
-                        if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width){
+                        if(safePoint({float(j), float(i)}, m_Size)){
                             m_Map[i*m_Size.width + j] = color;
                         }
                     }
@@ -202,11 +202,15 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
     else{
         int i_start = std::min(p1.y, p2.y);
         int i_end = std::max(p1.y, p2.y);
+        int j_start = p1.x - thickness/2;
+        int j_end = p1.x + (thickness-1)/2;
 
         for(int i = i_start; i <= i_end; i++){
-            // if(i*m_Size.width + int(p1.y) >= 0 && i*m_Size.width + int(p1.y) < m_Size.width * m_Size.height){
-            if(i >= 0 && i < m_Size.height && int(p1.x) >= 0 && int(p1.x) < m_Size.width){
-                m_Map[i*m_Size.width + int(p1.x)] = color;
+            for(int j = j_start; j < j_end; j++){
+                // if(i*m_Size.width + int(p1.y) >= 0 && i*m_Size.width + int(p1.y) < m_Size.width * m_Size.height){
+                if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width){
+                    m_Map[i*m_Size.width + j] = color;
+                }
             }
         }
     }
@@ -612,7 +616,7 @@ void map::Mapper::draw(Shape_t s){
 
         case ShapeType::triangle:{
             auto shape = std::get<Triangle>(s);
-            drawTri(shape.points[0], shape.points[1], shape.points[2], shape.color, shape.thickness);
+            // drawTri(shape.points[0], shape.points[1], shape.points[2], shape.color, shape.thickness);
             break;
         }
 
@@ -782,7 +786,7 @@ void map::Mapper::rotate(float angle){
     
     bool s = m_Set_state;
     m_Set_state = false;
-    fillWhite();
+    fill();
     m_Set_state = s;
 
     for(int y = 0; y < m_Size.height; y++){
@@ -800,29 +804,45 @@ void map::Mapper::rotate(float angle){
 }
 
 
-void map::Mapper::move(Shape_t shape, Point shift, int seconds){
+// void map::Mapper::move(Shape_t shape, Point shift, int seconds){
+//     int frames = seconds * m_FPS;
+//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+//     shift *= 1.0/frames;
+
+//     switch(shape.index()){
+//         case ShapeType::line:{
+
+//             auto &line = std::get<ShapeType::line>(shape);
+
+//             for(double frame = 0; frame < frames; frame++){
+//                 copy(temp, m_Map);
+//                 line.shift(shift);
+//                 draw(line);
+//                 saveFrame();
+//                 std::cout << frame << '/' << frames << '\n';
+//             }
+
+//             break;
+//         }
+//     }
+// }
+
+
+
+void map::Mapper::animate(Shape_t(*provider)(int, int), int seconds){
+    std::cout << "Beginning Scene:\n";
     int frames = seconds * m_FPS;
+
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-
-    switch(shape.index()){
-        case ShapeType::line:{
-
-            auto &line = std::get<ShapeType::line>(shape);
-
-            for(double frame = 0; frame < frames; frame++){
-                copy(temp, m_Map);
-                line.shift(shift * (frame/frames));
-                draw(line);
-                saveFrame();
-                std::cout << frame << '/' << frames << '\n';
-            }
-
-            break;
-        }
-
-        
+    for(int frame = 0; frame <= frames; frame++){
+        copy(temp, m_Map);
+        auto shape = provider(frame, frames);
+        draw(shape);
+        saveFrame();
+        std::cout << frame << '/' << frames << '\n';
     }
 
+    std::cout << "Scene Ended!\n";
 }
 
 
@@ -870,7 +890,8 @@ void map::Mapper::setInfo(){
 
 
 
-void map::Mapper::setState(const std::vector<map::clr::RGB> &alt_map){
+void map::Mapper::setState(){
+
     setInfo();
     std::string fn = OUTPUT_PATH + m_Filename;
     std::ofstream fout(fn, std::ios::app);

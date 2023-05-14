@@ -35,10 +35,14 @@ namespace map{
             }
         };
 
-        const clr::RGB RED =  RGB(255, 0, 0);
+        const RGB RED =  RGB(255, 0, 0);
 
-        const clr::RGB GREEN = RGB(0, 255, 0);
+        const RGB GREEN = RGB(0, 255, 0);
 
-        const clr::RGB BLUE = RGB(0, 0, 255);
+        const RGB BLUE = RGB(0, 0, 255);
+
+        const RGB WHITE = RGB(255, 255, 255);
+
+        const RGB BLACK  = RGB(0, 0 ,0);
     }
 }
