@@ -38,6 +38,7 @@ using Shape_t = std::variant<
 
 
 namespace map{
+    
 
     class Mapper{
 
@@ -61,7 +62,9 @@ namespace map{
 
         public:
             // Mapper();
-            Mapper(std::string = "output.ppm", int h = 100, int w = 100, Loadtype = Loadtype::reset);
+            Mapper(std::string, Size, Loadtype = Loadtype::reset);
+            Mapper(std::string, Size, int fps, Loadtype = Loadtype::reset);
+
             ~Mapper();
 
             void setFPS(int);
@@ -89,8 +92,14 @@ namespace map{
 
             void randomizeGrey();
 
+            /**
+             * ! Deprecated
+            */
             clr::RGB getColorAt(Point = Point());
 
+            /**
+             * ! Deprecated
+            */
             void drawAt(Point = Point(), clr::RGB = clr::RGB());
 
             void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
@@ -181,6 +190,17 @@ namespace map{
             void render(const std::string &output_file = "out.mp4") const;
 
             void clearFrames() const;
+
+
+            // ----------------------- Operators -----------------------
+
+            clr::RGB &operator[](Point);
+
+            clr::RGB &operator[](int);
+
+            clr::RGB *begin();
+
+            clr::RGB *end();
 
     };
 

@@ -97,9 +97,20 @@ namespace map{
             bool filled;
             map::RectAlignment rectAlignment;
 
-            Rect(Point p = Point(), int h = 1, int w = 1, clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
+            Rect(Point p, int h, int w, clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
             : height(h), width(w), filled(f), rectAlignment(rectAlignment),
             Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}) {}
+
+
+            void shift(Point p){
+                center += p;
+            }
+
+            Rect shifted(Point p){
+                Rect r = *this;
+                r.shift(p);
+                return r;
+            }
         };
 
         struct Triangle : Shape{
@@ -157,8 +168,7 @@ namespace map{
                 center = std::accumulate(
                     points.begin(),
                     points.end(),
-                    Point(),
-                    [](Point p1, Point p2){ return p1 + p2; }
+                    Point()
                 )/points.size();
             }
 
@@ -186,3 +196,4 @@ namespace map{
         };
     }
 }
+ 

@@ -4,29 +4,29 @@
 
 int height = 500, width = 500;
 
-void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug = false);
+void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype &arg, bool debug = false);
 
+int countNeighbors(map::Mapper &m, map::Point p){
+	int count = 0;
 
-Shape_t scene1(int frame, int frames){
-	map::shapes::Line l({width/5.0, height/2.0}, height/3, 90 DEGREES, map::clr::RGB(255, 0, 0), 3);
-	map::Point shift{3*width/5.0, 0};
-	l.rotate(360 DEGREES * (frame/double(frames)));
-	l.shift(shift * (frame/double(frames)));
+	for(int i = -1; i <= 1; i++){
+		for(int j = -1; j <= 1; j++){
+			if(i == 0 && j == 0) continue;
 
-	return l;
+			map::Point p2 = map::Point((width + (int)p.x + i) % width, (height + (int)p.y + j) % height);
+
+			if(m[p2] == map::clr::WHITE){
+				count++;
+			}
+		}
+	}
+
+	return count;
 }
 
-
-Shape_t scene2(int frame, int frames){
-	map::shapes::Line l({4*width/5.0, height/2.0}, height/3, 90 DEGREES, map::clr::RGB(255, 0, 0), 3);
-	map::Point shift{-3*width/5.0, 0};
-	l.rotate(360 DEGREES * (frame/double(frames)));
-	l.shift(shift * (frame/double(frames)));
-
-	return l;
-}
 
 int main(int argc, char **argv){
+	srand(time(NULL));
 	/* --------------------------- Meta Data --------------------------- */
 
     std::string filename = "output.ppm";
@@ -35,7 +35,7 @@ int main(int argc, char **argv){
 
 	setup(argc, argv, filename, height, width, fps, loadtype, true);
 
-    map::Mapper m = map::Mapper("output.ppm", height, width, loadtype);
+    map::Mapper m = map::Mapper("output.ppm", {height, width}, fps, loadtype);
 	// m.setFPS(fps);
 
 
@@ -43,10 +43,52 @@ int main(int argc, char **argv){
 
 	using namespace map;
 	std::cout << "fps: " << fps << std::endl;
-	// int seconds = 2;
+	int seconds = 20;
+	int frames = fps * seconds;
 
-	m.animate(scene1, 2);
-	m.animate(scene2, 1);
+	clr::RGB alt[height][width];
+
+	for(auto &pixle : m){
+		if(rand() % 100 > 90){
+			pixle = clr::WHITE;
+		}
+		else{
+			pixle = clr::BLACK;
+		}
+	}
+
+	for(int frame = 0; frame <= frames; frame++){
+		for(int i = 0; i < height; i++){
+			for(int j = 0; j < width; j++){
+				alt[i][j] = m[Point(i, j)];
+			}
+		}
+
+		
+		for(int i = 0; i < height; i++){
+			for(int j = 0; j < width; j++){
+				Point p = Point(i, j);
+				int neighbors = countNeighbors(m, p);
+
+				if(neighbors < 2 || neighbors > 3){
+					alt[i][j] = clr::BLACK;
+				}
+				else if(neighbors == 3){
+					alt[i][j] = clr::WHITE;
+				}
+			}
+		}
+
+		for(int i = 0; i < height; i++){
+			for(int j = 0; j < width; j++){
+				m[Point(i, j)] = alt[i][j];
+			}
+		}
+		std::cout << "frame: " << frame << '/' << frames << std::endl;
+		m.setState();
+		m.saveFrame();
+	}
+
 
 
 	m.render(filename);
@@ -61,8 +103,9 @@ int main(int argc, char **argv){
 
 
 
-void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype arg, bool debug){
-	if(argc > 1 && (std::string(argv[1]) == "l" || std::string(argv[1]) == "load"))
+void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype &arg, bool debug){
+	std::string argv1 = argv[1];
+	if(argc > 1 && (argv1 == "l" || argv1 == "load"))
 		arg = map::Loadtype::load;
 
 

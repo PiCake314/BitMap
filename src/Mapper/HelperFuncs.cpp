@@ -66,3 +66,12 @@ void copy(const std::vector<map::clr::RGB> &src, map::clr::RGB *dest){
         dest[i] = src[i];
     }
 }
+
+
+constexpr double distFromLine(map::Point p1, map::Point p2, map::Point p){
+    double a = p2.y - p1.y;
+    double b = p1.x - p2.x;
+    double c = p2.x*p1.y - p1.x*p2.y;
+
+    return (abs(a*p.x + b*p.y + c)*abs(a*p.x + b*p.y + c))/(a*a + b*b);
+}

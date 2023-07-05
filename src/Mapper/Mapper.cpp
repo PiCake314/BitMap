@@ -2,8 +2,20 @@
 #include "HelperFuncs.cpp"
 
 
-map::Mapper::Mapper(std::string fn, int height, int width, Loadtype type)
-: m_PType("P3"), m_Size(height, width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(30), m_Current_frame(0)
+map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
+: m_PType("P3"), m_Size(size.height, size.width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(0), m_Current_frame(0)
+{
+    assert(fn.length() > 4 );
+    assert(fn.substr(fn.length()-4, 4) == ".ppm");
+    m_Filename = fn;
+
+    if(type == Loadtype::load) loadFile();
+    else resetFile();
+}
+
+
+map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
+: m_PType("P3"), m_Size(size.height, size.width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(fps), m_Current_frame(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -175,42 +187,31 @@ void map::Mapper::drawAt(Point p, map::clr::RGB color){
 
 
 void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thickness){
+
+    int i_start = std::max(std::min(p1.y, p2.y), 0.0);
+    int i_end = std::min(std::max(p1.y, p2.y), double(m_Size.height - 1));
+
+    int j_start = std::max(std::min(p1.x, p2.x), 0.0);
+    int j_end = std::min(std::max(p1.x, p2.x), double(m_Size.width - 1));
+
+
     if(p2.x - p1.x != 0){
         float slope = (p2.y - p1.y) / (p2.x - p1.x);
         float b = p1.y - slope * p1.x;
 
-        int i_start = std::min(p1.y, p2.y);
-        int i_end = std::max(p1.y, p2.y);
-        int j_start = std::min(p1.x, p2.x);
-        int j_end = std::max(p1.x, p2.x);
-
-
-        // for(auto [i, j] : outter_prod(i_start, i_end, j_start, j_end)){
+            // #pragma omp parallel for simd collapse(2)
             for(int i = i_start; i <= i_end; i++){
                 for(int j = j_start; j <= j_end; j++){
-                    if(i >= int(slope*(j) + b) - (thickness/2) && i <= int(slope*(j+1) + b) + (thickness/2)){
-                        // if(i >= i_start && i <= i_end && j >= j_start && j <= j_end)
-                        // if(i*m_Size.width + j >= 0 && i*m_Size.width + j < m_Size.width * m_Size.height){
-                        if(safePoint({float(j), float(i)}, m_Size)){
-                            m_Map[i*m_Size.width + j] = color;
-                        }
+                    if(distFromLine(p1, p2, {float(j), float(i)}) <= (thickness/2)*(thickness/2)){
+                        m_Map[i*m_Size.width + j] = color;
                     }
                 }
             }
-        // }
     }
     else{
-        int i_start = std::min(p1.y, p2.y);
-        int i_end = std::max(p1.y, p2.y);
-        int j_start = p1.x - thickness/2;
-        int j_end = p1.x + (thickness-1)/2;
-
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j < j_end; j++){
-                // if(i*m_Size.width + int(p1.y) >= 0 && i*m_Size.width + int(p1.y) < m_Size.width * m_Size.height){
-                if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width){
-                    m_Map[i*m_Size.width + j] = color;
-                }
+                m_Map[i*m_Size.width + j] = color;
             }
         }
     }
@@ -351,11 +352,11 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
 
     if(filled){
-        int i_start = std::max(center.x - width/2 - 1, 0.0);
-        int i_end = std::min(center.x + width/2, (double)m_Size.width);
+        int i_start = std::max(center.y - width/2 - 1, 0.0);
+        int i_end = std::min(center.y + width/2, (double)m_Size.width);
 
-        int j_start = std::max(center.y - height/2 - 1, 0.0);
-        int j_end = std::min(center.y + height/2, (double)m_Size.height);
+        int j_start = std::max(center.x - height/2 - 1, 0.0);
+        int j_end = std::min(center.x + height/2, (double)m_Size.height);
 
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j <= j_end; ++j){
@@ -442,11 +443,11 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
         color.blue = 255 - color.blue;
     }
 
-    int iBeg = center.x-r >= 0 ? center.x-r : 0;
-    int jBeg = center.y-r >= 0 ? center.y-r : 0;
+    int i_start = center.x-r >= 0 ? center.x-r : 0;
+    int j_start = center.y-r >= 0 ? center.y-r : 0;
 
-    int iLim = center.x + 2*r < m_Size.height ? center.x + 2*r : m_Size.height;
-    int jLim = center.y + 2*r < m_Size.width ? center.y + 2*r : m_Size.width;
+    int i_end = center.x + 2*r < m_Size.height ? center.x + 2*r : m_Size.height;
+    int j_end = center.y + 2*r < m_Size.width ? center.y + 2*r : m_Size.width;
 
     if(inverted){
         for(int i = 0; i < m_Size.height; i++)
@@ -455,14 +456,14 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
                     m_Map[i*m_Size.width + j] = color;
     }
     else if(filled){
-        for(int i = iBeg; i < iLim; i++)
-            for(int j = jBeg; j < jLim; j++)
+        for(int i = i_start; i < i_end; i++)
+            for(int j = j_start; j < j_end; j++)
                 if(((i-center.x)*(i-center.x) + (j-center.y)*(j-center.y)) <= r*r)
                         m_Map[i*m_Size.width + j] = color;
     }
     else
-        for(int i = iBeg; i < iLim; i++)
-            for(int j = jBeg; j < jLim; j++)
+        for(int i = i_start; i < i_end; i++)
+            for(int j = j_start; j < j_end; j++)
                 if(
                     (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) >= r*r - thickness*r &&
                     (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) <= r*r + r
@@ -834,6 +835,7 @@ void map::Mapper::animate(Shape_t(*provider)(int, int), int seconds){
     int frames = seconds * m_FPS;
 
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+
     for(int frame = 0; frame <= frames; frame++){
         copy(temp, m_Map);
         auto shape = provider(frame, frames);
@@ -841,6 +843,7 @@ void map::Mapper::animate(Shape_t(*provider)(int, int), int seconds){
         saveFrame();
         std::cout << frame << '/' << frames << '\n';
     }
+    copy(temp, m_Map);
 
     std::cout << "Scene Ended!\n";
 }
@@ -869,6 +872,29 @@ void map::Mapper::clearFrames() const{
     std::system("rm " VIDEO_TEMP_PATH "*.png");
 }
 
+
+// ----------------------- Operators ----------------------- //
+
+map::clr::RGB &map::Mapper::operator[](Point p){
+    assert(p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height);
+    return m_Map[int(p.y * m_Size.width + p.x)];
+}
+
+
+map::clr::RGB &map::Mapper::operator[](int i){
+    assert(i >= 0 && i < m_Size.height * m_Size.width);
+    return m_Map[i];
+}
+
+
+map::clr::RGB *map::Mapper::begin(){
+    return m_Map;
+}
+
+
+map::clr::RGB *map::Mapper::end(){
+    return m_Map + m_Size.height * m_Size.width;
+}
 
 
 /* --------------------------- Setup Functions --------------------------- */

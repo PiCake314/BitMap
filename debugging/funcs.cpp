@@ -238,3 +238,25 @@
 //   m.plotXY(func, res, map::clr::RED);
 // }
 
+
+// Shape_t scene1(int frame, int frames){
+// 	map::shapes::Line l({width/5.0, height/2.0}, height/3, 90 DEGREES, map::clr::RGB(255, 0, 0), 3);
+
+// 	map::Point shift{3*width/5.0, 0};
+
+// 	l.rotate(360 DEGREES * (frame/double(frames)));
+
+// 	l.shift(shift * (frame/double(frames)));
+
+// 	return l;
+// }
+
+
+// Shape_t scene2(int frame, int frames){
+// 	map::shapes::Line l({4*width/5.0, height/2.0}, height/3, 90 DEGREES, map::clr::RGB(255, 0, 0), 3);
+// 	map::Point shift{-3*width/5.0, 0};
+// 	l.rotate(360 DEGREES * (frame/double(frames)));
+// 	l.shift(shift * (frame/double(frames)));
+
+// 	return l;
+// }
