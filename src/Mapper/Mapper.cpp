@@ -1,4 +1,5 @@
 #include "Mapper.hpp"
+#include "../Structs/Shapes/Shapes.hpp"
 #include "HelperFuncs.cpp"
 
 
@@ -443,30 +444,30 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
         color.blue = 255 - color.blue;
     }
 
-    int i_start = center.x-r >= 0 ? center.x-r : 0;
-    int j_start = center.y-r >= 0 ? center.y-r : 0;
+    int i_start = center.y-r >= 0 ? center.y-r : 0;
+    int j_start = center.x-r >= 0 ? center.x-r : 0;
 
-    int i_end = center.x + 2*r < m_Size.height ? center.x + 2*r : m_Size.height;
-    int j_end = center.y + 2*r < m_Size.width ? center.y + 2*r : m_Size.width;
+    int i_end = center.y + 2*r < m_Size.height ? center.y + 2*r : m_Size.height;
+    int j_end = center.x + 2*r < m_Size.width ? center.x + 2*r : m_Size.width;
 
     if(inverted){
         for(int i = 0; i < m_Size.height; i++)
             for(int j = 0; j < m_Size.width; j++)
-                if(-((i - center.x) * (i - center.x) + (j-center.y)*(j-center.y)) <= -r*r)
+                if(-((i - center.y) * (i - center.y) + (j-center.x)*(j-center.x)) <= -r*r)
                     m_Map[i*m_Size.width + j] = color;
     }
     else if(filled){
         for(int i = i_start; i < i_end; i++)
             for(int j = j_start; j < j_end; j++)
-                if(((i-center.x)*(i-center.x) + (j-center.y)*(j-center.y)) <= r*r)
+                if(((i-center.y)*(i-center.y) + (j-center.x)*(j-center.x)) <= r*r)
                         m_Map[i*m_Size.width + j] = color;
     }
     else
         for(int i = i_start; i < i_end; i++)
             for(int j = j_start; j < j_end; j++)
                 if(
-                    (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) >= r*r - thickness*r &&
-                    (i-center.x)*(i-center.x) + (j-center.y)*(j-center.y) <= r*r + r
+                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) >= r*r - thickness*r &&
+                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) <= r*r + r
                 )
                     m_Map[i*m_Size.width + j] = color;
 
@@ -592,46 +593,8 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
 // template <class T>
 // requires std::is_base_of<Shape, T>::value
-void map::Mapper::draw(Shape_t s){
-    using namespace shapes;
-
-    switch (s.index()){
-
-        case ShapeType::line:{
-            shapes::Line shape = std::get<Line>(s);
-            drawLine(shape.start(), shape.end(), shape.color, shape.thickness);
-            break;
-        }
-
-        case ShapeType::circle:{
-            auto shape = std::get<Circle>(s);
-            drawCircle(shape.center, shape.radius, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
-            break;
-        }
-
-        case ShapeType::rect:{
-            auto shape = std::get<Rect>(s);
-            drawRect(shape.center, shape.height, shape.width, shape.color, shape.filled, shape.thickness, shape.rectAlignment);
-            break;
-        }
-
-        case ShapeType::triangle:{
-            auto shape = std::get<Triangle>(s);
-            // drawTri(shape.points[0], shape.points[1], shape.points[2], shape.color, shape.thickness);
-            break;
-        }
-
-        case ShapeType::ellipse:{
-            auto shape = std::get<Ellipse>(s);
-            drawEllipse(shape.center, shape.r1, shape.r2, shape.color, shape.filled, shape.inverted, shape.thickness, shape.alignment);
-            break;
-        }
-        
-        // default:
-        //     break;
-    }
-
-
+void map::Mapper::draw(map::shapes::Shape *s){
+    s->draw(this);
 
     // else if constexpr(std::is_same_v<T, Polygon>){
     //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
@@ -683,7 +646,7 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB co
 
     bool s = m_Set_state;
     m_Set_state = false;
-    for(float a = 0; a < 1+dt/2; a += dt){
+    for(float a = 0; a <= 1; a += dt){
         std::vector<std::vector<Point>> lerpVec = {pts};
         for(int i = 1; i < l; i++){
             if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
@@ -830,23 +793,23 @@ void map::Mapper::rotate(float angle){
 
 
 
-void map::Mapper::animate(Shape_t(*provider)(int, int), int seconds){
-    std::cout << "Beginning Scene:\n";
-    int frames = seconds * m_FPS;
+// void map::Mapper::animate(Shape_t(*provider)(int, const int), float seconds){
+//     std::cout << "Beginning Scene:\n";
+//     int frames = seconds * m_FPS;
 
-    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
 
-    for(int frame = 0; frame <= frames; frame++){
-        copy(temp, m_Map);
-        auto shape = provider(frame, frames);
-        draw(shape);
-        saveFrame();
-        std::cout << frame << '/' << frames << '\n';
-    }
-    copy(temp, m_Map);
+//     for(int frame = 0; frame <= frames; frame++){
+//         copy(temp, m_Map);
+//         auto shape = provider(frame, frames);
+//         draw(shape);
+//         saveFrame();
+//         std::cout << frame << '/' << frames << '\n';
+//     }
+//     copy(temp, m_Map);
 
-    std::cout << "Scene Ended!\n";
-}
+//     std::cout << "Scene Ended!\n";
+// }
 
 
 // int Mapper::dist(Point p1, Point p2){

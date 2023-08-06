@@ -13,7 +13,7 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
-#include "../Structs/Shapes.hpp"
+// #include "../Structs/Shapes/Shapes.hpp"
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
@@ -27,17 +27,19 @@
 
 #define DEGREES * M_PI / 180
 
-using Shape_t = std::variant<
-    map::shapes::Line,
-    map::shapes::Circle,
-    map::shapes::Rect,
-    map::shapes::Triangle,
-    map::shapes::Ellipse
->;
-
-
-
 namespace map{
+
+    // Forward declaration
+    namespace shapes{
+        struct Shape;
+        class Line;
+        class Circle;
+        class Rect;
+        class Triangle;
+        class Ellipse;
+
+        using ShapePtr = std::unique_ptr<Shape>;
+    }
     
 
     class Mapper{
@@ -100,7 +102,7 @@ namespace map{
             /**
              * ! Deprecated
             */
-            void drawAt(Point = Point(), clr::RGB = clr::RGB());
+            void drawAt(Point, clr::RGB);
 
             void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
 
@@ -130,9 +132,7 @@ namespace map{
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
             
-            // template <class T>
-            // requires std::is_base_of<Shape, T>::value
-            void draw(Shape_t shape);
+            void draw(map::shapes::Shape *shape);
 
 
             // /**
@@ -179,7 +179,7 @@ namespace map{
             // void move(Shape_t, Point, int seconds = 1);
 
 
-            void animate(Shape_t(*)(int, int), int seconds);
+            // void animate(Shape_t(*)(int, const int), float seconds);
 
 
 

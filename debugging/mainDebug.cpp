@@ -1,4 +1,5 @@
 #include "../src/Mapper/Mapper.hpp"
+#include "../src/Structs/Shapes/Shapes.hpp"
 // #include "funcs.cpp"
 // #include "rdtsc.h"
 
@@ -6,22 +7,9 @@ int height = 500, width = 500;
 
 void setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype &arg, bool debug = false);
 
-int countNeighbors(map::Mapper &m, map::Point p){
-	int count = 0;
 
-	for(int i = -1; i <= 1; i++){
-		for(int j = -1; j <= 1; j++){
-			if(i == 0 && j == 0) continue;
-
-			map::Point p2 = map::Point((width + (int)p.x + i) % width, (height + (int)p.y + j) % height);
-
-			if(m[p2] == map::clr::WHITE){
-				count++;
-			}
-		}
-	}
-
-	return count;
+map::shapes::ShapePtr scene(int frame, const int frames){
+	return std::make_unique<map::shapes::Circle>(map::shapes::Circle(map::Point{0 + width *(float(frame)/frames), float(height/2)}, 20));
 }
 
 
@@ -35,66 +23,24 @@ int main(int argc, char **argv){
 
 	setup(argc, argv, filename, height, width, fps, loadtype, true);
 
-    map::Mapper m = map::Mapper("output.ppm", {height, width}, fps, loadtype);
+    map::Mapper m = map::Mapper(filename, {height, width}, fps, loadtype);
 	// m.setFPS(fps);
 
 
 	/* --------------------------- Put your code here --------------------------- */
 
-	using namespace map;
-	std::cout << "fps: " << fps << std::endl;
-	int seconds = 20;
-	int frames = fps * seconds;
 
-	clr::RGB alt[height][width];
+	map::shapes::ShapePtr c = std::make_unique<map::shapes::Circle>(map::Point{static_cast<double>(width)/2, static_cast<double>(height)/2}, 100, map::clr::RED, true);
+	m.draw(c.get());
 
-	for(auto &pixle : m){
-		if(rand() % 100 > 90){
-			pixle = clr::WHITE;
-		}
-		else{
-			pixle = clr::BLACK;
-		}
-	}
+	// m.animate(scene, .5);
 
-	for(int frame = 0; frame <= frames; frame++){
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < width; j++){
-				alt[i][j] = m[Point(i, j)];
-			}
-		}
-
-		
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < width; j++){
-				Point p = Point(i, j);
-				int neighbors = countNeighbors(m, p);
-
-				if(neighbors < 2 || neighbors > 3){
-					alt[i][j] = clr::BLACK;
-				}
-				else if(neighbors == 3){
-					alt[i][j] = clr::WHITE;
-				}
-			}
-		}
-
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < width; j++){
-				m[Point(i, j)] = alt[i][j];
-			}
-		}
-		std::cout << "frame: " << frame << '/' << frames << std::endl;
-		m.setState();
-		m.saveFrame();
-	}
-
-
-
-	m.render(filename);
-	m.clearFrames();
 
 	/* -------------------------------------------------------------------------- */
+
+	// m.render(filename);
+	// m.clearFrames();
+
     return 0;
 }
 
