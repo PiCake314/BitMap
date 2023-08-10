@@ -1,3 +1,5 @@
+# THIS READ ME IS OUTDATED.
+
 # BitMap - Mapper Class
 ```
 map::Mapper mapper;
