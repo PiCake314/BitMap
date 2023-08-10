@@ -16,7 +16,7 @@ namespace map{
              * @param r2: negative values will result in them being the same as r1.
             */
             Ellipse(Point p, int r1, int r2, clr::RGB c = clr::RGB(), bool filled = false, bool inverted = false, int thickness = 0, map::Alignment alignment = map::Alignment::none)
-            : r1(r1), r2(r2), filled(filled), inverted(inverted), alignment(alignment), Shape(p, c, thickness) {}
+            : Shape(p, c, thickness), r1(r1), r2(r2), filled(filled), inverted(inverted), alignment(alignment) {}
 
             void rotate(double angle) override {}
 

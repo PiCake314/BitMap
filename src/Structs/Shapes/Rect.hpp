@@ -12,8 +12,8 @@ namespace  map{
             map::RectAlignment rectAlignment;
 
             Rect(Point p, int h, int w, clr::RGB c = clr::RGB(), bool f = false, bool t = false, map::RectAlignment rectAlignment = map::RectAlignment::Rnone)
-            : height(h), width(w), filled(f), rectAlignment(rectAlignment),
-            Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}) {}
+            : Shape(p, c, t, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
+              height(h), width(w), filled(f), rectAlignment(rectAlignment) {}
 
 
             void rotate(double angle) override {

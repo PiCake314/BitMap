@@ -5,16 +5,16 @@ namespace map{
 
     namespace shapes{
         
-        class Polygon : public Shape{
+        struct Polygon : Shape{
             std::vector<Point> points;
 
         public:
             Polygon(std::vector<Point> pts, clr::RGB c = clr::RGB(), int thickness = 0)
-            : points(pts),
-            Shape(
+            : Shape(
                 std::accumulate(pts.begin(), pts.end(), Point(), [](Point p1, Point p2){ return p1 + p2; })/pts.size(),
-                c, thickness
-            ) {}
+                c,
+                thickness
+            ),  points(pts) {}
 
             void rotate(double angle) override {
                 for(auto &point : points){

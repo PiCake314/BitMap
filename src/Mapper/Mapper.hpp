@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cassert>
 #include <variant>
-// #include <type_traits>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -32,11 +31,11 @@ namespace map{
     // Forward declaration
     namespace shapes{
         struct Shape;
-        class Line;
-        class Circle;
-        class Rect;
-        class Triangle;
-        class Ellipse;
+        struct Line;
+        struct Circle;
+        struct Rect;
+        struct Triangle;
+        struct Ellipse;
 
         using ShapePtr = std::unique_ptr<Shape>;
     }
@@ -57,8 +56,8 @@ namespace map{
 
             bool m_Set_state;
 
-            int m_XCenter;
-            int m_YCenter;
+            [[maybe_unused]] int m_XCenter;
+            [[maybe_unused]] int m_YCenter;
 
             void setInfo();
 

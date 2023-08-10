@@ -5,13 +5,13 @@ namespace map{
 
     namespace shapes{
 
-        class Line : public  Shape{
+        struct Line : Shape{
             int length;
             double angle;
             public:
 
             Line(Point c, int len, double angle, clr::RGB color = clr::RGB(), int thickness = 0)
-            : length(len), angle(angle), Shape(c, color, thickness, {}) {}
+            : Shape(c, color, thickness, {}), length(len), angle(angle) {}
 
             Point start() const{
                 return {center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)};

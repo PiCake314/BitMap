@@ -12,7 +12,7 @@ namespace map{
             map::Alignment alignment;
 
             Circle(Point p, int r, clr::RGB c = clr::RGB(), bool filled = false, bool inverted = false, int thickness = false, map::Alignment alignment = map::Alignment::none)
-            : radius(r), filled(filled), inverted(inverted), alignment(alignment), Shape(p, c, thickness) {}
+            : Shape(p, c, thickness), radius(r), filled(filled), inverted(inverted), alignment(alignment) {}
 
             void rotate(double angle) override {}
 

@@ -4,11 +4,11 @@
 
 
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
-: m_PType("P3"), m_Size(size.height, size.width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(0), m_Current_frame(0)
+: m_Filename(fn), m_Size(size.height, size.width), m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
-    m_Filename = fn;
+    
 
     if(type == Loadtype::load) loadFile();
     else resetFile();
@@ -16,11 +16,10 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 
 
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
-: m_PType("P3"), m_Size(size.height, size.width), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0), m_FPS(fps), m_Current_frame(0)
+: m_Filename(fn), m_Size(size.height, size.width), m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
-    m_Filename = fn;
 
     if(type == Loadtype::load) loadFile();
     else resetFile();
@@ -197,17 +196,14 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
 
 
     if(p2.x - p1.x != 0){
-        float slope = (p2.y - p1.y) / (p2.x - p1.x);
-        float b = p1.y - slope * p1.x;
-
-            // #pragma omp parallel for simd collapse(2)
-            for(int i = i_start; i <= i_end; i++){
-                for(int j = j_start; j <= j_end; j++){
-                    if(distFromLine(p1, p2, {float(j), float(i)}) <= (thickness/2)*(thickness/2)){
-                        m_Map[i*m_Size.width + j] = color;
-                    }
+        // #pragma omp parallel for simd collapse(2)a
+        for(int i = i_start; i <= i_end; i++){
+            for(int j = j_start; j <= j_end; j++){
+                if(distFromLine(p1, p2, {float(j), float(i)}) <= (thickness/2)*(thickness/2)){
+                    m_Map[i*m_Size.width + j] = color;
                 }
             }
+        }
     }
     else{
         for(int i = i_start; i <= i_end; i++){
@@ -435,8 +431,8 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
     }
 
 
-    int topMid = center.x+r;
-    int leftMid = center.y+r;
+    // int topMid = center.x+r; // not sure what this was for...
+    // int leftMid = center.y+r;
 
     if(inverted){
         color.red = 255 - color.red;
