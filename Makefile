@@ -12,13 +12,14 @@ image: mains/main.cpp src/Mapper/Mapper.cpp
 	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp -O3 && ./main r image def$(filename) 0$(h) 0$(w)
 
 
-test:
-	make image filename=test.ppm && make clean
+test: unit_tests/test.cpp src/Mapper/Mapper.cpp
+	g++ -std=c++20 -o test unit_tests/test.cpp src/Mapper/Mapper.cpp -Wall && ./test
+	# make image filename=test.ppm && make clean
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
 
 clean: 
-	rm main
+	rm main test
 
 
 install:

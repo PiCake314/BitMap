@@ -84,6 +84,8 @@ namespace map{
 
             void setFile(std::string);
 
+            Size getSize() const;
+
             // ! Deprecated
             // void fillWhite();
 
@@ -205,3 +207,4 @@ namespace map{
 
 }
 
+#include "../Structs/Shapes/Shapes.hpp"

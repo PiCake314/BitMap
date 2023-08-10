@@ -1,7 +1,6 @@
 #include <string_view>
 
 #include "../src/Mapper/Mapper.hpp"
-#include "../src/Structs/Shapes/Shapes.hpp"
 
 #define DEFAULT_SIZE 500
 

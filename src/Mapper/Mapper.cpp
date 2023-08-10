@@ -121,6 +121,11 @@ void map::Mapper::setFile(std::string fn){
 }
 
 
+Size map::Mapper::getSize() const{
+    return m_Size;
+}
+
+
 
 // void map::Mapper::fillWhite(){
 //     for(int i=0; i<m_Size.height; i++)
