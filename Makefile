@@ -13,7 +13,7 @@ image: mains/main.cpp src/Mapper/Mapper.cpp
 
 
 test:
-	make image filename=out.ppm && make clean
+	make image filename=test.ppm && make clean
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
 
