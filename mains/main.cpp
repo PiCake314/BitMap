@@ -71,7 +71,7 @@ int main(int argc, char **argv){
     map::Mapper m = map::Mapper(filename, {height, width}, fps, loadtype);
 
 
-	/* -------------------------------------------------------------------------- */
+	/* ----------------------------------------------------------------- */
 
 	if(vid){
 		video(m);	

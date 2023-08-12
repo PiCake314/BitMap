@@ -2,7 +2,7 @@
 #include "../Structs/Shapes/Shapes.hpp"
 #include "HelperFuncs.cpp"
 
-
+// image mode
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 : m_Filename(fn), m_Size(size.height, size.width), m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
@@ -10,21 +10,20 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
     
 
-    if(type == Loadtype::load) loadFile();
+    if(type == Loadtype::edit) loadFile();
     else resetFile();
 }
 
-
+// video mode
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
 : m_Filename(fn), m_Size(size.height, size.width), m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
 
-    if(type == Loadtype::load) loadFile();
+    if(type == Loadtype::edit) loadFile();
     else resetFile();
 }
-
 
 
 map::Mapper::~Mapper(){
@@ -42,11 +41,9 @@ int map::Mapper::getFPS() const{
 }
 
 
-
 void map::Mapper::doSet(){
     m_Set_state = true;
 }
-
 
 
 void map::Mapper::noSet(){
@@ -54,66 +51,20 @@ void map::Mapper::noSet(){
 }
 
 
+void map::Mapper::setState(){
 
-void map::Mapper::resetFile(){
-    std::cout << "RESET!" << std::endl;
-    m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
-    fill();
-}
+    setInfo();
+    std::string fn = OUTPUT_PATH + m_Filename;
+    std::ofstream fout(fn, std::ios::app);
 
-
-
-void map::Mapper::loadFile(){
-    std::cout << "LOAD!" << std::endl;
-    std::string P;
-    std::string h;
-    std::string w;
-    std::string M;
-    
-    std::string filename = OUTPUT_PATH + m_Filename;
-    std::ifstream fin(filename);
-    assert(fin.is_open() == true);
-
-    std::string spaces;
-
-    std::getline(fin, P);
-    std::cout << "P: " << P << std::endl;
-    fin >> w;
-    std::cout << "W: " << w << std::endl;
-    fin >> h;
-    std::cout << "H: " << h << std::endl;
-    fin >> M;
-    std::cout << "M: " << M << std::endl;
-
-
-    std::cout << "Meow :3" << std::endl;
-    assert(areValidString(P, h, w, M) == true);        
-    std::cout << "Meow :3" << std::endl;
-
-    m_PType = P;
-    m_Size.height = std::stoi(h);
-    m_Size.width = std::stoi(w);
-    m_Max = std::stoi(M);
-
-    int r;
-    int g;
-    int b;
-    std::string garbage;
-    
-    // map::clr::RGB arr[s.height*s.width];
-    m_Map = new map::clr::RGB[m_Size.height*m_Size.width]();
-
-    for(int i = 0; i < m_Size.height; i++){
-        for(int j = 0; j < m_Size.width; j++){
-            fin >> r >> g >> b;
-            m_Map[i*m_Size.width + j] = map::clr::RGB(r, g, b);
-        }
-        std::getline(fin, garbage);
+    for(int i=0; i<m_Size.height; i++){
+        for(int j=0; j<m_Size.width; j++)
+            fout << m_Map[i*m_Size.width + j] << " ";
+        fout << '\n';
     }
 
-    fin.close();
+    fout.close();
 }
-
 
 
 void map::Mapper::setFile(std::string fn){
@@ -127,13 +78,13 @@ Size map::Mapper::getSize() const{
 
 
 
-// void map::Mapper::fillWhite(){
-//     for(int i=0; i<m_Size.height; i++)
-//         for(int j=0; j<m_Size.width; j++)
-//             m_Map[i*m_Size.width + j] = map::clr::RGB(255, 255, 255);
+void map::Mapper::fillWhite(){
+    for(int i=0; i<m_Size.height; i++)
+        for(int j=0; j<m_Size.width; j++)
+            m_Map[i*m_Size.width + j] = map::clr::RGB(255, 255, 255);
 
-//     if(m_Set_state) setState();
-// }
+    if(m_Set_state) setState();
+}
 
 
 
@@ -769,30 +720,6 @@ void map::Mapper::rotate(float angle){
 }
 
 
-// void map::Mapper::move(Shape_t shape, Point shift, int seconds){
-//     int frames = seconds * m_FPS;
-//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-//     shift *= 1.0/frames;
-
-//     switch(shape.index()){
-//         case ShapeType::line:{
-
-//             auto &line = std::get<ShapeType::line>(shape);
-
-//             for(double frame = 0; frame < frames; frame++){
-//                 copy(temp, m_Map);
-//                 line.shift(shift);
-//                 draw(line);
-//                 saveFrame();
-//                 std::cout << frame << '/' << frames << '\n';
-//             }
-
-//             break;
-//         }
-//     }
-// }
-
-
 
 // void map::Mapper::animate(Shape_t(*provider)(int, const int), float seconds){
 //     std::cout << "Beginning Scene:\n";
@@ -861,7 +788,7 @@ map::clr::RGB *map::Mapper::end(){
 }
 
 
-/* --------------------------- Setup Functions --------------------------- */
+/* --------------------------- Private Functions --------------------------- */
 
 void map::Mapper::setInfo(){
     std::string fn = OUTPUT_PATH + m_Filename;
@@ -880,17 +807,62 @@ void map::Mapper::setInfo(){
 
 
 
-void map::Mapper::setState(){
+void map::Mapper::resetFile(){
+    std::cout << "RESET!" << std::endl;
+    if(m_Map) delete[] m_Map;
 
-    setInfo();
-    std::string fn = OUTPUT_PATH + m_Filename;
-    std::ofstream fout(fn, std::ios::app);
+    m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
+    fill();
+}
 
-    for(int i=0; i<m_Size.height; i++){
-        for(int j=0; j<m_Size.width; j++)
-            fout << m_Map[i*m_Size.width + j] << " ";
-        fout << '\n';
+
+
+void map::Mapper::loadFile(){
+    std::cout << "LOAD!" << std::endl;
+    std::string P; // P type
+    std::string h; // height
+    std::string w; // width
+    std::string M; // mode
+    
+    std::string_view filename = OUTPUT_PATH + m_Filename;
+    std::ifstream fin(filename);
+    assert(fin.is_open());
+
+    std::string spaces;
+
+    std::getline(fin, P);
+    std::cout << "P: " << P << std::endl;
+    fin >> w;
+    std::cout << "W: " << w << std::endl;
+    fin >> h;
+    std::cout << "H: " << h << std::endl;
+    fin >> M;
+    std::cout << "M: " << M << std::endl;
+
+
+    assert(areValidString(P, h, w, M));
+
+
+    m_PType = P;
+    m_Size.height = std::stoi(h);
+    m_Size.width = std::stoi(w);
+    m_Max = std::stoi(M);
+
+    int r;
+    int g;
+    int b;
+    std::string garbage;
+    
+    if(m_Map) delete[] m_Map;
+    m_Map = new map::clr::RGB[m_Size.height*m_Size.width];
+
+    for(int i = 0; i < m_Size.height; i++){
+        for(int j = 0; j < m_Size.width; j++){
+            fin >> r >> g >> b;
+            m_Map[i*m_Size.width + j] = map::clr::RGB(r, g, b);
+        }
+        std::getline(fin, garbage);
     }
 
-    fout.close();
+    fin.close();
 }

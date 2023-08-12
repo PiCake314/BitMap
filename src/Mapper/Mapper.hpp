@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cassert>
 #include <variant>
+#include <string_view>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -60,6 +61,10 @@ namespace map{
             [[maybe_unused]] int m_YCenter;
 
             void setInfo();
+            
+            void resetFile();
+
+            void loadFile();
 
         public:
             // Mapper();
@@ -76,18 +81,14 @@ namespace map{
 
             void noSet();
 
-            void resetFile();
-
-            void loadFile();
-
             void setState();
 
             void setFile(std::string);
 
             Size getSize() const;
 
-            // ! Deprecated
-            // void fillWhite();
+            [[deprecated]]
+            void fillWhite();
 
             void fill(clr::RGB = clr::WHITE);
 
@@ -95,14 +96,10 @@ namespace map{
 
             void randomizeGrey();
 
-            /**
-             * ! Deprecated
-            */
+            [[deprecated]]
             clr::RGB getColorAt(Point = Point());
 
-            /**
-             * ! Deprecated
-            */
+            [[deprecated]]
             void drawAt(Point, clr::RGB);
 
             void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
@@ -136,13 +133,6 @@ namespace map{
             void draw(map::shapes::Shape *shape);
 
 
-            // /**
-            //  * @brief Creates a bezian curve that goes from p1 to p3 curved by p2.
-            //  * ! Deprecated
-            //  */
-            // void bezierQuadCurve(Point p1, Point p2, Point p3, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
-
-
             /**
              * @brief Creates a bezian curve from a vector of points
              */
@@ -162,8 +152,8 @@ namespace map{
              * @brief Folds the canvas on itself (i.e. Copys the top half to the bottom half with t2b)
              * 
              * @param Fold: use one of the provided constants (l2r, r2l, t2b, b2t)
-             * ! Deprecated
              */
+            [[deprecated]]
             void fold(Fold);
 
 
@@ -172,12 +162,6 @@ namespace map{
             */
             void rotate(float);
 
-
-            /**
-             * @brief Moves the shape to the given point in the given time.
-             * ! Deprecated
-            */
-            // void move(Shape_t, Point, int seconds = 1);
 
 
             // void animate(Shape_t(*)(int, const int), float seconds);
