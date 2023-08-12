@@ -17,8 +17,8 @@ bool setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fp
 	std::string_view argv1 = argv[1];
 	std::string_view mode = "image";
 
-	if(argc > 1 && (argv1 == "l" || argv1 == "load"))
-		arg = map::Loadtype::load;
+	if(argc > 1 && (argv1 == "e" || argv1 == "edit"))
+		arg = map::Loadtype::edit;
 
 
     if(argc > 3){
