@@ -6,6 +6,8 @@ namespace map{
     namespace shapes{
 
         struct Ellipse : Shape{
+            friend class Mapper;
+
             int r1;
             int r2;
             bool filled;
@@ -33,7 +35,7 @@ namespace map{
                 return e;
             }
 
-            void draw(Mapper * m) const override {
+            void draw(Mapper *m) const override {
                 m->drawEllipse(center, r1, r2, color, filled, inverted, thickness, alignment);
             }
         };

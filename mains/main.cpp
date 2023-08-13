@@ -72,13 +72,10 @@ int main(int argc, char **argv){
 
 
 	/* ----------------------------------------------------------------- */
+	canvas(m);
 
 	if(vid){
-		video(m);	
 		m.render(filename);
 		m.clearFrames();
-	}
-	else{
-		image(m);
 	}
 }

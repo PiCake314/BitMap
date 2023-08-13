@@ -6,6 +6,9 @@ namespace map{
     namespace shapes{
 
         struct Triangle : Shape{
+            friend class Mapper;
+
+
             Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), int t = 0)
             : Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, c, t, {p1, p2, p3}) {}
 

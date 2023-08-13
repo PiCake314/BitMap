@@ -29,6 +29,8 @@ namespace map{
 
         // template <class Child>
         struct Shape{
+            friend class Mapper;
+
             // Shared
             Point center;
             clr::RGB color;
@@ -45,8 +47,10 @@ namespace map{
             virtual void shift(Point) = 0;
             virtual ShapePtr shifted(Point) const = 0;
 
-            virtual void draw(Mapper*) const = 0;
             virtual ~Shape() = default;
+
+            protected:
+                virtual void draw(Mapper*) const = 0;
 
 
         };

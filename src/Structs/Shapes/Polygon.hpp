@@ -6,6 +6,8 @@ namespace map{
     namespace shapes{
         
         struct Polygon : Shape{
+            friend class Mapper;
+
             std::vector<Point> points;
 
         public:
@@ -48,7 +50,7 @@ namespace map{
                 return poly;
             }
 
-            void draw(Mapper * m) const override {
+            void draw(Mapper *m) const override {
                 // m->drawPolygon(points, color, thickness);
             }
         };

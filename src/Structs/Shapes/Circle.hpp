@@ -6,6 +6,8 @@ namespace map{
     namespace shapes{
 
         struct Circle : Shape{
+            friend class Mapper;
+
             int radius;
             bool filled;
             bool inverted;
@@ -28,7 +30,7 @@ namespace map{
                 c->shift(p);
                 return c;
             }
-
+            
             void draw(Mapper *m) const override {
                 m->drawCircle(center, radius, color, filled, inverted, thickness, alignment);
             }

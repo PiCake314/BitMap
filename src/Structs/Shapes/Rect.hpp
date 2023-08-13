@@ -6,6 +6,8 @@ namespace  map{
     namespace shapes{
 
         struct Rect : Shape{
+            friend class Mapper;
+
             int height;
             int width;
             bool filled;

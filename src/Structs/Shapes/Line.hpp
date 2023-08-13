@@ -6,6 +6,8 @@ namespace map{
     namespace shapes{
 
         struct Line : Shape{
+            friend class Mapper;
+
             int length;
             double angle;
             public:
@@ -41,7 +43,7 @@ namespace map{
                 return l;
             }
 
-            void draw(Mapper * m) const override {
+            void draw(Mapper *m) const override {
                 m->drawLine(start(), end(), color, thickness);
             }
         };
