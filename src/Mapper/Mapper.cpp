@@ -809,7 +809,7 @@ void map::Mapper::setInfo(){
 
 void map::Mapper::resetFile(){
     std::cout << "RESET!" << std::endl;
-    if(m_Map) delete[] m_Map;
+    // if(m_Map) delete[] m_Map;
 
     m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
     fill();
@@ -824,7 +824,7 @@ void map::Mapper::loadFile(){
     std::string w; // width
     std::string M; // mode
     
-    std::string_view filename = OUTPUT_PATH + m_Filename;
+    std::string filename = OUTPUT_PATH + m_Filename;
     std::ifstream fin(filename);
     assert(fin.is_open());
 

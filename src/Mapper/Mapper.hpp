@@ -21,7 +21,7 @@
 #include "../Enums/RectAlignment.hpp"
 
 
-#define OUTPUT_PATH "output/ppm"
+#define OUTPUT_PATH "output/ppm/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/.temp/"
 
