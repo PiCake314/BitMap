@@ -19,17 +19,14 @@
 
 namespace map{
 
-    class Mapper;
-
     namespace shapes{
 
         struct Shape;
 
         using ShapePtr = std::unique_ptr<Shape>;
 
-        // template <class Child>
         struct Shape{
-            friend class Mapper;
+            friend class map::Mapper;
 
             // Shared
             Point center;
@@ -50,7 +47,7 @@ namespace map{
             virtual ~Shape() = default;
 
             protected:
-                virtual void draw(Mapper*) const = 0;
+            virtual void draw(Mapper*) const = 0;
 
 
         };

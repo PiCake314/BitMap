@@ -4,7 +4,7 @@
 
 // image mode
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
-: m_Filename(fn), m_Size(size.height, size.width), m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
+: m_Filename(fn), m_Size{size.height, size.width}, m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -16,18 +16,35 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 
 // video mode
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
-: m_Filename(fn), m_Size(size.height, size.width), m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
+: m_Filename(MANGLED_PPM), m_Filename_vid(fn), m_Size{size.height, size.width}, m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
-    assert(fn.substr(fn.length()-4, 4) == ".ppm");
+    assert(fn.substr(fn.length()-4, 4) == ".mp4");
 
     if(type == Loadtype::edit) loadFile();
     else resetFile();
 }
 
 
+// map::Mapper::Mapper(Mapper &&m){
+//     m_Filename = m.m_Filename;
+//     m_Filename_vid = m.m_Filename_vid;
+//     m_Size = m.m_Size;
+//     m_FPS = m.m_FPS;
+//     m_Current_frame = m.m_Current_frame;
+//     m_PType = m.m_PType;
+//     m_Max = m.m_Max;
+//     m_Map = m.m_Map;
+//     m_Set_state = m.m_Set_state;
+//     m_XCenter = m.m_XCenter;
+//     m_YCenter = m.m_YCenter;
+
+//     m.m_Map = nullptr;
+// }
+
+
 map::Mapper::~Mapper(){
-    delete[] m_Map;
+    if(m_Map) delete[] m_Map;
 }
 
 
@@ -72,7 +89,7 @@ void map::Mapper::setFile(std::string fn){
 }
 
 
-Size map::Mapper::getSize() const{
+map::Size map::Mapper::getSize() const{
     return m_Size;
 }
 
@@ -228,7 +245,8 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
 
 void map::Mapper::drawMulti(std::vector<Point> points, map::clr::RGB color, bool thick){
     assert(points.size() >= 2);
-    for(int i=0; i<points.size()-1; i++)
+    int limit = points.size() - 1;
+    for(int i = 0; i < limit; i++)
         drawLine(points[i], points[i+1], color, thick);
 
 
@@ -721,41 +739,42 @@ void map::Mapper::rotate(float angle){
 
 
 
-// void map::Mapper::animate(Shape_t(*provider)(int, const int), float seconds){
-//     std::cout << "Beginning Scene:\n";
-//     int frames = seconds * m_FPS;
-
-//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-
-//     for(int frame = 0; frame <= frames; frame++){
-//         copy(temp, m_Map);
-//         auto shape = provider(frame, frames);
-//         draw(shape);
-//         saveFrame();
-//         std::cout << frame << '/' << frames << '\n';
-//     }
-//     copy(temp, m_Map);
-
-//     std::cout << "Scene Ended!\n";
-// }
+void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float seconds){
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
 
-// int Mapper::dist(Point p1, Point p2){
-//     return sqrt(pow(p2.x-p1.x, 2) + pow(p2.y-p1.y, 2));
-// }
+    std::cout << "Beginning Scene:\n";
+    int frames = seconds * m_FPS;
+
+    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+
+    for(int frame = 0; frame <= frames; frame++){
+        copy(temp, m_Map);
+        auto shape = provider(frame, frames);
+        draw(shape);
+        saveFrame();
+        std::cout << frame << '/' << frames << '\n';
+
+        delete shape;
+    }
+    copy(temp, m_Map);
+
+    std::cout << "Scene Ended!\n";
+}
 
 
 // ----------------------- Video Related Functions ----------------------- //
 
 void map::Mapper::saveFrame(){
-    std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH "out" + std::to_string(m_Current_frame) + ".png";
+    std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH MANGLED_PNG(m_Current_frame);
     std::system(command.c_str());
     m_Current_frame++;
 }
 
 
 void map::Mapper::render(const std::string &output_file) const{
-	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH "out%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
+	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
 }
 
 
@@ -776,6 +795,23 @@ map::clr::RGB &map::Mapper::operator[](int i){
     assert(i >= 0 && i < m_Size.height * m_Size.width);
     return m_Map[i];
 }
+
+
+// void map::Mapper::operator=(map::Mapper &&other){
+//     m_Filename = other.m_Filename;
+//     m_Filename_vid = other.m_Filename_vid;
+//     m_PType = other.m_PType;
+//     m_Size = other.m_Size;
+//     m_Max = other.m_Max;
+
+//     if(m_Map) delete[] m_Map;
+//     m_Map = other.m_Map;
+//     other.m_Map = nullptr;
+
+//     m_Set_state = other.m_Set_state;
+//     m_FPS = other.m_FPS;
+//     m_Current_frame = other.m_Current_frame;
+// }
 
 
 map::clr::RGB *map::Mapper::begin(){
@@ -853,7 +889,7 @@ void map::Mapper::loadFile(){
     int b;
     std::string garbage;
     
-    if(m_Map) delete[] m_Map;
+    // if(m_Map) delete[] m_Map;
     m_Map = new map::clr::RGB[m_Size.height*m_Size.width];
 
     for(int i = 0; i < m_Size.height; i++){

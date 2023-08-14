@@ -1,4 +1,5 @@
 #include <string_view>
+#include <optional>
 
 #include "../src/Mapper/Mapper.hpp"
 
@@ -66,16 +67,19 @@ int main(int argc, char **argv){
 	int fps = 0;
     map::Loadtype loadtype = map::Loadtype::reset;
 
-	bool vid = setup(argc, argv, filename, height, width, fps, loadtype, true);
+	bool vid = setup(argc, argv, filename, height, width, fps, loadtype, false);
 
-    map::Mapper m = map::Mapper(filename, {height, width}, fps, loadtype);
+	std::optional<map::Mapper> m;
+
+	if(vid) m.emplace(filename, map::Size{height, width}, fps, loadtype);
+	else m.emplace(filename, map::Size{height, width}, loadtype);
 
 
 	/* ----------------------------------------------------------------- */
-	canvas(m);
+	canvas(*m);
 
 	if(vid){
-		m.render(filename);
-		m.clearFrames();
+		m->render(filename);
+		m->clearFrames();
 	}
 }

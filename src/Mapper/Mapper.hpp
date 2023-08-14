@@ -21,23 +21,21 @@
 #include "../Enums/RectAlignment.hpp"
 
 
-#define OUTPUT_PATH "output/ppm/"
+#define OUTPUT_PATH "output/ppms/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/.temp/"
+#define MANGLED "__out__"
+#define MANGLED_PPM MANGLED ".ppm"
+#define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
 
-#define DEGREES * M_PI / 180
+
+#define DEGREES * M_ PI / 180
 
 namespace map{
 
     // Forward declaration
     namespace shapes{
         struct Shape;
-        struct Line;
-        struct Circle;
-        struct Rect;
-        struct Triangle;
-        struct Ellipse;
-
         using ShapePtr = std::unique_ptr<Shape>;
     }
     
@@ -46,6 +44,7 @@ namespace map{
 
         private:
             std::string m_Filename;
+            std::string m_Filename_vid;
             Size m_Size;
 
             int m_FPS; // for video only
@@ -70,6 +69,7 @@ namespace map{
             // Mapper();
             Mapper(std::string, Size, Loadtype = Loadtype::reset);
             Mapper(std::string, Size, int fps, Loadtype = Loadtype::reset);
+            // Mapper(Mapper &&);
 
             ~Mapper();
 
@@ -164,14 +164,16 @@ namespace map{
 
 
 
-            // void animate(Shape_t(*)(int, const int), float seconds);
+            void animate(map::shapes::Shape *(*)(int, const int), float seconds);
 
 
 
             // ----------------------- Video Related Functions -----------------------
 
+            private:
             void saveFrame();
-
+            
+            public:
             void render(const std::string &output_file = "out.mp4") const;
 
             void clearFrames() const;

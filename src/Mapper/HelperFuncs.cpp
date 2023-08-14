@@ -33,7 +33,7 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
     return (isNumber(h) && isNumber(w) && isNumber(m) && isValidP(p) &&  isValidHeight(std::stoi(h)) && isValidWidth(std::stoi(w)) && isValidMax(std::stoi(m)));
 }
 
-bool safePoint(map::Point p, Size s){
+bool safePoint(map::Point p, map::Size s){
     return p.y*s.height + p.x >= 0 && p.y*s.height + p.x < s.height*s.width;
 }
 
@@ -62,7 +62,8 @@ std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, i
 
 
 void copy(const std::vector<map::clr::RGB> &src, map::clr::RGB *dest){
-    for(int i = 0; i < src.size(); i++){
+    int s = src.size();
+    for(int i = 0; i < s; i++){
         dest[i] = src[i];
     }
 }

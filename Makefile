@@ -2,6 +2,7 @@
 
 compile: mains/main.cpp src/Mapper/Mapper.cpp
 	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp -Wall
+	# -Wextra -Weverything -Wno-c++98-compat
 
 
 video:  mains/main.cpp src/Mapper/Mapper.cpp

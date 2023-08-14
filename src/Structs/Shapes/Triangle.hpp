@@ -6,7 +6,7 @@ namespace map{
     namespace shapes{
 
         struct Triangle : Shape{
-            friend class Mapper;
+            // friend class Mapper;
 
 
             Triangle(Point p1 = Point(), Point p2 = Point(), Point p3 = Point(), clr::RGB c = clr::RGB(), int t = 0)
@@ -37,6 +37,7 @@ namespace map{
                 return t;
             }
 
+            protected:
             void draw(Mapper *m) const override {
                 // m->drawTriangle(points[0], points[1], points[2], color, thickness);
             }
