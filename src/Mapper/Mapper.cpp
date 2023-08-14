@@ -277,44 +277,40 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
     switch (alignment){
         case RectAlignment::Rcenter:
-            center.x = m_Size.height/2;
-            center.y = m_Size.width/2;
+            center.x = m_Size.width/2;
+            center.y = m_Size.height/2;
             break;
 
         case RectAlignment::Rtop_left:
-            center.x = height/2;
-            center.y = width/2;
+            center.x = width/2;
+            center.y = height/2;
             break;
 
         case RectAlignment::Rtop_right:
-            height = m_Size.height/2;
-            width = m_Size.width/2;
-            center.x = 0;
-            center.y = m_Size.width-width;
+            center.x = m_Size.width - width/2 - 1;
+            center.y = height/2;
             break;
 
         case RectAlignment::Rbottom_left:
-            height = m_Size.height/2;
-            width = m_Size.width/2;
-            center.x = m_Size.height-height;
-            center.y = 0;
+            center.x = width/2;
+            center.y = m_Size.height - height/2 - 1;
             break;
 
         case RectAlignment::Rbottom_right:
-            height = m_Size.height/2;
-            width = m_Size.width/2;
-            center.x = m_Size.height-height;
-            center.y = m_Size.width-width;
+            center.x = m_Size.width - width/2 - 1;
+            center.y = m_Size.height - height/2 - 1;
             break;
 
         case RectAlignment::Rwidth:
             width = m_Size.width;
-            center.y = m_Size.width/2;
+            center.x = m_Size.width/2;
+            center.y = m_Size.height/2;
             break;
         
         case RectAlignment::Rheight:
             height = m_Size.height;
-            center.x = m_Size.height/2;
+            center.x = m_Size.width/2;
+            center.y = m_Size.height/2;
             break;
         
         case RectAlignment::Rnone:
@@ -323,14 +319,15 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
 
     if(filled){
-        int i_start = std::max(center.y - width/2 - 1, 0.0);
-        int i_end = std::min(center.y + width/2, (double)m_Size.width);
+        int i_start = std::max(center.y - height/2 - 1, 0.0);
+        int i_end = std::min(center.y + height/2, (double)m_Size.height);
 
-        int j_start = std::max(center.x - height/2 - 1, 0.0);
-        int j_end = std::min(center.x + height/2, (double)m_Size.height);
+        int j_start = std::max(center.x - width/2 - 1, 0.0);
+        int j_end = std::min(center.x + width/2, (double)m_Size.width);
 
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j <= j_end; ++j){
+                if(i > 0 && i < m_Size.height && j > 0 && j < m_Size.width)
                 m_Map[i*m_Size.width + j] = color;
             }
         }

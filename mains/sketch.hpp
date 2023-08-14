@@ -12,15 +12,37 @@ map::shapes::Shape *scene(int frame, const int frames){
 
 
 void canvas(map::Mapper &m){
-    // bool is_filled = true;
-    // map::Point center{static_cast<double>(width)/2, static_cast<double>(height)/2};
-    // int radius = 150;
+    // m.fill(map::clr::RGB(255, 255, 0));
 
-	// // map::shapes::ShapePtr c1 = std::make_unique<map::shapes::Circle>(center, radius, map::clr::RED, is_filled);
-    // map::shapes::Circle c2{center, radius, map::clr::RED, is_filled};
+    // map::shapes::Rect *top_l = new map::shapes::Rect({}, static_cast<double>(height)/2 - 50, static_cast<double>(width)/2 - 50, map::clr::BLUE, true, false, map::RectAlignment::Rtop_left);
+    // map::shapes::Rect *top_r = new map::shapes::Rect({}, static_cast<double>(height)/2 - 50, static_cast<double>(width)/2 - 50, map::clr::BLUE, true, false, map::RectAlignment::Rtop_right);
+    // map::shapes::Rect *bot_l = new map::shapes::Rect({}, static_cast<double>(height)/2 - 50, static_cast<double>(width)/2 - 50, map::clr::BLUE, true, false, map::RectAlignment::Rbottom_left);
+    // map::shapes::Rect *bot_r = new map::shapes::Rect({}, static_cast<double>(height)/2 - 50, static_cast<double>(width)/2 - 50, map::clr::BLUE, true, false, map::RectAlignment::Rbottom_right);
 
-    // m.draw(&c2);
+    // m.noSet();
+    // std::cerr << "Drawing rects" << std::endl;
+    // m.draw(top_l);
+    // std::cerr << "Drawing rects" << std::endl;
+    // m.draw(top_r);
+    // std::cerr << "Drawing rects" << std::endl;
+    // m.draw(bot_l);
+    // std::cerr << "Drawing rects" << std::endl;
+    // m.draw(bot_r);
 
-    m.animate(scene, 1);
+    // m.setState();
+
+    // delete top_l;
+    // delete top_r;
+    // delete bot_l;
+    // delete bot_r;
+
+
+    m.fill(map::clr::BLUE);
+
+    map::shapes::Rect r1({}, 0, 100, map::clr::RGB(255, 255, 0), true, false, map::RectAlignment::Rheight);
+    map::shapes::Rect r2({}, 100, 0, map::clr::RGB(255, 255, 0), true, false, map::RectAlignment::Rwidth);
+
+    m.draw(&r1);
+    m.draw(&r2);
 
 }
