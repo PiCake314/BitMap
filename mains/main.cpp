@@ -82,4 +82,7 @@ int main(int argc, char **argv){
 		m->render(filename);
 		m->clearFrames();
 	}
+	else{
+		m->setState();
+	}
 }

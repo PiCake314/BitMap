@@ -8,6 +8,7 @@
 #include <cassert>
 #include <variant>
 #include <string_view>
+#include <memory>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -177,7 +178,6 @@ namespace map{
             void render(const std::string &output_file = "out.mp4") const;
 
             void clearFrames() const;
-
 
             // ----------------------- Operators -----------------------
 

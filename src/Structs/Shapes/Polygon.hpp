@@ -16,6 +16,12 @@ namespace map::shapes{
         ),  points(pts) {}
 
         void rotate(double angle) override {
+
+            double ROT_MAT[2][2] = {
+                {cos(angle), -sin(angle)},
+                {sin(angle), cos(angle)}
+            };
+
             for(auto &point : points){
                 point = ROT_MAT * point;
             }

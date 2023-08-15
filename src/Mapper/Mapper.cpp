@@ -2,9 +2,11 @@
 #include "../Structs/Shapes/Shapes.hpp"
 #include "HelperFuncs.cpp"
 
+#define INIT_STATE false
+
 // image mode
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
-: m_Filename(fn), m_Size{size.height, size.width}, m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
+: m_Filename(fn), m_Size{size.height, size.width}, m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -16,7 +18,7 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 
 // video mode
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
-: m_Filename(MANGLED_PPM), m_Filename_vid(fn), m_Size{size.height, size.width}, m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(true), m_XCenter(0), m_YCenter(0)
+: m_Filename(MANGLED_PPM), m_Filename_vid(fn), m_Size{size.height, size.width}, m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE), m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".mp4");
@@ -215,25 +217,25 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
     Point p3 = points[2];
     Point p4 = points[3];
 
-    float slope1 = (p2.x-p1.x)/(p2.y-p1.y);
-    float b1 = p1.x - slope1*p1.y;
+    float slope1 = (p2.y - p1.y)/(p2.x - p1.x);
+    float b1 = p1.y - slope1*p1.x;
 
-    float slope2 = (p3.x-p2.x)/(p3.y-p2.y);
-    float b2 = p2.x - slope2*p2.y;
+    float slope2 = (p3.y - p2.y)/(p3.x - p2.x);
+    float b2 = p2.y - slope2*p2.x;
 
-    float slope3 = (p4.x-p3.x)/(p4.y-p3.y);
-    float b3 = p3.x - slope3*p3.y;
+    float slope3 = (p4.y - p3.y)/(p4.x - p3.x);
+    float b3 = p3.y - slope3*p3.x;
 
-    float slope4 = (p1.x-p4.x)/(p1.y-p4.y);
-    float b4 = p4.x - slope4*p4.y;
+    float slope4 = (p1.y - p4.y)/(p1.x - p4.x);
+    float b4 = p4.y - slope4*p4.x;
 
     for(int i = 0; i < m_Size.height; i++)
         for(int j = 0; j < m_Size.width; j++)
             if(
                 i >= int(slope1*j + b1)+thick &&
-                (p2.y == p3.y ? j <= p2.y : i >= int(slope2*j + b2)+thick) &&
+                (p2.x == p3.x ? j <= p2.x : i >= int(slope2*j + b2)+thick) &&
                 i <= int(slope3*j + b3)+thick &&
-                (p1.y == p4.y ? j >= p1.y : i <= int(slope4*j + b4)+thick)
+                (p1.x == p4.x ? j >= p1.x : i <= int(slope4*j + b4)+thick)
             )
                     m_Map[i*m_Size.width + j] = color;
 
@@ -304,12 +306,10 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
         case RectAlignment::Rwidth:
             width = m_Size.width;
             center.x = m_Size.width/2;
-            center.y = m_Size.height/2;
             break;
         
         case RectAlignment::Rheight:
             height = m_Size.height;
-            center.x = m_Size.width/2;
             center.y = m_Size.height/2;
             break;
         
@@ -373,28 +373,28 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
 
     switch (alignment){
         case Alignment::center:
-            center.x = (m_Size.height/2) - r;
-            center.y = (m_Size.width/2) - r;
+            center.x = (m_Size.width/2);
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::top:
             center.x = 0;
-            center.y = (m_Size.width/2) - r;
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::bottom:
-            center.x = m_Size.height - 2*r;
-            center.y = (m_Size.width/2) - r;
+            center.x = m_Size.width - r;
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::left:
-            center.x = (m_Size.height/2) - r;
+            center.x = (m_Size.width/2);
             center.y = 0;
             break;
 
         case Alignment::right:
-            center.x = (m_Size.height/2) - r;
-            center.y = m_Size.width - 2*r;
+            center.x = (m_Size.width/2);
+            center.y = m_Size.height - r;
             break;
         
         case Alignment::none:
@@ -411,8 +411,8 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
         color.blue = 255 - color.blue;
     }
 
-    int i_start = center.y-r >= 0 ? center.y-r : 0;
-    int j_start = center.x-r >= 0 ? center.x-r : 0;
+    int i_start = center.y - r >= 0 ? center.y - r : 0;
+    int j_start = center.x - r >= 0 ? center.x - r : 0;
 
     int i_end = center.y + 2*r < m_Size.height ? center.y + 2*r : m_Size.height;
     int j_end = center.x + 2*r < m_Size.width ? center.x + 2*r : m_Size.width;
@@ -426,15 +426,15 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
     else if(filled){
         for(int i = i_start; i < i_end; i++)
             for(int j = j_start; j < j_end; j++)
-                if(((i-center.y)*(i-center.y) + (j-center.x)*(j-center.x)) <= r*r)
+                if(((i - center.y) * (i - center.y) + (j - center.x) * (j - center.x)) <= r*r)
                         m_Map[i*m_Size.width + j] = color;
     }
     else
         for(int i = i_start; i < i_end; i++)
             for(int j = j_start; j < j_end; j++)
                 if(
-                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) >= r*r - thickness*r &&
-                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) <= r*r + r
+                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) >= r*r - thickness*r
+                 && (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) <= r*r + r
                 )
                     m_Map[i*m_Size.width + j] = color;
 
@@ -558,8 +558,6 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 }
 
 
-// template <class T>
-// requires std::is_base_of<Shape, T>::value
 void map::Mapper::draw(map::shapes::Shape *s){
     s->draw(this);
 

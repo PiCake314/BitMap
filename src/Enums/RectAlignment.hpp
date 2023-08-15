@@ -4,7 +4,7 @@ namespace map{
     enum RectAlignment{
         Rnone = -1,
         Rcenter = 0,
-        // TODO:
+        // TODO: Multiple parameter using bit flag
         // Rtop,
         // Rbottom,
         // Rleft,
