@@ -289,18 +289,18 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
             break;
 
         case RectAlignment::Rtop_right:
-            center.x = m_Size.width - width/2 - 1;
+            center.x = m_Size.width - width/2;
             center.y = height/2;
             break;
 
         case RectAlignment::Rbottom_left:
             center.x = width/2;
-            center.y = m_Size.height - height/2 - 1;
+            center.y = m_Size.height - height/2;
             break;
 
         case RectAlignment::Rbottom_right:
-            center.x = m_Size.width - width/2 - 1;
-            center.y = m_Size.height - height/2 - 1;
+            center.x = m_Size.width - width/2;
+            center.y = m_Size.height - height/2;
             break;
 
         case RectAlignment::Rwidth:
@@ -327,7 +327,7 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j <= j_end; ++j){
-                if(i > 0 && i < m_Size.height && j > 0 && j < m_Size.width)
+                if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width)
                 m_Map[i*m_Size.width + j] = color;
             }
         }
@@ -516,7 +516,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
     // }
     
     if(inverted){
-        map::clr::RGB invColor = color.invert();
+        map::clr::RGB invColor = color.inverted();
         for(int i = 0; i < m_Size.height; i++){
             for(int j = 0; j < m_Size.width; j++){
                 float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
