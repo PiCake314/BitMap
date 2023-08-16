@@ -1,25 +1,46 @@
-#include "../src/Mapper/Mapper.hpp"
+#include "../src/Mapper/Mapper.hpp" // importing the library
 
-extern int height, width;
+extern int height, width; // importing the height and width of the canvas
 
 
 void canvas(map::Mapper &m){
     using namespace map::shapes;
 
-    m.noSet();
-
     m.fill();
 
-    Rect green({0, height/6.}, 0, height/3., {color: {0, 150, 0}, filled: true, rectAlignment: map::RectAlignment::Rwidth});
-    Rect red({0, 5*height/6.}, 0, height/3., {color: {180, 0, 0}, filled: true, rectAlignment: map::RectAlignment::Rwidth});
+    const int stripe_width = height/13 + 1;
+    const double x_mid = width/2;
+
+    for(int i = 0; i < 7; i++){
+        const Rect red({x_mid, i*2*stripe_width + stripe_width/2.}, width, stripe_width, {.color = {200, 0, 0}, .filled = true});
+
+        m.draw(&red);
+    }
+
+    const double box_width = width/2.5;
+    const double box_height = 7*stripe_width;
+
+    const Rect box({}, box_width, box_height, {.color = {0, 0, 150}, .filled = true, .rectAlignment = map::RectAlignment::Rtop_left});
+
+    m.draw(&box);
 
 
-    m.draw(&green);
-    m.draw(&red);
+    const int outline_width = box_width ;
+    const int outline_height = box_height - 5;
 
-    map::Point points[4] = {{0, 0}, {width/4., height/3.}, {width/4., 2*height/3.}, {0, height*1.}};
-    m.drawFourPoints(points, map::clr::BLACK, false);
+    bool flag = true;
 
-    m.setState();
+    // 11 by 9 grid
+    for(int i = 0; i < 9; i++){
+        for(int j = 0; j < 11; j++, flag = !flag){ // toggling the flag
+            if(flag){
+                const double x = (j/11.)*outline_width + 25;
+                const double y = (i/9.)*outline_height + 25;
+                const Circle star({x, y}, 10, {.color = map::clr::WHITE, .filled = true});
+
+                m.draw(&star);
+            }
+        }
+    }
 
 }

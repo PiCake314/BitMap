@@ -131,7 +131,7 @@ namespace map{
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
             
-            void draw(map::shapes::Shape *shape);
+            void draw(const shapes::Shape *shape);
 
 
             /**

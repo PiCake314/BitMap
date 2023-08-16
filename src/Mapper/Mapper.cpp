@@ -558,7 +558,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 }
 
 
-void map::Mapper::draw(map::shapes::Shape *s){
+void map::Mapper::draw(const map::shapes::Shape *s){
     s->draw(this);
 
     // else if constexpr(std::is_same_v<T, Polygon>){
