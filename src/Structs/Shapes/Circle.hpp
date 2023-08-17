@@ -1,3 +1,4 @@
+#pragma once
 #include "Shapes.hpp"
 
 namespace map::shapes{
@@ -20,27 +21,17 @@ namespace map::shapes{
         bool inverted;
         map::Alignment alignment;
 
-        Circle(Point p, int r, Data &&d)
-        : Shape(p, d.color, d.thickness), radius(r), filled(d.filled), inverted(d.inverted), alignment(d.alignment) {}
+        Circle(Point p, int r, Data &&);
 
-        void rotate(double angle) override {}
+        void rotate(double angle) override;
 
-        ShapePtr rotated(double angle) const override { return std::make_unique<Circle>(*this); }
+        ShapePtr rotated(double angle) const override;
 
+        void shift(Point p) override;
 
-        void shift(Point p) override {
-            center += p;
-        }
-
-        ShapePtr shifted(Point p) const override {
-            ShapePtr c = std::make_unique<Circle>(*this);
-            c->shift(p);
-            return c;
-        }
+        ShapePtr shifted(Point p) const override;
 
         protected:
-        void draw(Mapper *m) const override {
-            m->drawCircle(center, radius, color, filled, inverted, thickness, alignment);
-        }
+        void draw(Mapper *m) const override;
     };
 }

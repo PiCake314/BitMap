@@ -1,9 +1,21 @@
+#pragma once
+
 #include "Shapes.hpp"
 
 namespace map::shapes{
 
     struct Ellipse : Shape{
-        // friend class Mapper;
+
+        // use for named arguments
+        struct Data{
+            // DO NOT ACCESS THESE DIRECTLY
+            clr::RGB color{};
+            bool filled{false};
+            bool inverted{false};
+            int thickness{};
+            map::Alignment alignment{map::Alignment::none};
+        };
+
 
         int r1;
         int r2;
@@ -14,27 +26,18 @@ namespace map::shapes{
         /**
          * @param r2: negative values will result in them being the same as r1.
         */
-        Ellipse(Point p, int r1, int r2, clr::RGB c = clr::RGB(), bool filled = false, bool inverted = false, int thickness = 0, map::Alignment alignment = map::Alignment::none)
-        : Shape(p, c, thickness), r1(r1), r2(r2), filled(filled), inverted(inverted), alignment(alignment) {}
+        Ellipse(Point p, int r1, int r2, Data &&);
 
-        void rotate(double angle) override {}
+        void rotate(double angle) override;
 
-        ShapePtr rotated(double angle) const override { return std::make_unique<Ellipse>(*this); }
+        ShapePtr rotated(double angle) const override;
 
 
-        void shift(Point p) override {
-            center += p;
-        }
+        void shift(Point p) override;
 
-        ShapePtr shifted(Point p) const override {
-            ShapePtr e = std::make_unique<Ellipse>(*this);
-            e->shift(p);
-            return e;
-        }
+        ShapePtr shifted(Point p) const override;
 
         protected:
-        void draw(Mapper *m) const override {
-            m->drawEllipse(center, r1, r2, color, filled, inverted, thickness, alignment);
-        }
+        void draw(Mapper *m) const override;
     };
 }

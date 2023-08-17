@@ -14,7 +14,7 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
-// #include "../Structs/Shapes/Shapes.hpp"
+#include "../Structs/Shapes/Shapes.hpp"
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
@@ -192,5 +192,3 @@ namespace map{
     };
 
 }
-
-#include "../Structs/Shapes/Shapes.hpp"

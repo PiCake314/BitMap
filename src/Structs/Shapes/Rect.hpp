@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Shapes.hpp"
 
 namespace  map::shapes{
@@ -18,44 +20,17 @@ namespace  map::shapes{
         bool filled;
         map::RectAlignment rectAlignment;
 
-        Rect(Point p, int w, int h, Data &&d)
-        : Shape(p, d.color, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
-            width(w), height(h), filled(d.filled), rectAlignment(d.rectAlignment) {}
+        Rect(Point p, int w, int h, Data &&);
 
+        void rotate(double angle) override;
 
-        void rotate(double angle) override {
-            for(auto &point : points){
-                point -= center;
+        ShapePtr rotated(double angle) const override;
 
-                double ROT_MAT[2][2] = {
-                    {cos(angle), -sin(angle)},
-                    {sin(angle), cos(angle)}
-                };
+        void shift(Point p) override;
 
-                point = ROT_MAT * point;
-                point += center;
-            }
-        }
-
-        ShapePtr rotated(double angle) const override {
-            ShapePtr r = std::make_unique<Rect>(*this);
-            r->rotate(angle);
-            return r;
-        }
-
-        void shift(Point p) override {
-            center += p;
-        }
-
-        ShapePtr shifted(Point p) const override {
-            ShapePtr r = std::make_unique<Rect>(*this);
-            r->shift(p);
-            return r;
-        }
+        ShapePtr shifted(Point p) const override;
 
         protected:
-        void draw(Mapper *m) const override {
-            m->drawRect(center, height, width, color, filled, thickness, rectAlignment);
-        }
+        void draw(Mapper *m) const override;
     };
 }

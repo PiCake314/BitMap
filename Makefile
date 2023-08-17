@@ -3,7 +3,7 @@ NoWarn = -Wno-attributes -Wno-unused-result -Wno-attributes
 
 
 compile: mains/main.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp -Wall -Wno-attributes
+	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Wno-attributes
 	# -Wextra -Weverything -Wno-c++98-compat
 
 

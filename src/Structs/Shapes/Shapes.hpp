@@ -18,6 +18,8 @@
 
 
 namespace map{
+    
+    class Mapper;
 
     namespace shapes{
 

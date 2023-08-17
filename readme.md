@@ -1,9 +1,27 @@
+
+# TODO:
+- Fix readme IoI
+- Fix shape includes in mapper header file
+- Implement multi-threading
+- Implement triangle
+- Implement complex polygon
+- Add text
+- Add image
+- Implement multiple arg passing for Alignment
+- Deprecate unused functions/enums/structs
+
+
 # THIS READ ME IS OUTDATED.
 
 # BitMap - Mapper Class
 ```
 map::Mapper mapper;
-mapper.drawCircle();
+
+const map::Point p{50, 50};
+const int r 10;
+map::shapes::Circle c(p, r);
+
+mapper.draw(&c);
 ```
 
 ## Table of content:
@@ -109,5 +127,3 @@ This function will set each pixel on the canvas with a random color.
 
 ### ``` randomizeGrey() ```
 This function will set each pixel on the canvas with a random gradiant of gray.
-
-
