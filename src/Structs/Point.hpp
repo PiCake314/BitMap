@@ -3,8 +3,8 @@
 
 namespace map{
     struct Point{
-        double x;
-        double y;
+        double x{};
+        double y{};
 
         constexpr Point() : x(0), y(0) {}
         constexpr Point(double x_, double y_) : x(x_), y(y_) {}

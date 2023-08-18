@@ -22,9 +22,17 @@ test: unit_tests/test.cpp src/Mapper/Mapper.cpp
 
 
 clean: 
-	rm main test
+	rm main test Circle.s Ellipse.s Line.s main.s Mapper.s Polygon.s Rect.s Triangle.s
 
 
 install:
 	mkdir output; mkdir output/ppms; output/pngs;
 	# brew install ImageMagick && brew install ffmpeg
+
+
+count:
+	find . -name '*.s' | xargs wc -l
+
+
+wc: mains/main.cpp src/Mapper/Mapper.cpp
+	g++ -std=c++20 -S mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Wno-attributes; make count

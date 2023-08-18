@@ -6,41 +6,41 @@
 namespace map{
     namespace clr{
         struct RGB{
-            uint16_t red;
-            uint16_t green;
-            uint16_t blue;
+            uint16_t red{};
+            uint16_t green{};
+            uint16_t blue{};
 
-            RGB():
+            constexpr RGB():
             red(0),
             green(0),
             blue(0)
             {}
 
-            RGB(int v):
+            constexpr RGB(int v):
             red(std::clamp(v, 0, 255)),
             green(std::clamp(v, 0, 255)),
             blue(std::clamp(v, 0, 255))
             {}
 
-            RGB(int r, int g, int b):
+            constexpr RGB(int r, int g, int b):
             red(std::clamp(r, 0, 255)),
             green(std::clamp(g, 0, 255)),
             blue(std::clamp(b, 0, 255))
             {}
 
-            void invert(){
+            constexpr void invert(){
                 red = 255 - red;
                 green = 255 - green;
                 blue = 255 - blue;
             }
 
-            RGB inverted() const{
+            constexpr RGB inverted() const {
                 return RGB{255 - red, 255 - green, 255 - blue};
             }
 
-            bool operator==(const RGB& rgb) const = default;
+            constexpr bool operator==(const RGB& rgb) const = default;
 
-            friend std::ostream& operator<<(std::ostream &os, const RGB &c){
+            constexpr friend std::ostream& operator<<(std::ostream &os, const RGB &c){
                 return (os << c.red << " " << c.green << " " << c.blue);
             }
         };

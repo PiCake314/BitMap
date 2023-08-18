@@ -82,7 +82,12 @@ namespace map{
 
             void noSet();
 
-            void setState();
+
+            /**
+             * @brief copies the internal array to the output file.
+             * @param threads: the number of threads to use. (default: 1)
+            */
+            void setState(/* int threads = 1 */);
 
             void setFile(std::string);
 
@@ -98,7 +103,7 @@ namespace map{
             void randomizeGrey();
 
             [[deprecated]]
-            clr::RGB getColorAt(Point = Point());
+            clr::RGB getColorAt(Point);
 
             [[deprecated]]
             void drawAt(Point, clr::RGB);
@@ -166,7 +171,6 @@ namespace map{
 
 
             void animate(map::shapes::Shape *(*)(int, const int), float seconds);
-
 
 
             // ----------------------- Video Related Functions -----------------------
