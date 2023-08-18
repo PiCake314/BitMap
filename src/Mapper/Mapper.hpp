@@ -14,7 +14,7 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
-// #include "../Structs/Shapes/Shapes.hpp"
+#include "../Structs/Shapes/Shapes.hpp"
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
@@ -82,7 +82,12 @@ namespace map{
 
             void noSet();
 
-            void setState();
+
+            /**
+             * @brief copies the internal array to the output file.
+             * @param threads: the number of threads to use. (default: 1)
+            */
+            void setState(/* int threads = 1 */);
 
             void setFile(std::string);
 
@@ -98,7 +103,7 @@ namespace map{
             void randomizeGrey();
 
             [[deprecated]]
-            clr::RGB getColorAt(Point = Point());
+            clr::RGB getColorAt(Point);
 
             [[deprecated]]
             void drawAt(Point, clr::RGB);
@@ -131,7 +136,7 @@ namespace map{
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
             
-            void draw(map::shapes::Shape *shape);
+            void draw(const shapes::Shape *shape);
 
 
             /**
@@ -168,7 +173,6 @@ namespace map{
             void animate(map::shapes::Shape *(*)(int, const int), float seconds);
 
 
-
             // ----------------------- Video Related Functions -----------------------
 
             private:
@@ -192,5 +196,3 @@ namespace map{
     };
 
 }
-
-#include "../Structs/Shapes/Shapes.hpp"

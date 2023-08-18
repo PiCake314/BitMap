@@ -289,18 +289,18 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
             break;
 
         case RectAlignment::Rtop_right:
-            center.x = m_Size.width - width/2 - 1;
+            center.x = m_Size.width - width/2;
             center.y = height/2;
             break;
 
         case RectAlignment::Rbottom_left:
             center.x = width/2;
-            center.y = m_Size.height - height/2 - 1;
+            center.y = m_Size.height - height/2;
             break;
 
         case RectAlignment::Rbottom_right:
-            center.x = m_Size.width - width/2 - 1;
-            center.y = m_Size.height - height/2 - 1;
+            center.x = m_Size.width - width/2;
+            center.y = m_Size.height - height/2;
             break;
 
         case RectAlignment::Rwidth:
@@ -327,7 +327,7 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j <= j_end; ++j){
-                if(i > 0 && i < m_Size.height && j > 0 && j < m_Size.width)
+                if(i >= 0 && i < m_Size.height && j >= 0 && j < m_Size.width)
                 m_Map[i*m_Size.width + j] = color;
             }
         }
@@ -516,7 +516,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
     // }
     
     if(inverted){
-        map::clr::RGB invColor = color.invert();
+        map::clr::RGB invColor = color.inverted();
         for(int i = 0; i < m_Size.height; i++){
             for(int j = 0; j < m_Size.width; j++){
                 float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
@@ -558,7 +558,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 }
 
 
-void map::Mapper::draw(map::shapes::Shape *s){
+void map::Mapper::draw(const map::shapes::Shape *s){
     s->draw(this);
 
     // else if constexpr(std::is_same_v<T, Polygon>){
@@ -650,7 +650,6 @@ void map::Mapper::plotXY(double(*func)(double, double), double(*res)(double, dou
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             if (abs(func(j - m_Size.width/2, m_Size.height/2 - i) - (res(j - m_Size.width/2, m_Size.height/2 - i))) <= 5){
-                // std::cout << "IN\n";
                 m_Map[i*m_Size.width + j] = color;
             }
         }
@@ -739,7 +738,7 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
 
-    std::cout << "Beginning Scene:\n";
+    std::clog << "Beginning Scene:\n";
     int frames = seconds * m_FPS;
 
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
@@ -749,13 +748,13 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float
         auto shape = provider(frame, frames);
         draw(shape);
         saveFrame();
-        std::cout << frame << '/' << frames << '\n';
+        std::clog << frame << '/' << frames << '\n';
 
         delete shape;
     }
     copy(temp, m_Map);
 
-    std::cout << "Scene Ended!\n";
+    std::clog << "Scene Ended!\n";
 }
 
 
@@ -839,7 +838,7 @@ void map::Mapper::setInfo(){
 
 
 void map::Mapper::resetFile(){
-    std::cout << "RESET!" << std::endl;
+    std::clog << "RESET!\n";
     // if(m_Map) delete[] m_Map;
 
     m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
@@ -849,26 +848,27 @@ void map::Mapper::resetFile(){
 
 
 void map::Mapper::loadFile(){
-    std::cout << "LOAD!" << std::endl;
+    std::clog << "LOAD!\n";
     std::string P; // P type
     std::string h; // height
     std::string w; // width
     std::string M; // mode
     
     std::string filename = OUTPUT_PATH + m_Filename;
+    std::cerr << filename << std::endl;
     std::ifstream fin(filename);
     assert(fin.is_open());
 
     std::string spaces;
 
     std::getline(fin, P);
-    std::cout << "P: " << P << std::endl;
+    std::clog << "P: " << P << std::endl;
     fin >> w;
-    std::cout << "W: " << w << std::endl;
+    std::clog << "W: " << w << std::endl;
     fin >> h;
-    std::cout << "H: " << h << std::endl;
+    std::clog << "H: " << h << std::endl;
     fin >> M;
-    std::cout << "M: " << M << std::endl;
+    std::clog << "M: " << M << std::endl;
 
 
     assert(areValidString(P, h, w, M));

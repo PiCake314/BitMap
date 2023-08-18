@@ -1,19 +1,20 @@
 #pragma once
+#include <ostream>
 
 namespace map{
     struct Point{
-        double x;
-        double y;
+        double x{};
+        double y{};
 
         constexpr Point() : x(0), y(0) {}
         constexpr Point(double x_, double y_) : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
-        constexpr Point operator + (Point p){
+        constexpr Point operator+(Point p){
             return {x + p.x, y + p.y};
         }
 
-        constexpr Point operator - (Point p){
+        constexpr Point operator-(Point p){
             return {x - p.x, y - p.y};
         }
 
@@ -65,8 +66,8 @@ namespace map{
         }
 
 
-        friend std::ostream& operator << (std::ostream &os, Point p){
-            return (os << p.x << ", " << p.y);
+        friend std::ostream& operator << (std::ostream &os, const Point& p){
+            return os << p.x << ", " << p.y;
         }
     };
 }
