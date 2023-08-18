@@ -14,7 +14,7 @@
 #include "../../Mapper/Mapper.hpp"
 
 
-// #define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}}
+// #define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}} // only works in clang (haven't tested msvc)
 
 
 namespace map{

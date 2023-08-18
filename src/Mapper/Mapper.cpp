@@ -855,6 +855,7 @@ void map::Mapper::loadFile(){
     std::string M; // mode
     
     std::string filename = OUTPUT_PATH + m_Filename;
+    std::cerr << filename << std::endl;
     std::ifstream fin(filename);
     assert(fin.is_open());
 
