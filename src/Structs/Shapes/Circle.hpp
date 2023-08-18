@@ -21,17 +21,17 @@ namespace map::shapes{
         bool inverted;
         map::Alignment alignment;
 
-        constexpr Circle(Point p, int r, Data &&);
+        Circle(Point p, int r, Data &&);
 
-        constexpr void rotate(double angle) override;
+        void rotate(double angle) override;
 
-        [[nodiscard]] constexpr ShapePtr rotated(double angle) const override;
+        [[nodiscard]] ShapePtr rotated(double angle) const override;
 
-        constexpr void shift(Point p) override;
+        void shift(Point p) override;
 
-        [[nodiscard]] constexpr ShapePtr shifted(Point p) const override;
+        [[nodiscard]] ShapePtr shifted(Point p) const override;
 
         protected:
-        constexpr void draw(Mapper *m) const override;
+        void draw(Mapper *m) const override;
     };
 }

@@ -24,11 +24,11 @@ namespace  map::shapes{
 
         void rotate(double angle) override;
 
-        ShapePtr rotated(double angle) const override;
+        [[nodiscard]] ShapePtr rotated(double angle) const override;
 
         void shift(Point p) override;
 
-        ShapePtr shifted(Point p) const override;
+        [[nodiscard]] ShapePtr shifted(Point p) const override;
 
         protected:
         void draw(Mapper *m) const override;
