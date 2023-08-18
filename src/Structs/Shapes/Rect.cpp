@@ -3,7 +3,8 @@
 
 map::shapes::Rect::Rect(Point p, int w, int h, Data &&d)
 : Shape(p, d.color, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
-    width(w), height(h), filled(d.filled), rectAlignment(d.rectAlignment) {}
+width(w), height(h), filled(d.filled), rectAlignment(d.rectAlignment)
+{}
 
 
 void map::shapes::Rect::rotate(double angle){

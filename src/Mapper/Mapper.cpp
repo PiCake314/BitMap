@@ -650,7 +650,6 @@ void map::Mapper::plotXY(double(*func)(double, double), double(*res)(double, dou
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             if (abs(func(j - m_Size.width/2, m_Size.height/2 - i) - (res(j - m_Size.width/2, m_Size.height/2 - i))) <= 5){
-                // std::cout << "IN\n";
                 m_Map[i*m_Size.width + j] = color;
             }
         }
@@ -739,7 +738,7 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
 
-    std::cout << "Beginning Scene:\n";
+    std::clog << "Beginning Scene:\n";
     int frames = seconds * m_FPS;
 
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
@@ -749,13 +748,13 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float
         auto shape = provider(frame, frames);
         draw(shape);
         saveFrame();
-        std::cout << frame << '/' << frames << '\n';
+        std::clog << frame << '/' << frames << '\n';
 
         delete shape;
     }
     copy(temp, m_Map);
 
-    std::cout << "Scene Ended!\n";
+    std::clog << "Scene Ended!\n";
 }
 
 
@@ -839,7 +838,7 @@ void map::Mapper::setInfo(){
 
 
 void map::Mapper::resetFile(){
-    std::cout << "RESET!" << std::endl;
+    std::clog << "RESET!\n";
     // if(m_Map) delete[] m_Map;
 
     m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
@@ -849,7 +848,7 @@ void map::Mapper::resetFile(){
 
 
 void map::Mapper::loadFile(){
-    std::cout << "LOAD!" << std::endl;
+    std::clog << "LOAD!\n";
     std::string P; // P type
     std::string h; // height
     std::string w; // width
@@ -862,13 +861,13 @@ void map::Mapper::loadFile(){
     std::string spaces;
 
     std::getline(fin, P);
-    std::cout << "P: " << P << std::endl;
+    std::clog << "P: " << P << std::endl;
     fin >> w;
-    std::cout << "W: " << w << std::endl;
+    std::clog << "W: " << w << std::endl;
     fin >> h;
-    std::cout << "H: " << h << std::endl;
+    std::clog << "H: " << h << std::endl;
     fin >> M;
-    std::cout << "M: " << M << std::endl;
+    std::clog << "M: " << M << std::endl;
 
 
     assert(areValidString(P, h, w, M));
