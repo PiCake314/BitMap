@@ -28,25 +28,15 @@ map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
 }
 
 
-// map::Mapper::Mapper(Mapper &&m){
-//     m_Filename = m.m_Filename;
-//     m_Filename_vid = m.m_Filename_vid;
-//     m_Size = m.m_Size;
-//     m_FPS = m.m_FPS;
-//     m_Current_frame = m.m_Current_frame;
-//     m_PType = m.m_PType;
-//     m_Max = m.m_Max;
-//     m_Map = m.m_Map;
-//     m_Set_state = m.m_Set_state;
-//     m_XCenter = m.m_XCenter;
-//     m_YCenter = m.m_YCenter;
-
-//     m.m_Map = nullptr;
-// }
-
-
 map::Mapper::~Mapper(){
     if(m_Map) delete[] m_Map;
+}
+
+
+void map::Mapper::loadFont(const std::string &fnt, const std::string &ppm, clr::RGB transparent_color){
+    fnt::FontLoader(m_Letters, m_Spacing, fnt, ppm);
+    std::clog << "Font loaded" << std::endl;
+    m_Transparent_color = transparent_color;
 }
 
 
@@ -163,11 +153,11 @@ void map::Mapper::drawAt(Point p, map::clr::RGB color){
 
 void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thickness){
 
-    int i_start = std::max(std::min(p1.y, p2.y), 0.0);
-    int i_end = std::min(std::max(p1.y, p2.y), double(m_Size.height - 1));
+    int i_start = std::clamp(std::min(p1.y, p2.y), 0., m_Size.height-1.);
+    int i_end = std::clamp(std::max(p1.y, p2.y), 0., m_Size.height - 1.);
 
-    int j_start = std::max(std::min(p1.x, p2.x), 0.0);
-    int j_end = std::min(std::max(p1.x, p2.x), double(m_Size.width - 1));
+    int j_start = std::clamp(std::min(p1.x, p2.x), 0., m_Size.width - 1.);
+    int j_end = std::clamp(std::max(p1.x, p2.x), 0., m_Size.width - 1.);
 
 
     if(p2.x - p1.x != 0){
@@ -180,13 +170,11 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
             }
         }
     }
-    else{
-        for(int i = i_start; i <= i_end; i++){
+    else for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j < j_end; j++){
                 m_Map[i*m_Size.width + j] = color;
             }
         }
-    }
 
     if(m_Set_state) setState();
 }
@@ -556,6 +544,89 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
     if(m_Set_state) setState();
 }
+
+
+
+void map::Mapper::drawText(std::string_view text, Point center, Alignment alignment){
+    assert(m_Letters.size() > 0 && "No font loaded");
+ 
+    // calculating the center of the text
+    int textHeight = m_Letters['a'].height + m_Letters['a'].yoffset;
+    int textWidth = 0;
+    for(char c : text){
+        textWidth += m_Letters[c].xoffset;
+        textWidth += m_Letters[c].width;
+        textWidth += m_Letters[c].xadvance;
+    }
+
+    int i_start = std::max(center.y - textHeight/2, 0.0);
+    int j_start = std::max(center.x - textWidth/2, 0.0);
+
+    // switch (alignment){
+    //     case Alignment::center:
+    //         center.x = (m_Size.width/2) - textWidth/2;
+    //         center.y = (m_Size.height/2) - textHeight/2;
+    //         break;
+
+    //     case Alignment::top:
+    //         center.x = (m_Size.width/2) - textWidth/2;
+    //         center.y = 0;
+    //         break;
+
+    //     case Alignment::bottom:
+    //         center.x = (m_Size.width/2) - textWidth/2;
+    //         center.y = m_Size.height - textHeight;
+    //         break;
+
+    //     case Alignment::left:
+    //         center.x = 0;
+    //         center.y = (m_Size.height/2) - textHeight/2;
+    //         break;
+
+    //     case Alignment::right:
+    //         center.x = m_Size.width - textWidth;
+    //         center.y = (m_Size.height/2) - textHeight/2;
+    //         break;
+        
+    //     case Alignment::none:
+    //         break;
+    // }
+
+
+    // drawing the text
+    for(char c : text){
+        fnt::Letter l = m_Letters[c - 32];
+        // std::clog << char(l) << ' ';
+
+        j_start += l.xoffset;
+        i_start = l.yoffset;
+
+        for(int i = i_start; i < i_start + l.height; i++){
+            for(int j = j_start; j < j_start + l.width; j++){
+                const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
+
+                if(pixel != m_Transparent_color && safePoint({j*1., i*1.}, m_Size)){
+                    m_Map[i*m_Size.width + j] = pixel;
+                }
+            }
+        }
+
+        j_start += l.xadvance + m_Spacing.width;
+    }
+
+
+    // fnt::Letter letter_c = m_Letters['c'];
+
+    // for(int i = 0; i < letter_c.height; i++){
+    //     for(int j = 0; j < letter_c.width; j++){
+    //         if(letter_c.buffer[i*letter_c.width + j] != clr::BLACK){
+    //             m_Map[int((center.y + i + letter_c.yoffset)*m_Size.width + center.x + j + letter_c.xoffset)] = letter_c.buffer[i*letter_c.width + j];
+    //         }
+    //     }
+    // }
+
+}
+
 
 
 void map::Mapper::draw(const map::shapes::Shape *s){

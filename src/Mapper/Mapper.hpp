@@ -15,6 +15,7 @@
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
 #include "../Structs/Shapes/Shapes.hpp"
+#include "../Structs/FontLoader.hpp"
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
@@ -51,9 +52,13 @@ namespace map{
             int m_FPS; // for video only
             int m_Current_frame; // for video only
 
+            std::vector<fnt::Letter> m_Letters;
+            clr::RGB m_Transparent_color = clr::BLACK;
+            Size m_Spacing = {0, 0};
+
             std::string m_PType; // Meta Data
             int m_Max; // Meta Data
-            clr::RGB *m_Map; // The canvas (2D array of RGB values)
+            /* volatile */ clr::RGB *m_Map; // The canvas (2D array of RGB values)
 
             bool m_Set_state;
 
@@ -74,6 +79,8 @@ namespace map{
 
             ~Mapper();
 
+            void loadFont(const std::string &fnt, const std::string &ppm = "", clr::RGB transparent_color = clr::BLACK);
+
             void setFPS(int);
 
             int getFPS() const;
@@ -85,9 +92,8 @@ namespace map{
 
             /**
              * @brief copies the internal array to the output file.
-             * @param threads: the number of threads to use. (default: 1)
             */
-            void setState(/* int threads = 1 */);
+            void setState();
 
             void setFile(std::string);
 
@@ -134,6 +140,9 @@ namespace map{
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
+
+
+            void drawText(std::string_view, Point, Alignment = Alignment::none);
 
             
             void draw(const shapes::Shape *shape);

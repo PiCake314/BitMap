@@ -1,5 +1,6 @@
 
 NoWarn = -Wno-attributes -Wno-unused-result -Wno-attributes
+OPT = -O2
 
 
 compile: mains/main.cpp src/Mapper/Mapper.cpp
@@ -8,11 +9,11 @@ compile: mains/main.cpp src/Mapper/Mapper.cpp
 
 
 video:  mains/main.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) -O3 && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
+	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) $(OPT) && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
 
 
 image: mains/main.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) -O3 && ./main r image def$(filename) 0$(h) 0$(w)
+	g++ -std=c++20 -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) $(OPT) && ./main r image def$(filename) 0$(h) 0$(w)
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp

@@ -34,7 +34,7 @@ bool areValidString(std::string p, std::string h, std::string w, std::string m){
 }
 
 bool safePoint(map::Point p, map::Size s){
-    return p.y*s.height + p.x >= 0 && p.y*s.height + p.x < s.height*s.width;
+    return (p.x >= 0 && p.x < s.width && p.y >= 0 && p.y < s.height);
 }
 
 
