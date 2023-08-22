@@ -15,7 +15,7 @@
 #include "../Structs/Point.hpp"
 #include "../Structs/Complex.hpp"
 #include "../Structs/Shapes/Shapes.hpp"
-#include "../Structs/FontLoader.hpp"
+#include "../Structs/Font.hpp"
 
 #include "../Enums/Loadtype.hpp"
 #include "../Enums/Fold.hpp"
@@ -52,9 +52,7 @@ namespace map{
             int m_FPS; // for video only
             int m_Current_frame; // for video only
 
-            std::vector<fnt::Letter> m_Letters;
-            clr::RGB m_Transparent_color = clr::BLACK;
-            Size m_Spacing = {0, 0};
+            std::vector<fnt::Font> m_Fonts;
 
             std::string m_PType; // Meta Data
             int m_Max; // Meta Data
@@ -79,7 +77,7 @@ namespace map{
 
             ~Mapper();
 
-            void loadFont(const std::string &fnt, const std::string &ppm = "", clr::RGB transparent_color = clr::BLACK);
+            void loadFont(std::string_view);
 
             void setFPS(int);
 
@@ -142,7 +140,10 @@ namespace map{
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
 
-            void drawText(std::string_view, Point, Alignment = Alignment::none);
+            /**
+             * @param font: the name of the font to use. (passing "" will use the default font)
+            */
+            void drawText(std::string_view, Point, std::string font = "default", Alignment = Alignment::none);
 
             
             void draw(const shapes::Shape *shape);

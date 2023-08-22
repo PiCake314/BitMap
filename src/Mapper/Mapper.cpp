@@ -14,6 +14,8 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 
     if(type == Loadtype::edit) loadFile();
     else resetFile();
+
+    m_Fonts.push_back(fnt::Font{"Minecraft"}); // default font
 }
 
 // video mode
@@ -25,6 +27,8 @@ map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
 
     if(type == Loadtype::edit) loadFile();
     else resetFile();
+
+    m_Fonts.push_back(fnt::Font{"Minecraft"}); // default font
 }
 
 
@@ -33,10 +37,8 @@ map::Mapper::~Mapper(){
 }
 
 
-void map::Mapper::loadFont(const std::string &fnt, const std::string &ppm, clr::RGB transparent_color){
-    fnt::FontLoader(m_Letters, m_Spacing, fnt, ppm);
-    std::clog << "Font loaded" << std::endl;
-    m_Transparent_color = transparent_color;
+void map::Mapper::loadFont(std::string_view fontname){
+    m_Fonts.push_back(fnt::Font{fontname});
 }
 
 
@@ -547,16 +549,29 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
 
 
-void map::Mapper::drawText(std::string_view text, Point center, Alignment alignment){
-    assert(m_Letters.size() > 0 && "No font loaded");
+void map::Mapper::drawText(std::string_view text, Point center, std::string fontname, Alignment alignment){
+    if(fontname == "") fontname = "default";
+
+    int index = -1;
+    for(int i = 0; i < m_Fonts.size(); i++){
+        if(m_Fonts[i].getFontname() == fontname){
+            index = i;
+            break;
+        }
+    }
+    assert(index != -1 && "Font not found");
+
+    const fnt::Font &font = m_Fonts[index];
+
+
  
     // calculating the center of the text
-    int textHeight = m_Letters['a'].height + m_Letters['a'].yoffset;
+    int textHeight = font['a'].height + font['a'].yoffset;
     int textWidth = 0;
     for(char c : text){
-        textWidth += m_Letters[c].xoffset;
-        textWidth += m_Letters[c].width;
-        textWidth += m_Letters[c].xadvance;
+        textWidth += font[c].xoffset;
+        textWidth += font[c].width;
+        textWidth += font[c].xadvance;
     }
 
     int i_start = std::max(center.y - textHeight/2, 0.0);
@@ -595,8 +610,7 @@ void map::Mapper::drawText(std::string_view text, Point center, Alignment alignm
 
     // drawing the text
     for(char c : text){
-        fnt::Letter l = m_Letters[c - 32];
-        // std::clog << char(l) << ' ';
+        fnt::Letter l = font[c];
 
         j_start += l.xoffset;
         i_start = l.yoffset;
@@ -605,13 +619,13 @@ void map::Mapper::drawText(std::string_view text, Point center, Alignment alignm
             for(int j = j_start; j < j_start + l.width; j++){
                 const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
 
-                if(pixel != m_Transparent_color && safePoint({j*1., i*1.}, m_Size)){
+                if(pixel != font.getTransparentColor() && safePoint({j*1., i*1.}, m_Size)){
                     m_Map[i*m_Size.width + j] = pixel;
                 }
             }
         }
 
-        j_start += l.xadvance + m_Spacing.width;
+        j_start += l.xadvance + font.getSpacing().width;
     }
 
 

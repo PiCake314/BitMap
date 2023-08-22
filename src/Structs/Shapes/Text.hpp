@@ -1,0 +1,33 @@
+#pragma once
+#include "Shapes.hpp"
+
+namespace map::shapes{
+
+    struct Text : Shape{
+
+        // use for named arguments
+        struct Data{
+            // DO NOT ACCESS THESE DIRECTLY
+            std::string font{"defualt"};
+            map::Alignment alignment{map::Alignment::none};
+        };
+
+
+        std::string text;
+        std::string font;
+        map::Alignment alignment;
+
+        Text(std::string, Point, Data &&);
+
+        void rotate(double angle) override;
+
+        [[nodiscard]] ShapePtr rotated(double angle) const override;
+
+        void shift(Point p) override;
+
+        [[nodiscard]] ShapePtr shifted(Point p) const override;
+
+        protected:
+        void draw(Mapper *m) const override;
+    };
+}
