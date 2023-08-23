@@ -63,19 +63,19 @@ namespace map::fnt{
             return m_Fontname;
         }
 
-        [[nodiscard]] const int getFontSize() const{
+        [[nodiscard]] int getFontSize() const{
             return m_Fontsize;
         }
 
-        [[nodiscard]] const bool isBold() const{
+        [[nodiscard]] bool isBold() const{
             return m_Bold;
         }
 
-        [[nodiscard]] const bool isItalic() const{
+        [[nodiscard]] bool isItalic() const{
             return m_Italic;
         }
 
-        [[nodiscard]] const Size& getSpacing() const{
+        [[nodiscard]] Size getSpacing() const{
             return m_Spacing;
         }
 
@@ -83,7 +83,7 @@ namespace map::fnt{
             return m_Transparent_color;
         }
 
-        [[nodiscard]] const int size() const{
+        [[nodiscard]] size_t size() const{
             return m_Letters.size();
         }
 
