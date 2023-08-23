@@ -62,3 +62,4 @@ namespace map{
 #include "Triangle.hpp"
 #include "Ellipse.hpp"
 #include "Polygon.hpp"
+#include "Text.hpp"

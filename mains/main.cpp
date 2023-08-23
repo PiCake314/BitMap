@@ -82,6 +82,7 @@ int main(int argc, char **argv){
 	canvas(*m);
 
 	if(vid){
+		m->setState();
 		m->render(filename);
 		m->clearFrames();
 	}

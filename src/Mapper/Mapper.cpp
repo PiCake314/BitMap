@@ -15,7 +15,7 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
     if(type == Loadtype::edit) loadFile();
     else resetFile();
 
-    m_Fonts.push_back(fnt::Font{"Minecraft"}); // default font
+    m_Fonts.push_back(fnt::Font{"Default"}); // default font "Minecraft"
 }
 
 // video mode
@@ -28,7 +28,7 @@ map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
     if(type == Loadtype::edit) loadFile();
     else resetFile();
 
-    m_Fonts.push_back(fnt::Font{"Minecraft"}); // default font
+    m_Fonts.push_back(fnt::Font{"Default"}); // default font "Minecraft"
 }
 
 
@@ -550,7 +550,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
 
 void map::Mapper::drawText(std::string_view text, Point center, std::string fontname, Alignment alignment){
-    if(fontname == "") fontname = "default";
+    if(fontname == "") fontname = "Default";
 
     int index = -1;
     for(int i = 0; i < m_Fonts.size(); i++){
@@ -570,11 +570,11 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
     int textWidth = 0;
     for(char c : text){
         textWidth += font[c].xoffset;
-        textWidth += font[c].width;
         textWidth += font[c].xadvance;
     }
 
-    int i_start = std::max(center.y - textHeight/2, 0.0);
+    const int i_base = std::max(center.y - textHeight/2, 0.0);
+
     int j_start = std::max(center.x - textWidth/2, 0.0);
 
     // switch (alignment){
@@ -607,13 +607,12 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
     //         break;
     // }
 
-
     // drawing the text
     for(char c : text){
         fnt::Letter l = font[c];
-
+        
+        int i_start = i_base + l.yoffset;
         j_start += l.xoffset;
-        i_start = l.yoffset;
 
         for(int i = i_start; i < i_start + l.height; i++){
             for(int j = j_start; j < j_start + l.width; j++){
@@ -628,17 +627,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
         j_start += l.xadvance + font.getSpacing().width;
     }
 
-
-    // fnt::Letter letter_c = m_Letters['c'];
-
-    // for(int i = 0; i < letter_c.height; i++){
-    //     for(int j = 0; j < letter_c.width; j++){
-    //         if(letter_c.buffer[i*letter_c.width + j] != clr::BLACK){
-    //             m_Map[int((center.y + i + letter_c.yoffset)*m_Size.width + center.x + j + letter_c.xoffset)] = letter_c.buffer[i*letter_c.width + j];
-    //         }
-    //     }
-    // }
-
+    if(m_Set_state) setState();
 }
 
 
@@ -818,7 +807,7 @@ void map::Mapper::rotate(float angle){
 
 
 
-void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float seconds){
+void map::Mapper::animate(map::shapes::Shape *(*provider)(const int, const int), float seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
@@ -832,6 +821,7 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(int, const int), float
         copy(temp, m_Map);
         auto shape = provider(frame, frames);
         draw(shape);
+        if(!m_Set_state) setState();
         saveFrame();
         std::clog << frame << '/' << frames << '\n';
 

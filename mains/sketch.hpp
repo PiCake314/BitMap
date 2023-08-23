@@ -3,47 +3,72 @@
 extern int height, width; // importing the height and width of the canvas
 
 
+map::shapes::Shape* growingCircle(const int frame, const int frames){
+    int radius = (frame*1.)/(frames) * 100;
+    return new map::shapes::Circle{{width/2., height/2. - 150}, radius, {.color={11, 134, 216}, .filled=true}};
+}
+
+
+map::shapes::Shape* textInMiddle(const int frame, const int frames){
+    return new map::shapes::Text{"m", {width/2. + 4, height/2. - 170}, {.font="Consolas164"}};
+}
+
+
+
+map::shapes::Shape* restOfTexts(const int frame, const int frames){
+    std::string text = "Consulting";
+    int num_letters = (frame*1.)/(frames) * text.size();
+    return new map::shapes::Text{text.substr(0, num_letters), {width/2., height/2. + 50}, {.font="Jetbrains"}};
+}
+
+map::shapes::Shape* restOfTexts2(const int frame, const int frames){
+    std::string text = "Contracting";
+    int num_letters = (frame*1.)/(frames) * text.size();
+    return new map::shapes::Text{text.substr(0, num_letters), {width/2., height/2.+120}, {.font="Jetbrains"}};
+}
+
+
+map::shapes::Shape* restOfTexts3(const int frame, const int frames){
+    std::string text = "Code Review";
+    int num_letters = (frame*1.)/(frames) * text.size();
+    return new map::shapes::Text{text.substr(0, num_letters), {width/2., height/2.+190}, {.font="Jetbrains"}};
+}
+
+
+map::shapes::Shape* restOfTexts4(const int frame, const int frames){
+    std::string text = "Interview Prep";
+    int num_letters = (frame*1.)/(frames) * text.size();
+    return new map::shapes::Text{text.substr(0, num_letters), {width/2., height/2.+260}, {.font="Jetbrains"}};
+}
+
+
+
 void canvas(map::Mapper &m){
-    // using namespace map::shapes;
+    m.fill(map::clr::BLACK);
+    m.loadFont("Consolas164");
 
-    // m.fill();
+    m.animate(growingCircle, .5);
+    auto circle = map::shapes::Circle{{width/2., height/2. - 150}, 100, {.color={11, 134, 216}, .filled=true}};
+    m.draw(&circle);
+    auto text = map::shapes::Text{"m", {width/2. + 4, height/2. - 170}, {.font="Consolas164"}};
+    m.draw(&text);
 
-    // const int stripe_width = height/13 + 1;
-    // const double x_mid = width/2;
+    m.animate(textInMiddle, .5);
 
-    // for(int i = 0; i < 7; i++){
-    //     const Rect red({x_mid, i*2*stripe_width + stripe_width/2.}, width, stripe_width, {.color = {200, 0, 0}, .filled = true});
+    m.loadFont("Jetbrains");
 
-    //     m.draw(&red);
-    // }
+    m.animate(restOfTexts, .5);
+    auto t = map::shapes::Text{"Consulting", {width/2., height/2.+50}, {.font="Jetbrains"}};
+    m.draw(&t);
 
-    // const double box_width = width/2.5;
-    // const double box_height = 7*stripe_width;
+    m.animate(restOfTexts2, .5);
+    t = map::shapes::Text{"Contracting", {width/2., height/2.+120}, {.font="Jetbrains"}};
+    m.draw(&t);
 
-    // const Rect box({}, box_width, box_height, {.color = {0, 0, 150}, .filled = true, .rectAlignment = map::RectAlignment::Rtop_left});
+    m.animate(restOfTexts3, .5);
+    t = map::shapes::Text{"Code Review", {width/2., height/2.+190}, {.font="Jetbrains"}};
+    m.draw(&t);
 
-    // m.draw(&box);
-
-
-    // const int outline_width = box_width ;
-    // const int outline_height = box_height - 5;
-
-    // bool flag = true;
-
-    // // 11 by 9 grid
-    // for(int i = 0; i < 9; i++){
-    //     for(int j = 0; j < 11; j++, flag = !flag){ // toggling the flag
-    //         if(flag){
-    //             const double x = (j/11.)*outline_width + 25;
-    //             const double y = (i/9.)*outline_height + 25;
-    //             const Circle star({x, y}, 10, {.color = map::clr::WHITE, .filled = true});
-
-    //             m.draw(&star);
-    //         }
-    //     }
-    // }
-
-    m.loadFont("Minecraft.fnt");
-    m.drawText("What the actual fuck!", {width/2., height/2.});
+    m.animate(restOfTexts4, .5);
 
 }

@@ -143,7 +143,7 @@ namespace map{
             /**
              * @param font: the name of the font to use. (passing "" will use the default font)
             */
-            void drawText(std::string_view, Point, std::string font = "default", Alignment = Alignment::none);
+            void drawText(std::string_view, Point, std::string font = "Default", Alignment = Alignment::none);
 
             
             void draw(const shapes::Shape *shape);
@@ -180,7 +180,7 @@ namespace map{
 
 
 
-            void animate(map::shapes::Shape *(*)(int, const int), float seconds);
+            void animate(map::shapes::Shape *(*)(const int, const int), float seconds);
 
 
             // ----------------------- Video Related Functions -----------------------

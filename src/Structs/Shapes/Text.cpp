@@ -1,7 +1,7 @@
 #include "Text.hpp"
 
 map::shapes::Text::Text(std::string t, Point p, Data &&d)
-: text{t}, font{d.font}, alignment{d.alignment}, Shape(p, clr::RGB{}, 1)
+: Shape(p, clr::RGB{}, 1), text{t}, font{d.font}, alignment{d.alignment}
 {}
 
 
@@ -22,6 +22,11 @@ map::shapes::ShapePtr map::shapes::Text::shifted(Point p) const{
     ShapePtr t = std::make_unique<Text>(text, center, Data{.font = font, .alignment = alignment});
     t->shift(p);
     return t;
+}
+
+
+size_t map::shapes::Text::size() const{
+    return text.size();
 }
 
 

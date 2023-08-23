@@ -8,7 +8,7 @@ namespace map::shapes{
         // use for named arguments
         struct Data{
             // DO NOT ACCESS THESE DIRECTLY
-            std::string font{"defualt"};
+            std::string font{"Default"};
             map::Alignment alignment{map::Alignment::none};
         };
 
@@ -26,6 +26,8 @@ namespace map::shapes{
         void shift(Point p) override;
 
         [[nodiscard]] ShapePtr shifted(Point p) const override;
+
+        [[nodiscard]] size_t size() const;
 
         protected:
         void draw(Mapper *m) const override;

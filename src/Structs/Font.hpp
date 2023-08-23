@@ -32,8 +32,8 @@ namespace map::fnt{
         }
 
         ~Letter(){
-            if(buffer)
-                delete[] buffer;
+            // if(buffer)
+            //     delete[] buffer;
         }
     };
 
@@ -112,6 +112,7 @@ namespace map::fnt{
 
         void loadinfo(){
             std::ifstream file{FONT_PATH + m_FNT_Filename};
+            if(!file.is_open())
             assert(file.is_open());
 
             std::string line;
@@ -119,22 +120,32 @@ namespace map::fnt{
             std::string h;
             std::string num_letters;
 
-            file >> line >> line >> line;
-            m_Fontsize = std::stoi(line.substr(5));
-
-            file >> line;
-            m_Bold = line.at(5) == '1';
-
-            file >> line;
-            m_Italic = line.at(7) == '1';
-
             std::getline(file, line);
+
+            int size_ind = line.find("size=");
+            assert(size_ind != std::string::npos);
+            std::string size_str = line.substr(size_ind + 5);
+            m_Fontsize = std::stoi(size_str.substr(0, size_str.find(" ")));
+
+
+            int bold_ind = line.find("bold=");
+            assert(bold_ind != std::string::npos);
+            std::string bold_str = line.substr(bold_ind + 5);
+            m_Bold = bold_str.at(0) == '1';
+
+
+            int italic_ind = line.find("italic=");
+            assert(italic_ind != std::string::npos);
+            std::string italic_str = line.substr(italic_ind + 7);
+            m_Italic = italic_str.at(0) == '1';
+
+
             int spacing_ind = line.find("spacing=");
-            if(spacing_ind != std::string::npos){
-                std::string spacing_str = line.substr(spacing_ind + 8);
-                m_Spacing.width = std::stoi(spacing_str.substr(0, spacing_str.find(",")));
-                m_Spacing.height = std::stoi(spacing_str.substr(spacing_str.find(",") + 1));
-            }
+            assert(spacing_ind != std::string::npos);
+            std::string spacing_str = line.substr(spacing_ind + 8);
+            m_Spacing.width = std::stoi(spacing_str.substr(0, spacing_str.find(",")));
+            m_Spacing.height = std::stoi(spacing_str.substr(spacing_str.find(",") + 1));
+
 
             file >> line >> line >> line >> w >> h;
             std::getline(file, line);
