@@ -17,7 +17,7 @@ image: mains/main.cpp src/Mapper/Mapper.cpp
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp
-	g++ -std=c++20 -o test unit_tests/test.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Wextra && ./test
+	g++ -std=c++20 -o test unit_tests/test.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Weverything && ./test
 	# make image filename=test.ppm && make clean
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
