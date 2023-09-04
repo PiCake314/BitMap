@@ -20,6 +20,8 @@ namespace map::shapes{
 
         Line(Point c, int len, double angle, Data &&);
 
+        Line(Point s, Point e, Data &&);
+
         Point start() const;
 
         Point end() const;
@@ -32,7 +34,12 @@ namespace map::shapes{
 
         [[nodiscard]] ShapePtr shifted(Point p) const override;
 
+        [[nodiscard]] bool on(Point p) const;
+
         protected:
         void draw(Mapper *m) const override;
+
+        private:
+            Point m_start, m_end;
     };
 }

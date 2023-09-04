@@ -42,13 +42,25 @@ namespace map{
             return *this = *this / f;
         }
 
-        constexpr int dist(Point p){
+        constexpr bool operator == (const Point& p) const = default;
+
+        constexpr double dist(Point p){
             return sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
         }
 
+
+        static constexpr double dist(Point a, Point b){
+            return a.dist(b);
+        }
+
         
-        constexpr int distSqrd(Point p){
+        constexpr double distSqrd(Point p){
             return pow(x - p.x, 2) + pow(y - p.y, 2);
+        }
+
+
+        static constexpr double distSqrd(Point a, Point b){
+            return a.distSqrd(b);
         }
 
         // Point operator = (Point p){

@@ -41,38 +41,39 @@ bool safePoint(map::Point p, map::Size s){
 map::Point lerp(map::Point p1, map::Point p2, float dt){
     int x =  p1.x + (p2.x-p1.x)*dt;
     int y =  p1.y + (p2.y-p1.y)*dt;
+    // TODO: refactor using std::lerp
 
     return map::Point(x, y);
 }
 
 
 
-std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, int end2){
-    std::vector<std::pair<int, int>> ret((end1 - begin1) * (end2 - begin2));
+// std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, int end2){
+//     std::vector<std::pair<int, int>> ret((end1 - begin1) * (end2 - begin2));
 
-    for(int i = begin1; i < end1; i++){
-        for(int j = begin2; j < end2; j++){
-            ret.push_back(std::make_pair(i, j));
-        }
-    }
+//     for(int i = begin1; i < end1; i++){
+//         for(int j = begin2; j < end2; j++){
+//             ret.push_back(std::make_pair(i, j));
+//         }
+//     }
 
-    return ret;
-}
-
-
-
-void copy(const std::vector<map::clr::RGB> &src, map::clr::RGB *dest){
-    int s = src.size();
-    for(int i = 0; i < s; i++){
-        dest[i] = src[i];
-    }
-}
+//     return ret;
+// }
 
 
-constexpr double distFromLine(map::Point p1, map::Point p2, map::Point p){
-    double a = p2.y - p1.y;
-    double b = p1.x - p2.x;
-    double c = p2.x*p1.y - p1.x*p2.y;
 
-    return (abs(a*p.x + b*p.y + c)*abs(a*p.x + b*p.y + c))/(a*a + b*b);
+// void copy(const std::vector<map::clr::RGB> &src, map::clr::RGB *dest){
+//     int s = src.size();
+//     for(int i = 0; i < s; i++){
+//         dest[i] = src[i];
+//     }
+// }
+
+
+constexpr double distFromLineSquared(map::Point p1, map::Point p2, map::Point p){
+    const double a = p2.y - p1.y;
+    const double b = p1.x - p2.x;
+    const double c = p2.x*p1.y - p1.x*p2.y;
+
+    return (std::abs(a*p.x + b*p.y + c) * std::abs(a*p.x + b*p.y + c))/(a*a + b*b);
 }

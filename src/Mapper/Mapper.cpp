@@ -154,6 +154,7 @@ void map::Mapper::drawAt(Point p, map::clr::RGB color){
 
 
 void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thickness){
+    if(thickness < 2) thickness = 2;
 
     int i_start = std::clamp(std::min(p1.y, p2.y), 0., m_Size.height-1.);
     int i_end = std::clamp(std::max(p1.y, p2.y), 0., m_Size.height - 1.);
@@ -166,7 +167,7 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
         // #pragma omp parallel for simd collapse(2)a
         for(int i = i_start; i <= i_end; i++){
             for(int j = j_start; j <= j_end; j++){
-                if(distFromLine(p1, p2, {float(j), float(i)}) <= (thickness/2)*(thickness/2)){
+                if(distFromLineSquared(p1, p2, {float(j), float(i)}) <= std::pow(thickness/2., 2)){
                     m_Map[i*m_Size.width + j] = color;
                 }
             }
@@ -234,13 +235,52 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
 }
 
 
+std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std::vector<map::shapes::Line> lines){
+    for(const auto &line : lines){
+        if(line.on(p)) return {true, line};
+    }
 
-void map::Mapper::drawMulti(std::vector<Point> points, map::clr::RGB color, bool thick){
+    return {false, std::nullopt};
+}
+
+
+void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bool filled, int thick){
     assert(points.size() >= 2);
-    int limit = points.size() - 1;
-    for(int i = 0; i < limit; i++)
-        drawLine(points[i], points[i+1], color, thick);
 
+    // const int limit = points.size() - 1;
+    // for(int i = 0; i < limit; i++)
+    //     drawLine(points[i], points[i+1], color, thick);
+
+    // drawLine(points.back(), points.front(), color, thick);
+
+
+    if(filled){
+        std::vector<map::shapes::Line> lines;
+        const int num_lines = points.size() - 1;
+        for(int i = 0; i < num_lines; i++)
+            lines.push_back(map::shapes::Line(points[i], points[i+1], {.color = color, .thickness = thick}));
+
+        lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
+
+        for(int i = 0; i < m_Size.height; i++){
+            for(int j = 0; j < m_Size.width; j++){
+
+                int count = 0;
+                for(int k = 0; k <= j; k++){
+                    // count how many times you cross a line
+                    for(const auto &line : lines){
+                        if(line.on({k*1., i*1.})){
+                            count++;
+                            for(; line.on({k*1., i*1.}); k++);
+                            break;
+                        }
+                    }
+                }
+
+                if(count % 2 == 1) m_Map[i*m_Size.width + j] = color;
+            }
+        }
+    }
 
     if(m_Set_state) setState();
 }
@@ -618,7 +658,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
             for(int j = j_start; j < j_start + l.width; j++){
                 const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
 
-                if(pixel != font.getTransparentColor() && safePoint({j*1., i*1.}, m_Size)){
+                if(pixel != font.getTransparentColor() && safePoint({j*1., i*1.})){
                     m_Map[i*m_Size.width + j] = pixel;
                 }
             }
@@ -650,41 +690,17 @@ void map::Mapper::draw(const map::shapes::Shape *s){
 }
 
 
-
-// void map::Mapper::bezierQuadCurve(Point p1, Point p2, Point c, float dt, map::clr::RGB color, bool thick){
-//     Point l1;
-//     Point l2;
-
-//     Point curr;
-//     Point prev = p1;
-
-//     bool s = m_Set_state;
-//     m_Set_state = false;
-//     for(float a = 0; a < 1+dt/2; a += dt){
-//         l1 = lerp(p1, c, a);
-//         l2 = lerp(c, p2, a);
-//         curr = lerp(l1, l2, a);
-    
-//         drawLine(prev, curr, color, thick);
-//         prev = curr;
-//     }
-//     m_Set_state = s;
-
-//     if(m_Set_state) setState();
-// }
-
-
-
 void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB color, bool thick){
     assert(pts.size() >= 2);
 
-    int l = pts.size();
+    const int l = pts.size();
     
     Point curr;
     Point prev = pts[0];
 
     bool s = m_Set_state;
     m_Set_state = false;
+
     for(float a = 0; a <= 1; a += dt){
         std::vector<std::vector<Point>> lerpVec = {pts};
         for(int i = 1; i < l; i++){
@@ -796,7 +812,7 @@ void map::Mapper::rotate(float angle){
             int y2 = ((x - m_Size.width/2)*sin(angle) + (y - m_Size.height/2)*cos(angle) + m_Size.height/2);
             int x2 = ((x - m_Size.width/2)*cos(angle) - (y - m_Size.height/2)*sin(angle) + m_Size.width/2);
 
-            if(safePoint({float(x2),float(y2)}, m_Size)){
+            if(safePoint({float(x2),float(y2)})){
                 m_Map[y2*m_Size.width + x2] = temp[y*m_Size.width + x];
             }
         }
@@ -818,7 +834,8 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(const int, const int),
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
 
     for(int frame = 0; frame <= frames; frame++){
-        copy(temp, m_Map);
+        // copy(temp, m_Map); // can be replaced with memcpy
+        memcpy(m_Map, &temp[0], temp.size());
         auto shape = provider(frame, frames);
         draw(shape);
         if(!m_Set_state) setState();
@@ -827,7 +844,8 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(const int, const int),
 
         delete shape;
     }
-    copy(temp, m_Map);
+    // copy(temp, m_Map); // can be replaced with memcpy
+    memcpy(m_Map, &temp[0], temp.size());
 
     std::clog << "Scene Ended!\n";
 }

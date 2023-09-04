@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cassert>
 #include <variant>
+#include <optional>
 #include <string_view>
 #include <memory>
 
@@ -118,7 +119,7 @@ namespace map{
 
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
 
-            void drawMulti(std::vector<Point>, clr::RGB = clr::RGB(), bool thick = false);
+            void drawPolygon(std::vector<Point>, clr::RGB = clr::RGB(), bool filled = false, int thick = 1);
 
 
             /**
@@ -202,6 +203,12 @@ namespace map{
             clr::RGB *begin();
 
             clr::RGB *end();
+
+
+            // ----------------------- Private funcs -----------------------
+            bool safePoint(map::Point p){
+                return p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height;
+            }
 
     };
 
