@@ -122,25 +122,25 @@ namespace map::fnt{
 
             std::getline(file, line);
 
-            int size_ind = line.find("size=");
+            size_t size_ind = line.find("size=");
             assert(size_ind != std::string::npos);
             std::string size_str = line.substr(size_ind + 5);
             m_Fontsize = std::stoi(size_str.substr(0, size_str.find(" ")));
 
 
-            int bold_ind = line.find("bold=");
+            size_t bold_ind = line.find("bold=");
             assert(bold_ind != std::string::npos);
             std::string bold_str = line.substr(bold_ind + 5);
             m_Bold = bold_str.at(0) == '1';
 
 
-            int italic_ind = line.find("italic=");
+            size_t italic_ind = line.find("italic=");
             assert(italic_ind != std::string::npos);
             std::string italic_str = line.substr(italic_ind + 7);
             m_Italic = italic_str.at(0) == '1';
 
 
-            int spacing_ind = line.find("spacing=");
+            size_t spacing_ind = line.find("spacing=");
             assert(spacing_ind != std::string::npos);
             std::string spacing_str = line.substr(spacing_ind + 8);
             m_Spacing.width = std::stoi(spacing_str.substr(0, spacing_str.find(",")));

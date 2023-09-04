@@ -40,7 +40,7 @@ namespace map{
 
             constexpr bool operator==(const RGB& rgb) const = default;
 
-            constexpr friend std::ostream& operator<<(std::ostream &os, const RGB &c){
+            /*constexpr*/ friend std::ostream& operator<<(std::ostream &os, const RGB &c){
                 return (os << c.red << " " << c.green << " " << c.blue);
             }
         };

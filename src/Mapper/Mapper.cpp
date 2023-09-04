@@ -268,10 +268,19 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
                 int count = 0;
                 for(int k = 0; k <= j; k++){
                     // count how many times you cross a line
-                    for(const auto &line : lines){
+                    const size_t s = lines.size();
+                    for(size_t ind = 0; ind < s; ++ind){
+                        const auto &line = lines[ind];
+
                         if(line.on({k*1., i*1.})){
-                            count++;
-                            for(; line.on({k*1., i*1.}); k++);
+                            ++count;
+                            for(; line.on({k*1., i*1.}); ++k);
+
+                            if(lines[(ind-1 + s) % s].on({k*1., i*1.}) || lines[(ind+1) % s].on({k*1., i*1.})){
+                                // std::puts("IN!");
+                                ++count;
+                            }
+
                             break;
                         }
                     }
@@ -593,7 +602,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
     if(fontname == "") fontname = "Default";
 
     int index = -1;
-    for(int i = 0; i < m_Fonts.size(); i++){
+    for(size_t i = 0; i < m_Fonts.size(); i++){
         if(m_Fonts[i].getFontname() == fontname){
             index = i;
             break;

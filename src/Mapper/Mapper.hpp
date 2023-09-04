@@ -9,6 +9,8 @@
 #include <variant>
 #include <optional>
 #include <string_view>
+// #include <string>
+#include <cstring>
 #include <memory>
 
 #include "../Structs/Size.hpp"

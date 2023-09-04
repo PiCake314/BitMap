@@ -37,19 +37,19 @@ namespace map{
             std::vector<Point> points;
 
 
-            constexpr Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
+            Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
             : center(p), color(c), thickness(t), points(pts) {}
 
 
-            constexpr virtual void rotate(double) = 0;
-            [[nodiscard]] constexpr virtual ShapePtr rotated(double) const = 0;
-            constexpr virtual void shift(Point) = 0;
-            [[nodiscard]] constexpr virtual ShapePtr shifted(Point) const = 0;
+            virtual void rotate(double) = 0;
+            [[nodiscard]] virtual ShapePtr rotated(double) const = 0;
+            virtual void shift(Point) = 0;
+            [[nodiscard]] virtual ShapePtr shifted(Point) const = 0;
 
-            constexpr virtual ~Shape() = default;
+            virtual ~Shape() = default;
 
             protected:
-            constexpr virtual void draw(Mapper*) const = 0;
+            virtual void draw(Mapper*) const = 0;
 
 
         };
