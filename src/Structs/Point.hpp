@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include <concepts>
 
 namespace map{
     struct Point{
@@ -9,6 +10,8 @@ namespace map{
         constexpr Point() : x(0), y(0) {}
         constexpr Point(double x_, double y_) : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
+        
+        constexpr Point(std::integral auto x_, std::integral auto y_) : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
 
         constexpr Point operator+(Point p){
             return {x + p.x, y + p.y};
@@ -18,31 +21,31 @@ namespace map{
             return {x - p.x, y - p.y};
         }
 
-        constexpr Point operator * (double f){
+        constexpr Point operator*(double f){
             return {x * f, y * f};
         }
 
-        constexpr Point operator / (double f){
+        constexpr Point operator/(double f){
             return {x / f, y / f};
         }
 
-        constexpr Point operator += (Point p){
+        constexpr Point operator+=(Point p){
             return *this = *this + p;
         }
 
-        constexpr Point operator -= (Point p){
+        constexpr Point operator-=(Point p){
             return *this = *this - p;
         }
 
-        constexpr Point operator *= (double f){
+        constexpr Point operator*=(double f){
             return *this = *this * f;
         }
 
-        constexpr Point operator /= (double f){
+        constexpr Point operator/=(double f){
             return *this = *this / f;
         }
 
-        constexpr bool operator == (const Point& p) const = default;
+        constexpr bool operator==(const Point& p) const = default;
 
         constexpr double dist(Point p){
             return sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));

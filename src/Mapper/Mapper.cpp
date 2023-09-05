@@ -262,31 +262,42 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
 
         lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
 
+        bool b = true;
+
         for(int i = 0; i < m_Size.height; i++){
+
+            int count = 0;
             for(int j = 0; j < m_Size.width; j++){
 
-                int count = 0;
-                for(int k = 0; k <= j; k++){
-                    // count how many times you cross a line
-                    const size_t s = lines.size();
-                    for(size_t ind = 0; ind < s; ++ind){
-                        const auto &line = lines[ind];
 
-                        if(line.on({k*1., i*1.})){
-                            ++count;
-                            for(; line.on({k*1., i*1.}); ++k);
+                // count how many times you cross a line
+                const size_t s = lines.size();
+                for(size_t ind = 0; ind < s; ++ind){
+                    const auto &line = lines[ind];
 
-                            if(lines[(ind-1 + s) % s].on({k*1., i*1.}) || lines[(ind+1) % s].on({k*1., i*1.})){
-                                // std::puts("IN!");
-                                ++count;
-                            }
-
-                            break;
+                    if(line.on({j, i})){
+                        if(b){
+                            std::clog << "Point: " << Point(j, i) << '\n';
+                            std::clog << "Line start: " << line.start() << '\n';
+                            std::clog << "Line end: " << line.end() << '\n';
+                            b = false;
                         }
+
+                        ++count;
+                        for(; line.on({j, i}); ++j);
+
+                        // if(lines[(ind-1 + s) % s].on({j, i}))
+                        //     ++count;
+
+                        // if(lines[(ind+1 + s) % s].on({j, i}))
+                        //     ++count;
+
+                        // break;
                     }
                 }
 
                 if(count % 2 == 1) m_Map[i*m_Size.width + j] = color;
+
             }
         }
     }
@@ -667,7 +678,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
             for(int j = j_start; j < j_start + l.width; j++){
                 const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
 
-                if(pixel != font.getTransparentColor() && safePoint({j*1., i*1.})){
+                if(pixel != font.getTransparentColor() && safePoint({j, i})){
                     m_Map[i*m_Size.width + j] = pixel;
                 }
             }
@@ -821,7 +832,7 @@ void map::Mapper::rotate(float angle){
             int y2 = ((x - m_Size.width/2)*sin(angle) + (y - m_Size.height/2)*cos(angle) + m_Size.height/2);
             int x2 = ((x - m_Size.width/2)*cos(angle) - (y - m_Size.height/2)*sin(angle) + m_Size.width/2);
 
-            if(safePoint({float(x2),float(y2)})){
+            if(safePoint({x2, y2})){
                 m_Map[y2*m_Size.width + x2] = temp[y*m_Size.width + x];
             }
         }

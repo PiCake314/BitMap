@@ -65,6 +65,7 @@ bool map::shapes::Line::on(Point p) const {
     const Point p1 = start();
     const Point p2 = end();
 
+
     if(p.x < std::min(p1.x, p2.x) || p.x > std::max(p1.x, p2.x) || p.y < std::min(p1.y, p2.y) || p.y > std::max(p1.y, p2.y))
         return false;
 
@@ -72,6 +73,7 @@ bool map::shapes::Line::on(Point p) const {
     const double b = p1.x - p2.x;
     const double c = p2.x*p1.y - p1.x*p2.y;
 
+    // calculates distance the distance squared 
     return (std::abs(a*p.x + b*p.y + c) * std::abs(a*p.x + b*p.y + c))/(a*a + b*b) <= std::pow(this->thickness/2., 2);
 }
 
