@@ -1,7 +1,7 @@
 #pragma once
 
 namespace map{
-    enum Alignment{
+    enum class Alignment{
         none = -1,
         center = 0,
         top,

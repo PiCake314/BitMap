@@ -7,7 +7,7 @@
 #define FONT_PATH "fonts/"
 
 namespace map::fnt{
-    enum Alphabet{
+    enum class Alphabet{
         SPACE = 32, Exclamation, Quotation, Hash, Dollar, Percent, Ampersand, Apostrophe, LeftParenthesis, RightParenthesis,
         Asterisk, Plus, Comma, Minus, Period, Slash, Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine,
         Colon, Semicolon, LessThan, Equal, GreaterThan, Question, At,

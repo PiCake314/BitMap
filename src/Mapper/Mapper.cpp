@@ -320,42 +320,42 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 
 
     switch (alignment){
-        case RectAlignment::Rcenter:
+        case RectAlignment::center:
             center.x = m_Size.width/2;
             center.y = m_Size.height/2;
             break;
 
-        case RectAlignment::Rtop_left:
+        case RectAlignment::top_left:
             center.x = width/2;
             center.y = height/2;
             break;
 
-        case RectAlignment::Rtop_right:
+        case RectAlignment::top_right:
             center.x = m_Size.width - width/2;
             center.y = height/2;
             break;
 
-        case RectAlignment::Rbottom_left:
+        case RectAlignment::bottom_left:
             center.x = width/2;
             center.y = m_Size.height - height/2;
             break;
 
-        case RectAlignment::Rbottom_right:
+        case RectAlignment::bottom_right:
             center.x = m_Size.width - width/2;
             center.y = m_Size.height - height/2;
             break;
 
-        case RectAlignment::Rwidth:
+        case RectAlignment::width:
             width = m_Size.width;
             center.x = m_Size.width/2;
             break;
         
-        case RectAlignment::Rheight:
+        case RectAlignment::height:
             height = m_Size.height;
             center.y = m_Size.height/2;
             break;
         
-        case RectAlignment::Rnone:
+        case RectAlignment::none:
             break;
     }
 
@@ -602,7 +602,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
 
 
 void map::Mapper::drawText(std::string_view text, Point center, std::string fontname, Alignment alignment){
-    if(fontname == "") fontname = "Default";
+    if(fontname == "") fontname = m_Fonts.back().getFontname();
 
     int index = -1;
     for(size_t i = 0; i < m_Fonts.size(); i++){

@@ -8,7 +8,7 @@ namespace map::shapes{
         // use for named arguments
         struct Data{
             // DO NOT ACCESS THESE DIRECTLY
-            std::string font{"Default"};
+            std::string font{""};
             map::Alignment alignment{map::Alignment::none};
         };
 

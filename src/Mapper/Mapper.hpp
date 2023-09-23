@@ -127,7 +127,7 @@ namespace map{
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
-            void drawRect(Point center, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::Rnone);
+            void drawRect(Point center, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
 
 
             /**
