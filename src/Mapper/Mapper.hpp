@@ -183,7 +183,7 @@ namespace map{
 
 
 
-            void animate(map::shapes::Shape *(*)(const int, const int), float seconds);
+            void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
 
 
             // ----------------------- Video Related Functions -----------------------

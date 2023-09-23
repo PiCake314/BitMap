@@ -47,31 +47,25 @@ namespace map{
 
         constexpr bool operator==(const Point& p) const = default;
 
-        constexpr double dist(Point p){
-            return sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
+        constexpr double distSqrd(Point p) const {
+            return pow(x - p.x, 2) + pow(y - p.y, 2);
         }
 
+        constexpr double dist(Point p) const {
+            return std::sqrt(this->distSqrd(p));
+        }
+
+        constexpr bool isBetween(Point a, Point b) const {
+            return (a.y < y && y < b.y) || (b.y < y && y < a.y);
+        }
 
         static constexpr double dist(Point a, Point b){
             return a.dist(b);
         }
 
-        
-        constexpr double distSqrd(Point p){
-            return pow(x - p.x, 2) + pow(y - p.y, 2);
-        }
-
-
         static constexpr double distSqrd(Point a, Point b){
             return a.distSqrd(b);
         }
-
-        // Point operator = (Point p){
-        //     x = p.x;
-        //     y = p.y;
-        //     return *this;
-        // }
-
 
         constexpr friend Point operator * (double Matrix[2][2], Point p){
             return {
@@ -79,7 +73,6 @@ namespace map{
                 p.x * Matrix[1][0] + p.y * Matrix[1][1]
             };
         }
-
 
         friend std::ostream& operator << (std::ostream &os, const Point& p){
             return os << p.x << ", " << p.y;

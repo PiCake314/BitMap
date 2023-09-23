@@ -38,7 +38,10 @@ map::Mapper::~Mapper(){
 
 
 void map::Mapper::loadFont(std::string_view fontname){
-    m_Fonts.push_back(fnt::Font{fontname});
+    // only
+    std::find_if(m_Fonts.begin(), m_Fonts.end(), [&fontname](const fnt::Font &f){return f.getFontname() == fontname;}) == m_Fonts.end() ? m_Fonts.push_back(fnt::Font{fontname}) : void();
+
+    // m_Fonts.push_back(fnt::Font{fontname});
 }
 
 
@@ -59,22 +62,6 @@ void map::Mapper::doSet(){
 
 void map::Mapper::noSet(){
     m_Set_state = false;
-}
-
-
-void map::Mapper::setState(){
-
-    setInfo();
-    std::string fn = OUTPUT_PATH + m_Filename;
-    std::ofstream fout(fn, std::ios::app);
-
-    for(int i=0; i<m_Size.height; i++){
-        for(int j=0; j<m_Size.width; j++)
-            fout << m_Map[i*m_Size.width + j] << " ";
-        fout << '\n';
-    }
-
-    fout.close();
 }
 
 
@@ -262,7 +249,6 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
 
         lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
 
-        bool b = true;
 
         for(int i = 0; i < m_Size.height; i++){
 
@@ -274,25 +260,31 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
                 const size_t s = lines.size();
                 for(size_t ind = 0; ind < s; ++ind){
                     const auto &line = lines[ind];
+                    Point p{j, i};
 
-                    if(line.on({j, i})){
-                        if(b){
-                            std::clog << "Point: " << Point(j, i) << '\n';
-                            std::clog << "Line start: " << line.start() << '\n';
-                            std::clog << "Line end: " << line.end() << '\n';
-                            b = false;
+                    if(line.on(p)){
+                        ++count;
+                        for(; line.on(p); ++j, ++p.x);
+
+                        if(auto prev = lines[(ind-1 + s) % s]; prev.on(p)){
+                            if(!p.isBetween(prev.end(), line.start())){
+                                ++count;
+
+                                std::clog << "Worked1\n";
+                                break;
+                            }
                         }
 
-                        ++count;
-                        for(; line.on({j, i}); ++j);
+                        if(auto next = lines[(ind+1) % s]; next.on(p)){
+                            if(!p.isBetween(line.end(), next.start())){
+                                ++count;
 
-                        // if(lines[(ind-1 + s) % s].on({j, i}))
-                        //     ++count;
+                                std::clog << "Worked2\n";
+                                break;
+                            }
+                        }
 
-                        // if(lines[(ind+1 + s) % s].on({j, i}))
-                        //     ++count;
-
-                        // break;
+                        break;
                     }
                 }
 
@@ -637,35 +629,35 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
 
     int j_start = std::max(center.x - textWidth/2, 0.0);
 
-    // switch (alignment){
-    //     case Alignment::center:
-    //         center.x = (m_Size.width/2) - textWidth/2;
-    //         center.y = (m_Size.height/2) - textHeight/2;
-    //         break;
+    switch(alignment){
+        case Alignment::center:
+            center.x = (m_Size.width/2) - textWidth/2;
+            center.y = (m_Size.height/2) - textHeight/2;
+            break;
 
-    //     case Alignment::top:
-    //         center.x = (m_Size.width/2) - textWidth/2;
-    //         center.y = 0;
-    //         break;
+        case Alignment::top:
+            center.x = (m_Size.width/2) - textWidth/2;
+            center.y = 0;
+            break;
 
-    //     case Alignment::bottom:
-    //         center.x = (m_Size.width/2) - textWidth/2;
-    //         center.y = m_Size.height - textHeight;
-    //         break;
+        case Alignment::bottom:
+            center.x = (m_Size.width/2) - textWidth/2;
+            center.y = m_Size.height - textHeight;
+            break;
 
-    //     case Alignment::left:
-    //         center.x = 0;
-    //         center.y = (m_Size.height/2) - textHeight/2;
-    //         break;
+        case Alignment::left:
+            center.x = 0;
+            center.y = (m_Size.height/2) - textHeight/2;
+            break;
 
-    //     case Alignment::right:
-    //         center.x = m_Size.width - textWidth;
-    //         center.y = (m_Size.height/2) - textHeight/2;
-    //         break;
+        case Alignment::right:
+            center.x = m_Size.width - textWidth;
+            center.y = (m_Size.height/2) - textHeight/2;
+            break;
         
-    //     case Alignment::none:
-    //         break;
-    // }
+        case Alignment::none:
+            break;
+    }
 
     // drawing the text
     for(char c : text){
@@ -843,7 +835,7 @@ void map::Mapper::rotate(float angle){
 
 
 
-void map::Mapper::animate(map::shapes::Shape *(*provider)(const int, const int), float seconds){
+void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int), float seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
@@ -852,20 +844,21 @@ void map::Mapper::animate(map::shapes::Shape *(*provider)(const int, const int),
     int frames = seconds * m_FPS;
 
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
 
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
-        memcpy(m_Map, &temp[0], temp.size());
+        memcpy(m_Map, &temp[0], temp_size);
         auto shape = provider(frame, frames);
-        draw(shape);
+        draw(shape.get());
         if(!m_Set_state) setState();
         saveFrame();
         std::clog << frame << '/' << frames << '\n';
 
-        delete shape;
+        // delete shape; // for non unique_ptr
     }
     // copy(temp, m_Map); // can be replaced with memcpy
-    memcpy(m_Map, &temp[0], temp.size());
+    memcpy(m_Map, &temp[0], temp_size);
 
     std::clog << "Scene Ended!\n";
 }
@@ -887,6 +880,7 @@ void map::Mapper::render(const std::string &output_file) const{
 
 void map::Mapper::clearFrames() const{
     std::system("rm " VIDEO_TEMP_PATH "*.png");
+    std::system(("rm " + (OUTPUT_PATH + m_Filename)).c_str());
 }
 
 
@@ -948,6 +942,21 @@ void map::Mapper::setInfo(){
     fout.close();
 }
 
+
+void map::Mapper::setState(){
+
+    setInfo();
+    std::string fn = OUTPUT_PATH + m_Filename;
+    std::ofstream fout(fn, std::ios::app);
+
+    for(int i=0; i<m_Size.height; i++){
+        for(int j=0; j<m_Size.width; j++)
+            fout << m_Map[i*m_Size.width + j] << " ";
+        fout << '\n';
+    }
+
+    fout.close();
+}
 
 
 void map::Mapper::resetFile(){
