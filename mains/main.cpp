@@ -6,7 +6,7 @@
 
 #define DEFAULT_SIZE 500
 
-int height = DEFAULT_SIZE, width = DEFAULT_SIZE;
+size_t height = DEFAULT_SIZE, width = DEFAULT_SIZE;
 
 
 #include "sketch.hpp"
@@ -15,7 +15,7 @@ int height = DEFAULT_SIZE, width = DEFAULT_SIZE;
 /**
  * @returns true if video, false if image
 */
-bool setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fps, map::Loadtype &arg, bool debug){
+bool setup(int argc, char **argv, std::string &filename, size_t &h, size_t &w, int &fps, map::Loadtype &arg, bool debug){
 	std::string_view argv1 = argv[1];
 	std::string_view mode = "image";
 
@@ -40,8 +40,8 @@ bool setup(int argc, char **argv, std::string &filename, int &h, int &w, int &fp
     }
 	
 	if(argc > 5){
-		h = std::stoi(argv[4]);
-		w = std::stoi(argv[5]);
+		h = std::stoul(argv[4]);
+		w = std::stoul(argv[5]);
 
 		if(h == 0) h = DEFAULT_SIZE;
 		if(w == 0) w = DEFAULT_SIZE;
@@ -72,8 +72,8 @@ int main(int argc, char **argv){
 
 	std::optional<map::Mapper> m;
 
-	if(vid) m.emplace(filename, map::Size{height, width}, fps, loadtype);
-	else m.emplace(filename, map::Size{height, width}, loadtype);
+	if(vid) m.emplace(filename, map::Size{width, height}, fps, loadtype);
+	else m.emplace(filename, map::Size{width, height}, loadtype);
 
 
 	/* ----------------------------------------------------------------- */

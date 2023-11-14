@@ -32,33 +32,35 @@ map::Point map::shapes::Line::end() const {
 }
 
 
-void map::shapes::Line::rotate(double a){
-    angle += a;
+// void map::shapes::Line::rotate(double a){
+//     angle += a;
 
-    points.at(0) = {center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)};
-    points.at(1) = {center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)};
-}
-
-
-map::shapes::ShapePtr map::shapes::Line::rotated(double angle) const {
-    ShapePtr l = std::make_unique<Line>(*this);
-    l->rotate(angle);
-    return l;
-}
+//     points.at(0) = {center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)};
+//     points.at(1) = {center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)};
+// }
 
 
-void map::shapes::Line::shift(Point p){
-    center += p;
+// map::shapes::ShapePtr map::shapes::Line::rotated(double angle) const {
+//     ShapePtr l = std::make_unique<Line>(*this);
+//     l->rotate(angle);
+//     return l;
+// }
 
-    points.at(0) = {center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)};
-    points.at(1) = {center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)};
-}
 
-map::shapes::ShapePtr map::shapes::Line::shifted(Point p) const {
-    ShapePtr l = std::make_unique<Line>(*this);
-    l->shift(p);
-    return l;
-}
+// void map::shapes::Line::shift(Point p){
+//     center += p;
+
+//     // points.at(0) = {center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)};
+//     // points.at(1) = {center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)};
+//     points.at(0) += p;
+//     points.at(1) += p;
+// }
+
+// map::shapes::ShapePtr map::shapes::Line::shifted(Point p) const {
+//     ShapePtr l = std::make_unique<Line>(*this);
+//     l->shift(p);
+//     return l;
+// }
 
 
 bool map::shapes::Line::on(Point p) const {

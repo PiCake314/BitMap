@@ -51,7 +51,7 @@ namespace map::fnt{
         Font(std::string_view fontname)
         : m_Fontname{fontname}, m_FNT_Filename{m_Fontname + ".fnt"}, m_PPM_Filename{m_Fontname + ".ppm"}
         {
-            assert(m_FNT_Filename.substr(m_FNT_Filename.length()  - 4) == ".fnt");
+            assert(m_FNT_Filename.substr(m_FNT_Filename.length() - 4) == ".fnt");
             assert(m_PPM_Filename.substr(m_PPM_Filename.length() - 4) == ".ppm");
 
             loadinfo();
@@ -154,7 +154,7 @@ namespace map::fnt{
 
             m_Num_letters = std::stoi(num_letters.substr(6));
 
-            m_Image_size = {std::stoi(w.substr(7)), std::stoi(h.substr(7))};
+            m_Image_size = {std::stoul(w.substr(7)), std::stoul(h.substr(7))};
             m_Image_buffer = new map::clr::RGB[m_Image_size.width * m_Image_size.height];
 
             file.close();

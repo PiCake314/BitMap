@@ -26,13 +26,13 @@ namespace map::shapes{
 
         Point end() const;
 
-        void rotate(double a) override;
+        // void rotate(double a) override;
 
-        [[nodiscard]] ShapePtr rotated(double angle) const override;
+        // [[nodiscard]] ShapePtr rotated(double angle) const override;
 
-        void shift(Point p) override;
+        // void shift(Point p) override;
 
-        [[nodiscard]] ShapePtr shifted(Point p) const override;
+        // [[nodiscard]] ShapePtr shifted(Point p) const override;
 
         [[nodiscard]] bool on(Point p) const;
 

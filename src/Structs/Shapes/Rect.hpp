@@ -11,7 +11,7 @@ namespace  map::shapes{
             clr::RGB color{};
             bool filled{false};
             int thickness{};
-            map::RectAlignment rectAlignment{RectAlignment::Rnone};
+            map::RectAlignment rectAlignment{RectAlignment::none};
         };
 
 

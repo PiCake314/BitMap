@@ -52,14 +52,15 @@ namespace map{
             std::string m_Filename_vid;
             Size m_Size;
 
-            int m_FPS; // for video only
+            const int m_FPS; // for video only
+            const double delta; // for video only
             int m_Current_frame; // for video only
 
             std::vector<fnt::Font> m_Fonts;
 
             std::string m_PType; // Meta Data
             int m_Max; // Meta Data
-            /* volatile */ clr::RGB *m_Map; // The canvas (2D array of RGB values)
+            /* volatile */ clr::RGB *m_Map = nullptr; // The canvas (2D array of RGB values)
 
             bool m_Set_state;
 
@@ -82,7 +83,7 @@ namespace map{
 
             void loadFont(std::string_view);
 
-            void setFPS(int);
+            // void setFPS(int);
 
             int getFPS() const;
 
@@ -121,7 +122,7 @@ namespace map{
 
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
 
-            void drawPolygon(std::vector<Point>, clr::RGB = clr::RGB(), bool filled = false, int thick = 1);
+            void drawPolygon(const std::vector<Point>&, clr::RGB = clr::RGB(), bool filled = false, int thick = 1);
 
 
             /**
@@ -183,6 +184,10 @@ namespace map{
 
 
 
+            void animate(map::shapes::ShapePtr (*)(const double), float seconds);
+
+            void animate(map::shapes::ShapePtr (*)(const int, const int, const double), float seconds);
+
             void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
 
 
@@ -198,7 +203,7 @@ namespace map{
 
             // ----------------------- Operators -----------------------
 
-            clr::RGB &operator[](Point);
+            clr::RGB &operator[](const Point&);
 
             clr::RGB &operator[](int);
 

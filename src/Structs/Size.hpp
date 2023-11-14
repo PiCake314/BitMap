@@ -2,7 +2,7 @@
 
 namespace map{
     struct Size{
-        int width, height;
+        size_t width, height;
 
         bool operator==(const Size&) const = default;
     };

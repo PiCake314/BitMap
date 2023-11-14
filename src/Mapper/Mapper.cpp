@@ -6,7 +6,11 @@
 
 // image mode
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
-: m_Filename(fn), m_Size{size.height, size.width}, m_FPS(0), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE), m_XCenter(0), m_YCenter(0)
+: m_Filename(fn),
+m_Size{size.width, size.height},
+m_FPS(0), delta(0), m_Current_frame(0),
+m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
+m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -20,7 +24,11 @@ map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 
 // video mode
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
-: m_Filename(MANGLED_PPM), m_Filename_vid(fn), m_Size{size.height, size.width}, m_FPS(fps), m_Current_frame(0), m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE), m_XCenter(0), m_YCenter(0)
+: m_Filename(MANGLED_PPM), m_Filename_vid(fn),
+m_Size{size.width, size.height},
+m_FPS(fps), delta(1./fps), m_Current_frame(0),
+m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
+m_XCenter(0), m_YCenter(0)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".mp4");
@@ -45,9 +53,9 @@ void map::Mapper::loadFont(std::string_view fontname){
 }
 
 
-void map::Mapper::setFPS(int fps){
-    m_FPS = fps;
-}
+// void map::Mapper::setFPS(int fps){
+//     m_FPS = fps;
+// }
 
 
 int map::Mapper::getFPS() const{
@@ -160,11 +168,15 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
             }
         }
     }
-    else for(int i = i_start; i <= i_end; i++){
-            for(int j = j_start; j < j_end; j++){
+    else{
+        i_start -= thickness/2; j_start -= thickness/2;
+        i_end += thickness/2; j_end += thickness/2;
+        for(int i = i_start; i <= i_end; i++){
+            for(int j = j_start; j <= j_end; j++){
                 m_Map[i*m_Size.width + j] = color;
             }
         }
+    }
 
     if(m_Set_state) setState();
 }
@@ -231,15 +243,14 @@ std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std:
 }
 
 
-void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bool filled, int thick){
-    assert(points.size() >= 2);
+void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
+    assert(points.size() > 2);
 
     // const int limit = points.size() - 1;
-    // for(int i = 0; i < limit; i++)
+    // for(int i = 0; i < limit; ++i)
     //     drawLine(points[i], points[i+1], color, thick);
 
     // drawLine(points.back(), points.front(), color, thick);
-
 
     if(filled){
         std::vector<map::shapes::Line> lines;
@@ -248,6 +259,7 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
             lines.push_back(map::shapes::Line(points[i], points[i+1], {.color = color, .thickness = thick}));
 
         lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
+        const size_t s = lines.size(); // count how many times you cross a line
 
 
         for(int i = 0; i < m_Size.height; i++){
@@ -255,31 +267,40 @@ void map::Mapper::drawPolygon(std::vector<Point> points, map::clr::RGB color, bo
             int count = 0;
             for(int j = 0; j < m_Size.width; j++){
 
-
-                // count how many times you cross a line
-                const size_t s = lines.size();
                 for(size_t ind = 0; ind < s; ++ind){
                     const auto &line = lines[ind];
                     Point p{j, i};
 
-                    if(line.on(p)){
+                    if(line.on(p)){ 
                         ++count;
                         for(; line.on(p); ++j, ++p.x);
 
                         if(auto prev = lines[(ind-1 + s) % s]; prev.on(p)){
-                            if(!p.isBetween(prev.end(), line.start())){
+                            if(!p.isBetween(prev.start(), line.end(), thick)){
                                 ++count;
 
-                                std::clog << "Worked1\n";
+                                std::clog << "Worked:\n";
+                                // std::clog << "p: " << p << '\n';
+                                std::clog << "p: " << std::round(p.x) << ", " << std::round(p.y) << '\n';
+                                // std::clog << "prev.end(): " << prev.end() << '\n';
+                                std::clog << "prev.end(): " << std::round(prev.start().x + thick) << ", " << std::round(prev.start().y + thick) << '\n';
+                                // std::clog << "line.start(): " << line.start() << '\n';
+                                std::clog << "line.start(): " << std::round(line.end().x + thick) << ", " << std::round(line.end().y + thick) << '\n';
                                 break;
                             }
                         }
 
-                        if(auto next = lines[(ind+1) % s]; next.on(p)){
-                            if(!p.isBetween(line.end(), next.start())){
+                        else if(auto next = lines[(ind+1) % s]; next.on(p)){
+                            if(!p.isBetween(line.start(), next.end(), thick)){
                                 ++count;
 
-                                std::clog << "Worked2\n";
+                                std::clog << "Worked2 on\n";
+                                // std::clog << "p: " << p << '\n';
+                                std::clog << "p: " << std::round(p.x) << ", " << std::round(p.y) << '\n';
+                                // std::clog << "line.end(): " << line.end() << '\n';
+                                std::clog << "line.end(): " << std::round(line.start().x + thick) << ", " << std::round(line.start().y + thick) << '\n';
+                                // std::clog << "next.start(): " << next.start() << '\n';
+                                std::clog << "next.start(): " << std::round(next.end().x + thick) << ", " << std::round(next.end().y + thick) << '\n';
                                 break;
                             }
                         }
@@ -471,8 +492,7 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
                 if(((i - center.y) * (i - center.y) + (j - center.x) * (j - center.x)) <= r*r)
                         m_Map[i*m_Size.width + j] = color;
     }
-    else
-        for(int i = i_start; i < i_end; i++)
+    else for(int i = i_start; i < i_end; i++)
             for(int j = j_start; j < j_end; j++)
                 if(
                     (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) >= r*r - thickness*r
@@ -571,8 +591,8 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
         }
     }
     else if(filled){
-        for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  m_Size.height); i++){
-            for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, m_Size.width); j++){
+        for(int i = std::max(top, 0); i < std::min(top + 2 * r1,  static_cast<int>(m_Size.height)); i++){
+            for(int j = std::max(left, 0); j <= std::min(left + 2 * r2, static_cast<int>(m_Size.width)); j++){
                 float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
 
                 if(equation <= 1){
@@ -581,8 +601,8 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
             }
         }
     }
-    else for(int i = std::max(top, 0); i < std::min(top + 2 * r1 + 1,  m_Size.height); i++){
-        for(int j = std::max(left, 0); j <= std::min(left + 2 * r2 + 1, m_Size.width); j++){
+    else for(int i = std::max(top, 0); i < std::min(top + 2 * r1 + 1,  static_cast<int>(m_Size.height)); i++){
+        for(int j = std::max(left, 0); j <= std::min(left + 2 * r2 + 1, static_cast<int>(m_Size.width)); j++){
             float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
 
             // if(equation >= r1 * r1 - r1 && equation <= r2 * r2 + r2){
@@ -835,13 +855,13 @@ void map::Mapper::rotate(float angle){
 
 
 
-void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int), float seconds){
+void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const double), float seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
 
     std::clog << "Beginning Scene:\n";
-    int frames = seconds * m_FPS;
+    const int frames = seconds * m_FPS;
 
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
     const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
@@ -849,7 +869,68 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
+        // auto shape = provider(frame, frames, delta);
+        auto shape = provider(delta);
+        draw(shape.get());
+        if(!m_Set_state) setState();
+        saveFrame();
+        std::clog << frame << '/' << frames << '\n';
+
+        // delete shape; // for non unique_ptr
+    }
+    // copy(temp, m_Map); // can be replaced with memcpy
+    memcpy(m_Map, &temp[0], temp_size);
+
+    std::clog << "Scene Ended!\n";
+}
+
+
+void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int), float seconds){
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
+
+
+    std::clog << "Beginning Scene:\n";
+    const int frames = seconds * m_FPS;
+
+    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+
+    for(int frame = 0; frame <= frames; frame++){
+        // copy(temp, m_Map); // can be replaced with memcpy
+        memcpy(m_Map, &temp[0], temp_size);
+        // auto shape = provider(frame, frames, delta);
         auto shape = provider(frame, frames);
+        draw(shape.get());
+        if(!m_Set_state) setState();
+        saveFrame();
+        std::clog << frame << '/' << frames << '\n';
+
+        // delete shape; // for non unique_ptr
+    }
+    // copy(temp, m_Map); // can be replaced with memcpy
+    memcpy(m_Map, &temp[0], temp_size);
+
+    std::clog << "Scene Ended!\n";
+}
+
+
+void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int, const double), float seconds){
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
+
+
+    std::clog << "Beginning Scene:\n";
+    const int frames = seconds * m_FPS;
+
+    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+
+    for(int frame = 0; frame <= frames; frame++){
+        // copy(temp, m_Map); // can be replaced with memcpy
+        memcpy(m_Map, &temp[0], temp_size);
+        // auto shape = provider(frame, frames, delta);
+        auto shape = provider(frame, frames, delta);
         draw(shape.get());
         if(!m_Set_state) setState();
         saveFrame();
@@ -874,6 +955,7 @@ void map::Mapper::saveFrame(){
 
 
 void map::Mapper::render(const std::string &output_file) const{
+    // ffmpeg -framerate 10 -i output/vids/.temp/%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output/vids/vid.mp4
 	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
 }
 
@@ -886,9 +968,11 @@ void map::Mapper::clearFrames() const{
 
 // ----------------------- Operators ----------------------- //
 
-map::clr::RGB &map::Mapper::operator[](Point p){
+map::clr::RGB &map::Mapper::operator[](const Point& p){
     assert(p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height);
-    return m_Map[int(p.y * m_Size.width + p.x)];
+
+    // return m_Map[int(p.y * m_Size.width + p.x)]; // buggy..
+    return m_Map[int(p.y) * m_Size.width + int(p.x)];
 }
 
 
@@ -931,15 +1015,15 @@ void map::Mapper::setInfo(){
     std::string fn = OUTPUT_PATH + m_Filename;
     std::ofstream fout(fn, std::ios::trunc);
 
-    assert(fout.is_open() == true);
-    assert(areValid(m_Filename, m_PType, m_Size.height, m_Size.width, m_Max) == true);
+    assert(fout.is_open());
+    assert(areValid(m_Filename, m_PType, m_Size.height, m_Size.width, m_Max));
 
 
     fout << m_PType << std::endl;
     fout << m_Size.width << " " << m_Size.height << std::endl;
     fout << m_Max << std::endl;
 
-    fout.close();
+    // fout.close(); // RAII handles it
 }
 
 
@@ -949,20 +1033,22 @@ void map::Mapper::setState(){
     std::string fn = OUTPUT_PATH + m_Filename;
     std::ofstream fout(fn, std::ios::app);
 
-    for(int i=0; i<m_Size.height; i++){
-        for(int j=0; j<m_Size.width; j++)
+    for(int i = 0;  i < m_Size.height; ++i){
+        for(int j = 0; j < m_Size.width; ++j)
             fout << m_Map[i*m_Size.width + j] << " ";
         fout << '\n';
     }
 
-    fout.close();
+    // fout.close(); // RAII handles it
 }
 
 
 void map::Mapper::resetFile(){
     std::clog << "RESET!\n";
-    // if(m_Map) delete[] m_Map;
+    if(m_Map) delete[] m_Map;
 
+    std::clog << "Width: " << m_Size.width << '\n';
+    std::clog << "Height: " << m_Size.height << '\n';
     m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
     fill();
 }
@@ -1006,7 +1092,7 @@ void map::Mapper::loadFile(){
     int b;
     std::string garbage;
     
-    // if(m_Map) delete[] m_Map;
+    if(m_Map) delete[] m_Map;
     m_Map = new map::clr::RGB[m_Size.height*m_Size.width];
 
     for(int i = 0; i < m_Size.height; i++){

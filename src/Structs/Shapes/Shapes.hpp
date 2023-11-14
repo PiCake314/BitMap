@@ -32,6 +32,8 @@ namespace map{
 
             // Shared
             Point center;
+            Point velocity;
+            Point acceleration;
             clr::RGB color;
             int thickness;     
             std::vector<Point> points;
@@ -41,15 +43,44 @@ namespace map{
             : center(p), color(c), thickness(t), points(pts) {}
 
 
-            virtual void rotate(double) = 0;
-            [[nodiscard]] virtual ShapePtr rotated(double) const = 0;
-            virtual void shift(Point) = 0;
-            [[nodiscard]] virtual ShapePtr shifted(Point) const = 0;
+            virtual void rotate(double angle){
+                double ROT_MATT[2][2] = {
+                    {cos(angle), -sin(angle)},
+                    {sin(angle), cos(angle)}
+                };
+
+                double (*ROT_MAT)[2] = ROT_MATT;
+
+                std::for_each(points.begin(), points.end(), [ROT_MAT, this](Point &point){
+                    point -= center;
+                    point.rotate(ROT_MAT, center);
+                    point += center;
+                });
+            }
+
+            [[nodiscard]] virtual ShapePtr rotated(double angle) const {
+                ShapePtr s = std::make_unique<Shape>(*this);
+                s->rotate(angle);
+                return s;
+            }
+
+            virtual void shift(Point p){
+                center += p;
+                std::for_each(points.begin(), points.end(), [p](Point &pt){pt += p;});
+            }
+
+            [[nodiscard]] virtual ShapePtr shifted(Point p) const {
+                ShapePtr s = std::make_unique<Shape>(*this);
+                s->shift(p);
+                return s;
+            }
 
             virtual ~Shape() = default;
 
             protected:
-            virtual void draw(Mapper*) const = 0;
+            virtual void draw(Mapper*) const {
+                throw std::runtime_error("draw() not implemented for base class.");
+            };
 
 
         };
