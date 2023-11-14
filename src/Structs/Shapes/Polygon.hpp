@@ -16,14 +16,6 @@ namespace map::shapes{
 
         Polygon(std::vector<Point> pts, Data &&);
 
-        void rotate(double angle) override;
-
-        [[nodiscard]] ShapePtr rotated(double angle) const override;
-
-        void shift(Point p) override;
-
-        [[nodiscard]] ShapePtr shifted(Point p) const override;
-
         protected:
         void draw(Mapper *m) const override;
     };

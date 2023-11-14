@@ -6,21 +6,14 @@ map::shapes::Ellipse::Ellipse(Point p, int r1, int r2, Data &&d)
 {}
 
 
-void map::shapes::Ellipse::rotate(double angle) {}
-
-
-map::shapes::ShapePtr map::shapes::Ellipse::rotated(double angle) const { return std::make_unique<Ellipse>(*this); }
-
-
-void map::shapes::Ellipse::shift(Point p){
-    center += p;
+void map::shapes::Ellipse::rotate(double angle) {
+    throw std::runtime_error("Ellipse::rotate() is not implemented");
 }
 
+map::shapes::ShapePtr map::shapes::Ellipse::rotated(double angle) const {
+    throw std::runtime_error("Ellipse::rotated() is not implemented");
 
-map::shapes::ShapePtr map::shapes::Ellipse::shifted(Point p) const {
-    ShapePtr e = std::make_unique<Ellipse>(*this);
-    e->shift(p);
-    return e;
+    return std::make_unique<Ellipse>(*this);
 }
 
 

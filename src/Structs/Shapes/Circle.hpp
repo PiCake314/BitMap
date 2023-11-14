@@ -27,10 +27,6 @@ namespace map::shapes{
 
         [[nodiscard]] ShapePtr rotated(double angle) const override;
 
-        void shift(Point p) override;
-
-        [[nodiscard]] ShapePtr shifted(Point p) const override;
-
         protected:
         void draw(Mapper *m) const override;
     };
