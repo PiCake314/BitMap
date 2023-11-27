@@ -51,7 +51,7 @@ namespace map{
 
                 double (*ROT_MAT)[2] = ROT_MATT;
 
-                std::for_each(points.begin(), points.end(), [ROT_MAT, this](Point &point){
+                std::ranges::for_each(points, [ROT_MAT, this](Point &point){
                     point -= center;
                     point.rotate(ROT_MAT, center);
                     point += center;
@@ -66,7 +66,7 @@ namespace map{
 
             virtual void shift(Point p){
                 center += p;
-                std::for_each(points.begin(), points.end(), [p](Point &pt){pt += p;});
+                std::ranges::for_each(points, [p](Point &pt){pt += p;});
             }
 
             [[nodiscard]] virtual ShapePtr shifted(Point p) const {
