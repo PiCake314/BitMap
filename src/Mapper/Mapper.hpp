@@ -9,9 +9,10 @@
 #include <variant>
 #include <optional>
 #include <string_view>
-// #include <string>
+#include <string>
 #include <cstring>
 #include <memory>
+#include <concepts>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -152,6 +153,11 @@ namespace map{
             
             void draw(const shapes::Shape *shape);
 
+            template<template<typename> typename FR, typename T>
+            requires std::ranges::forward_range<FR<T>> &&
+            std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
+            void draw(const FR<T> &shapes);
+
 
             /**
              * @brief Creates a bezian curve from a vector of points
@@ -213,6 +219,7 @@ namespace map{
 
 
             // ----------------------- Private funcs -----------------------
+        private:
             bool safePoint(map::Point p){
                 return p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height;
             }

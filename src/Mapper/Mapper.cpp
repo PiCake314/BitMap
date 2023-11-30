@@ -721,6 +721,16 @@ void map::Mapper::draw(const map::shapes::Shape *s){
     // }
 }
 
+template<template<typename> typename FR, typename T>
+requires std::ranges::forward_range<FR<T>> &&
+std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
+void map::Mapper::draw(const FR<T> &shapes){
+    // naive implementation
+    // for(const auto &shape : shapes){
+    //     draw(shape);
+    // }
+}
+
 
 void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB color, bool thick){
     assert(pts.size() >= 2);
