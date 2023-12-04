@@ -153,10 +153,10 @@ namespace map{
             
             void draw(const shapes::Shape *shape);
 
-            template<template<typename> typename FR, typename T>
-            requires std::ranges::forward_range<FR<T>> &&
-            std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(const FR<T> &shapes);
+            // template<template<typename> typename FR, typename T>
+            // requires std::ranges::forward_range<FR<T>> &&
+            // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
+            void draw(const std::vector<shapes::Shape*> &shapes);
 
 
             /**
@@ -187,8 +187,6 @@ namespace map{
              * @brief Rotates the canvas by the given angle. (in radians)
             */
             void rotate(float);
-
-
 
             void animate(map::shapes::ShapePtr (*)(const double), float seconds);
 

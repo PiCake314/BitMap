@@ -721,14 +721,14 @@ void map::Mapper::draw(const map::shapes::Shape *s){
     // }
 }
 
-template<template<typename> typename FR, typename T>
-requires std::ranges::forward_range<FR<T>> &&
-std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
-void map::Mapper::draw(const FR<T> &shapes){
+// template<template<typename> typename FR, typename T>
+// requires std::ranges::forward_range<FR<T>> &&
+// std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
+void map::Mapper::draw(const std::vector<shapes::Shape*> &shapes){
     // naive implementation
-    // for(const auto &shape : shapes){
-    //     draw(shape);
-    // }
+    for(const auto &shape : shapes){
+        draw(shape);
+    }
 }
 
 

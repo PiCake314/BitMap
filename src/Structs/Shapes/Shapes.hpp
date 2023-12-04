@@ -32,15 +32,16 @@ namespace map{
 
             // Shared
             Point center;
-            Point velocity;
-            Point acceleration;
-            clr::RGB color;
-            int thickness;     
+            const Point velocity;
+            const Point acceleration;
+            const clr::RGB color;
+            const int thickness;     
             std::vector<Point> points;
+            const int depth;
 
 
-            Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>())
-            : center(p), color(c), thickness(t), points(pts) {}
+            Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>(), int d = 0)
+            : center(p), color(c), thickness(t), points(pts), depth{d} {}
 
 
             virtual void rotate(double angle){
