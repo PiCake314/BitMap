@@ -70,24 +70,27 @@ int main(int argc, char **argv){
 
 	bool vid = setup(argc, argv, filename, height, width, fps, loadtype, false);
 
-	std::optional<map::Mapper> m;
+	// std::optional<map::Mapper> m;
+	// if(vid) m.emplace(filename, map::Size{width, height}, fps, loadtype);
+	// else m.emplace(filename, map::Size{width, height}, loadtype);
 
-	if(vid) m.emplace(filename, map::Size{width, height}, fps, loadtype);
-	else m.emplace(filename, map::Size{width, height}, loadtype);
+	auto m = vid ?
+		map::Mapper(filename, map::Size{width, height}, fps, loadtype) :
+		map::Mapper(filename, map::Size{width, height}, loadtype);
 
 
 	/* ----------------------------------------------------------------- */
 	auto start = std::chrono::high_resolution_clock::now();
 
-	canvas(*m);
+	canvas(m);
 
 	if(vid){
-		m->setState();
-		m->render(filename);
-		m->clearFrames();
+		m.setState();
+		m.render(filename);
+		m.clearFrames();
 	}
 	else{
-		m->setState();
+		m.setState();
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
