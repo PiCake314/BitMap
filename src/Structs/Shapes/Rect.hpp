@@ -10,7 +10,7 @@ namespace  map::shapes{
             // DO NOT ACCESS THESE DIRECTLY
             clr::RGB color{};
             bool filled{false};
-            int thickness{};
+            int thickness{1};
             map::RectAlignment rectAlignment{RectAlignment::none};
         };
 

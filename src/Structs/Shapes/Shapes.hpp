@@ -37,11 +37,19 @@ namespace map{
             const clr::RGB color;
             const int thickness;     
             std::vector<Point> points;
-            const int depth;
+            int depth;
 
 
             Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>(), int d = 0)
             : center(p), color(c), thickness(t), points(pts), depth{d} {}
+
+            // Shape(const Shape& other) = default;
+
+            // Shape(Shape&& other) = default;
+
+            // Shape& operator=(const Shape& other) = default;
+
+            // Shape& operator=(Shape&& other) = default;
 
 
             virtual void rotate(double angle){
@@ -53,9 +61,7 @@ namespace map{
                 double (*ROT_MAT)[2] = ROT_MATT;
 
                 std::ranges::for_each(points, [ROT_MAT, this](Point &point){
-                    point -= center;
                     point.rotate(ROT_MAT, center);
-                    point += center;
                 });
             }
 
@@ -75,6 +81,39 @@ namespace map{
                 s->shift(p);
                 return s;
             }
+
+
+            [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size size, const int pixels_per_lock) const {
+                std::vector<std::pair<int, int>> lockIndices;
+
+                if (points.empty()) {
+                    // Handle shapes with no points
+                    return lockIndices;
+                }
+
+                // Calculate the bounding box of the shape
+                int left = std::max(0, int(center.x - thickness / 2));
+                int top = std::max(0, int(center.y - thickness / 2));
+                int right = std::min(int(size.width - 1), int(center.x + thickness / 2));
+                int bottom = std::min(int(size.height - 1), int(center.y + thickness / 2));
+
+                // Determine the locks associated with the bounding box
+                for (int y = top; y <= bottom; ++y) {
+                    for (int x = left; x <= right; ++x) {
+                        int lockIndexI = y / pixels_per_lock;
+                        int lockIndexJ = x / pixels_per_lock;
+
+                        lockIndices.emplace_back(lockIndexI, lockIndexJ);
+                    }
+                }
+
+                // Remove duplicate lock indices
+                std::sort(lockIndices.begin(), lockIndices.end());
+                lockIndices.erase(std::unique(lockIndices.begin(), lockIndices.end()), lockIndices.end());
+
+                return lockIndices;
+            }
+
 
             virtual ~Shape() = default;
 

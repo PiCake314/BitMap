@@ -67,35 +67,35 @@ namespace map::fnt{
             return m_Fontsize;
         }
 
-        [[nodiscard]] bool isBold() const{
+        [[nodiscard]] bool isBold() const {
             return m_Bold;
         }
 
-        [[nodiscard]] bool isItalic() const{
+        [[nodiscard]] bool isItalic() const {
             return m_Italic;
         }
 
-        [[nodiscard]] Size getSpacing() const{
+        [[nodiscard]] Size getSpacing() const {
             return m_Spacing;
         }
 
-        [[nodiscard]] const clr::RGB& getTransparentColor() const{
+        [[nodiscard]] clr::RGB getTransparentColor() const {
             return m_Transparent_color;
         }
 
-        [[nodiscard]] size_t size() const{
+        [[nodiscard]] size_t size() const {
             return m_Letters.size();
         }
 
-        [[nodiscard]] const Letter& operator [](Alphabet ID) const{
+        [[nodiscard]] const Letter& operator [](Alphabet ID) const {
             return m_Letters[static_cast<int>(ID) - static_cast<int>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter& operator [](char c) const{
+        [[nodiscard]] const Letter& operator [](char c) const {
             return m_Letters[static_cast<int>(c) - static_cast<int>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter& operator [](int index) const{
+        [[nodiscard]] const Letter& operator [](int index) const {
             return m_Letters[index];
         }
 

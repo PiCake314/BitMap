@@ -3,14 +3,15 @@
 
 
 map::shapes::Polygon::Polygon(std::vector<Point> pts, Data &&d)
-: Shape(
+: Shape{
     std::accumulate(pts.begin(), pts.end(), Point(), [](Point p1, Point p2){ return p1 + p2; })/pts.size(),
     d.color,
-    d.thickness, 
+    d.thickness,
     pts
-)
+},
+filled{d.filled}
 {}
 
 void map::shapes::Polygon::draw(Mapper *m) const {
-    // m->drawPolygon(points, color, thickness);
+    m->drawPolygon(points, color, filled, thickness);
 }

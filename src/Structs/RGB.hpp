@@ -10,11 +10,13 @@ namespace map{
             uint16_t green{};
             uint16_t blue{};
 
-            constexpr RGB():
-            red(0),
-            green(0),
-            blue(0)
-            {}
+            uint16_t depth{};
+
+            constexpr RGB() = default;
+            // red(0),
+            // green(0),
+            // blue(0)
+            // {}
 
             constexpr RGB(int v):
             red(std::clamp(v, 0, 255)),

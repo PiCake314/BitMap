@@ -12,7 +12,7 @@ namespace map::shapes{
             clr::RGB color{};
             bool filled{false};
             bool inverted{false};
-            int thickness{};
+            int thickness{1};
             map::Alignment alignment{map::Alignment::none};
         };
 

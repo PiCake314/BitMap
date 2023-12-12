@@ -10,7 +10,7 @@ namespace map::shapes{
         struct Data{
             // DO NOT ACCESS THESE DIRECTLY
             clr::RGB color{};
-            int thickness{};
+            int thickness{1};
         };
 
 
