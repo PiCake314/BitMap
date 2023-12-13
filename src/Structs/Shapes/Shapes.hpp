@@ -15,7 +15,7 @@
 
 
 // #define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}} // only works in clang (haven't tested msvc)
-
+extern size_t height, width;
 
 namespace map{
     
@@ -83,27 +83,46 @@ namespace map{
             }
 
 
-            [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size size, const int pixels_per_lock) const {
+            [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size size, const int root_pix_per_lock) const {
                 std::vector<std::pair<int, int>> lockIndices;
 
-                if (points.empty()) {
-                    // Handle shapes with no points
-                    return lockIndices;
+                if(points.empty()) return lockIndices;
+
+                // calculate the bounding box
+                Point
+                left{std::numeric_limits<double>::infinity(), 0.},
+                top{0., std::numeric_limits<double>::infinity()},
+                right{-std::numeric_limits<double>::infinity(), 0.},
+                bottom{0., -std::numeric_limits<double>::infinity()};
+
+                for(const auto& point : points){
+                    if(point.x < left.x)   left   = point;
+                    if(point.y < top.y)    top    = point;
+                    if(point.x > right.x)  right  = point;
+                    if(point.y > bottom.y) bottom = point;
                 }
 
-                // Calculate the bounding box of the shape
-                int left = std::max(0, int(center.x - thickness / 2));
-                int top = std::max(0, int(center.y - thickness / 2));
-                int right = std::min(int(size.width - 1), int(center.x + thickness / 2));
-                int bottom = std::min(int(size.height - 1), int(center.y + thickness / 2));
 
-                // Determine the locks associated with the bounding box
-                for (int y = top; y <= bottom; ++y) {
-                    for (int x = left; x <= right; ++x) {
-                        int lockIndexI = y / pixels_per_lock;
-                        int lockIndexJ = x / pixels_per_lock;
+                // std::clog << "left: " << left << std::endl;
+                // std::clog << "top: " << top << std::endl;
+                // std::clog << "right: " << right << std::endl;
+                // std::clog << "bottom: " << bottom << std::endl;
 
-                        lockIndices.emplace_back(lockIndexI, lockIndexJ);
+
+                // determine the locks associated
+                for(int y = top.y; y <= bottom.y; ++y){
+                    for(int x = left.x; x <= right.x; ++x){
+                        Point p{x, y};
+                        // std::clog << "p: " << p << std::endl;
+                        int i = y == size.height ?
+                        y/root_pix_per_lock - 1 : y/root_pix_per_lock;
+                        int j = x == size.width ?
+                        x/root_pix_per_lock - 1 : x/root_pix_per_lock;
+
+                        // std::clog << "i: " << i << std::endl;
+                        // std::clog << "j: " << j << std::endl;
+
+                        lockIndices.push_back({i, j});
                     }
                 }
 

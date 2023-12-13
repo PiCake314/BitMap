@@ -1,16 +1,22 @@
 #include "Mapper.hpp"
 #include "../Structs/Shapes/Shapes.hpp"
-#include "HelperFuncs.cpp"
+#include "../Utility/ThreadSafeQueue.hpp"
+#include "../Utility/HelperFuncs.cpp"
+#include <thread>
+#include <mutex>
 
 #define INIT_STATE false
+#define DEFUALT_FONT "Default"
+
+using namespace map::util;
 
 // image mode
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 : m_Filename(fn),
 m_Size{size.width, size.height},
-m_FPS(0), delta(0), m_Current_frame(0),
+m_FPS{0}, delta{0}, m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
-m_XCenter(0), m_YCenter(0)
+m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".ppm");
@@ -19,16 +25,33 @@ m_XCenter(0), m_YCenter(0)
     if(type == Loadtype::edit) loadFile();
     else resetFile();
 
-    m_Fonts.push_back(fnt::Font{"Default"}); // default font "Minecraft"
+    m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
+
+
+    if(m_Size.height * m_Size.width > m_Root_pix_per_lock){
+        // each lock will be responsible for m_Root_pix_per_lock^2 pixels
+        const int h = m_Size.height/m_Root_pix_per_lock;
+        const int w = m_Size.width/m_Root_pix_per_lock;
+
+        m_Locks.resize(h);
+        // for(auto &row : m_Locks) row.reserve(w);
+
+        for(int i = 0; i < h; ++i){
+            for(int j = 0; j < w; ++j){
+                m_Locks[i].emplace_back();
+            }
+        }
+    }
+
 }
 
 // video mode
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
 : m_Filename(MANGLED_PPM), m_Filename_vid(fn),
 m_Size{size.width, size.height},
-m_FPS(fps), delta(1./fps), m_Current_frame(0),
+m_FPS(fps), delta(1./fps), m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
-m_XCenter(0), m_YCenter(0)
+m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 {
     assert(fn.length() > 4 );
     assert(fn.substr(fn.length()-4, 4) == ".mp4");
@@ -36,7 +59,7 @@ m_XCenter(0), m_YCenter(0)
     if(type == Loadtype::edit) loadFile();
     else resetFile();
 
-    m_Fonts.push_back(fnt::Font{"Default"}); // default font "Minecraft"
+    m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
 }
 
 
@@ -105,8 +128,6 @@ void map::Mapper::fill(map::clr::RGB color){
 
 
 void map::Mapper::randomize(){
-    srand(time(0));
-
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
             *(m_Map + i * m_Size.width + j) = map::clr::RGB(rand()%256, rand()%256, rand()%256);
@@ -117,8 +138,6 @@ void map::Mapper::randomize(){
 
 
 void map::Mapper::randomizeGrey(){
-    srand(time(0));
-
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++){
             int c = rand()%256;
@@ -234,85 +253,94 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
 }
 
 
-std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std::vector<map::shapes::Line> lines){
-    for(const auto &line : lines){
-        if(line.on(p)) return {true, line};
-    }
-
-    return {false, std::nullopt};
-}
-
-
 void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
     assert(points.size() > 2);
 
-    // const int limit = points.size() - 1;
-    // for(int i = 0; i < limit; ++i)
-    //     drawLine(points[i], points[i+1], color, thick);
 
-    // drawLine(points.back(), points.front(), color, thick);
+    if(!filled){
+        const int limit = points.size() - 1;
+        for(int i = 0; i < limit; ++i)
+            drawLine(points[i], points[i+1], color, thick);
 
-    if(filled){
+        drawLine(points.back(), points.front(), color, thick);
+    }
+    else{
         std::vector<map::shapes::Line> lines;
         const int num_lines = points.size() - 1;
         for(int i = 0; i < num_lines; i++)
             lines.push_back(map::shapes::Line(points[i], points[i+1], {.color = color, .thickness = thick}));
 
         lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
-        const size_t s = lines.size(); // count how many times you cross a line
+        const size_t size = lines.size(); // count how many times you cross a line
 
 
         for(int i = 0; i < m_Size.height; i++){
+            std::vector<double> intersections;
 
-            int count = 0;
-            for(int j = 0; j < m_Size.width; j++){
+            for(int ind = 0; ind < size; ++ind){
+                const auto& line = lines[ind];
+                Point p1 = line.start();
+                Point p2 = line.end();
 
-                for(size_t ind = 0; ind < s; ++ind){
-                    const auto &line = lines[ind];
-                    Point p{j, i};
+                // Check if the scanline intersects with the current line segment
+                if((p1.y <= i && p2.y > i) || (p2.y <= i && p1.y > i)){
+                    double x_intersect = p1.x + (i - p1.y) / (p2.y - p1.y) * (p2.x - p1.x);
 
-                    if(line.on(p)){ 
-                        ++count;
-                        for(; line.on(p); ++j, ++p.x);
-
-                        if(auto prev = lines[(ind-1 + s) % s]; prev.on(p)){
-                            if(!p.isBetween(prev.start(), line.end(), thick)){
-                                ++count;
-
-                                std::clog << "Worked:\n";
-                                // std::clog << "p: " << p << '\n';
-                                std::clog << "p: " << std::round(p.x) << ", " << std::round(p.y) << '\n';
-                                // std::clog << "prev.end(): " << prev.end() << '\n';
-                                std::clog << "prev.end(): " << std::round(prev.start().x + thick) << ", " << std::round(prev.start().y + thick) << '\n';
-                                // std::clog << "line.start(): " << line.start() << '\n';
-                                std::clog << "line.start(): " << std::round(line.end().x + thick) << ", " << std::round(line.end().y + thick) << '\n';
-                                break;
-                            }
-                        }
-
-                        else if(auto next = lines[(ind+1) % s]; next.on(p)){
-                            if(!p.isBetween(line.start(), next.end(), thick)){
-                                ++count;
-
-                                std::clog << "Worked2 on\n";
-                                // std::clog << "p: " << p << '\n';
-                                std::clog << "p: " << std::round(p.x) << ", " << std::round(p.y) << '\n';
-                                // std::clog << "line.end(): " << line.end() << '\n';
-                                std::clog << "line.end(): " << std::round(line.start().x + thick) << ", " << std::round(line.start().y + thick) << '\n';
-                                // std::clog << "next.start(): " << next.start() << '\n';
-                                std::clog << "next.start(): " << std::round(next.end().x + thick) << ", " << std::round(next.end().y + thick) << '\n';
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
+                    intersections.push_back(x_intersect);
                 }
+            }
 
-                if(count % 2 == 1) m_Map[i*m_Size.width + j] = color;
+            // Sort intersections in ascending order
+            std::ranges::sort(intersections);
 
+            // Fill the pixels between pairs of intersections
+            const int s = intersections.size();
+            for(int j = 0; j < s; j += 2) {
+                int start_x = std::max(0, static_cast<int>(std::round(intersections[j])));
+                int end_x = std::min(m_Size.width - 1, static_cast<size_t>(std::round(intersections[j + 1])));
+
+                for (int x = start_x; x <= end_x; ++x) {
+                    m_Map[i * m_Size.width + x] = color;
+                }
             }
         }
+
+        // // old garbae implementation :)
+        // for(int i = 0; i < m_Size.height; i++){
+
+        //     int count = 0;
+        //     for(int j = 0; j < m_Size.width; j++){
+
+        //         for(size_t ind = 0; ind < s; ++ind){
+        //             const auto &line = lines[ind];
+        //             Point p{j, i};
+
+        //             if(line.on(p)){ 
+        //                 ++count;
+        //                 for(; line.on(p); ++j, ++p.x);
+
+        //                 if(auto prev = lines[(ind-1 + s) % s]; prev.on(p)){
+        //                     if(!p.isBetween(prev.start(), line.end(), thick)){
+        //                         ++count;
+        //                         break;
+        //                     }
+        //                 }
+
+        //                 else if(auto next = lines[(ind+1) % s]; next.on(p)){
+        //                     if(!p.isBetween(line.start(), next.end(), thick)){
+        //                         ++count;
+        //                         break;
+        //                     }
+        //                 }
+
+        //                 break;
+        //             }
+        //         }
+
+        //         if(count % 2 == 1) m_Map[i*m_Size.width + j] = color;
+
+        //     }
+        // }
     }
 
     if(m_Set_state) setState();
@@ -679,6 +707,8 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
             break;
     }
 
+    const clr::RGB transparent_color = font.getTransparentColor();
+
     // drawing the text
     for(char c : text){
         fnt::Letter l = font[c];
@@ -690,7 +720,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
             for(int j = j_start; j < j_start + l.width; j++){
                 const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
 
-                if(pixel != font.getTransparentColor() && safePoint({j, i})){
+                if(pixel != transparent_color && safePoint({j, i})){
                     m_Map[i*m_Size.width + j] = pixel;
                 }
             }
@@ -703,9 +733,30 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
 }
 
 
-
+template <bool locked>
 void map::Mapper::draw(const map::shapes::Shape *s){
-    s->draw(this);
+
+    if constexpr(locked){
+        // there could be multiple locks per shape
+        // lock any locks responsible for the shape
+        std::vector<std::unique_lock<std::mutex>> locks;
+        for(auto index : s->getLocks(m_Size, m_Root_pix_per_lock)){
+            // m_Locks[index.first][index.second].lock();
+            // std::clog << "Locked " << index.first << ", " << index.second << "\n";
+            locks.emplace_back(m_Locks[index.first][index.second]);
+        }
+
+        // puts("locked");
+        s->draw(this);
+        // puts("unlocked");
+
+
+        // unlock the locks
+        // for(auto index : s->getLocks(m_Size, m_Pix_per_lock)){
+        //     m_Locks[index].unlock();
+        // }
+    }
+    else s->draw(this);
 
     // else if constexpr(std::is_same_v<T, Polygon>){
     //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
@@ -721,14 +772,31 @@ void map::Mapper::draw(const map::shapes::Shape *s){
     // }
 }
 
+
+
 // template<template<typename> typename FR, typename T>
 // requires std::ranges::forward_range<FR<T>> &&
 // std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
-void map::Mapper::draw(const std::vector<shapes::Shape*> &shapes){
-    // naive implementation
-    for(const auto &shape : shapes){
-        draw(shape);
+void map::Mapper::draw(const std::vector<shapes::Shape*> &shapes, const int num_threads){
+    // // naive implementation
+    // for(const auto &shape : shapes){
+    //     draw(shape);
+    // }
+
+    map::util::ThreadSafeQueue<shapes::Shape*> queueP{shapes};
+    constexpr bool multithreaded = true;
+
+    std::vector<std::thread> threads;
+    for(int i = 0; i < num_threads; ++i){
+        threads.emplace_back([&queueP, multithreaded, this]{
+            while(!queueP.isEmpty()){
+                shapes::Shape *shape = queueP.dequeue();
+                draw<multithreaded>(shape);
+            }
+        });
     }
+
+    for(auto &thread : threads) thread.join();
 }
 
 
@@ -743,16 +811,16 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB co
     bool s = m_Set_state;
     m_Set_state = false;
 
-    for(float a = 0; a <= 1; a += dt){
+    for(float d = 0; d <= 1; d += dt){
         std::vector<std::vector<Point>> lerpVec = {pts};
         for(int i = 1; i < l; i++){
             if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
             for(int j = 1; j < l + 1 - i; j++){
                 drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], map::clr::RGB(200, 150, 0));
-                lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], a));
+                lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], d));
             }
         }
-        curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], a);
+        curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], d);
 
         drawLine(prev, curr, color, thick);
         prev = curr;

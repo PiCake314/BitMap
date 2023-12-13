@@ -3,3 +3,5 @@ output/
 ./main
 .DS_Store
 .gitignore
+CMakelists.txt
+build/

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <fstream>
 #include <cmath>
 #include <cassert>
@@ -12,6 +13,7 @@
 #include <string>
 #include <cstring>
 #include <memory>
+#include <mutex>
 #include <concepts>
 
 #include "../Structs/Size.hpp"
@@ -35,7 +37,7 @@
 #define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
 
 
-#define DEGREES * M_ PI / 180
+#define DEGREES * M_PI / 180
 
 namespace map{
 
@@ -52,21 +54,27 @@ namespace map{
             std::string m_Filename;
             std::string m_Filename_vid;
             Size m_Size;
-
-            const int m_FPS; // for video only
-            const double delta; // for video only
-            int m_Current_frame; // for video only
+            
+            // for video only
+            const int m_FPS;
+            const double delta;
+            int m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;
 
-            std::string m_PType; // Meta Data
-            int m_Max; // Meta Data
+            // Meta Data
+            std::string m_PType;
+            int m_Max;
             /* volatile */ clr::RGB *m_Map = nullptr; // The canvas (2D array of RGB values)
 
             bool m_Set_state;
 
             [[maybe_unused]] int m_XCenter;
             [[maybe_unused]] int m_YCenter;
+
+            // for multithreading
+            const int m_Root_pix_per_lock;
+            std::deque<std::deque<std::mutex>> m_Locks;
 
             void setInfo();
             
@@ -151,12 +159,13 @@ namespace map{
             void drawText(std::string_view, Point, std::string font = "Default", Alignment = Alignment::none);
 
             
+            template <bool locked = false>
             void draw(const shapes::Shape *shape);
 
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(const std::vector<shapes::Shape*> &shapes);
+            void draw(const std::vector<shapes::Shape*> &shapes, const int num_threads = 2);
 
 
             /**

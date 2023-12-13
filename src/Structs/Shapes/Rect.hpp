@@ -15,8 +15,8 @@ namespace  map::shapes{
         };
 
 
-        int width;
-        int height;
+        int width_;
+        int height_;
         bool filled;
         map::RectAlignment rectAlignment;
 

@@ -1,23 +1,24 @@
-DEP = mains/main.cpp src/Mapper/Mapper.cpp
+DEP = mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp
 
 CC = g++
 
 CVER = -std=c++20
+FLAGS = -pthread
 NoWarn = -Wno-attributes -Wno-unused-result -Wno-attributes
-OPT = -O2
+OPT = -O0
 
 
 compile: $(DEP)
-	$(CC) $(CVER) -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Wno-attributes
+	$(CC) $(CVER) -o main $(DEP) $(FLAGS) -Wall -Wno-attributes
 	# -Wextra -Weverything -Wno-c++98-compat
 
 
 video:  $(DEP)
-	$(CC) $(CVER) -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) $(OPT) && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
+	$(CC) $(CVER) -o main $(DEP) $(NoWarn) $(OPT) && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
 
 
 image: $(DEP)
-	$(CC) $(CVER) -o main mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp $(NoWarn) $(OPT) && ./main r image def$(filename) 0$(h) 0$(w)
+	$(CC) $(CVER) -o main $(DEP) $(FLAGS) $(NoWarn) $(OPT) && ./main r image def$(filename) 0$(h) 0$(w)
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp
@@ -40,4 +41,4 @@ count:
 
 
 wc: $(DEP)
-	$(CC) $(CVER) -S mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Wno-attributes; make count; rm *.s
+	$(CC) $(CVER) -S $(DEP) -Wall -Wno-attributes; make count; rm *.s
