@@ -17,7 +17,6 @@ namespace  map::shapes{
 
         int width_;
         int height_;
-        bool filled;
         map::RectAlignment rectAlignment;
 
         Rect(Point p, int w, int h, Data &&);

@@ -1,7 +1,7 @@
 #include "Text.hpp"
 
 map::shapes::Text::Text(std::string t, Point p, Data &&d)
-: Shape(p, clr::RGB{}, 1), text{t}, font{d.font}, alignment{d.alignment}
+: Shape(p, clr::RGB{}, false, 1), text{t}, font{d.font}, alignment{d.alignment}
 {}
 
 

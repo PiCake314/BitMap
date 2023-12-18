@@ -17,7 +17,6 @@ namespace map::shapes{
 
 
         int radius;
-        bool filled;
         bool inverted;
         map::Alignment alignment;
 
@@ -26,6 +25,10 @@ namespace map::shapes{
         void rotate(double angle) override;
 
         [[nodiscard]] ShapePtr rotated(double angle) const override;
+
+        [[nodiscard]] std::vector<std::pair<int, int>> getLocks(Size, const int) const override;
+
+        [[nodiscard]] bool onBorder(const Point&) const override;
 
         protected:
         void draw(Mapper *m) const override;

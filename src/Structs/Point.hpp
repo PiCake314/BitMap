@@ -57,12 +57,19 @@ namespace map{
 
         // specific use case
         constexpr bool isBetween(Point a, Point b, int thickness) const {
-            // double ay = std::round(a.y), by = std::round(b.y), y = std::round(this->y);
-            // acount for thickness
-            // return (ay < y - thickness && by > y + thickness ) || (by < y - thickness  && ay > y + thickness);
+            // if(a.x == b.x){
+            //     return x == a.x && y >= std::min(a.y, b.y) && y <= std::max(a.y, b.y);
+            // }
+            // else if(a.y == b.y){
+            //     return y == a.y && x >= std::min(a.x, b.x) && x <= std::max(a.x, b.x);
+            // }
+            // else{
+            //     // check if the point is on the line
+            //     const double slope = (b.y - a.y) / (b.x - a.x);
+            //     const double y_intercept = a.y - slope * a.x;
 
-            // return (ay < y && by > y) || (by < y && ay > y);
-            // return (a.y < y && b.y > y) || (b.y < y && a.y > y);
+            //     return std::abs(y - (slope * x + y_intercept)) < 1;
+            // }
 
             return (a.y - thickness < y && b.y + thickness > y) || (b.y - thickness < y && a.y + thickness > y);
         }

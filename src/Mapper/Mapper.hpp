@@ -197,11 +197,11 @@ namespace map{
             */
             void rotate(float);
 
-            void animate(map::shapes::ShapePtr (*)(const double), float seconds);
+            // void animate(map::shapes::ShapePtr (*)(const double), float seconds);
 
             void animate(map::shapes::ShapePtr (*)(const int, const int, const double), float seconds);
 
-            void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
+            // void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
 
 
             // ----------------------- Video Related Functions -----------------------

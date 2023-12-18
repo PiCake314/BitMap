@@ -1,8 +1,8 @@
 #include "Rect.hpp"
 
 map::shapes::Rect::Rect(Point p, int w, int h, Data &&d)
-: Shape( p, d.color, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
-width_(w), height_(h), filled(d.filled), rectAlignment(d.rectAlignment)
+: Shape( p, d.color, d.filled, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
+width_(w), height_(h), rectAlignment(d.rectAlignment)
 {
     
     switch(rectAlignment){

@@ -6,10 +6,10 @@
 
 namespace map::util{
 
-    template <typename T>
+    // template <typename T>
     class ThreadSafeQueue{
     private:
-        std::queue<T> queue;
+        std::queue<shapes::Shape*> queue;
         mutable std::mutex mutex;
         std::condition_variable cv;
         inline static int num_shapes = 0;
@@ -19,9 +19,10 @@ namespace map::util{
 
         ThreadSafeQueue() = default;
 
-        ThreadSafeQueue(const std::vector<T>& items){
+        ThreadSafeQueue(const std::vector<shapes::Shape*>& items){
             for(auto& item : items){
-                item->depth = ++num_shapes;
+                // item->depth = ++num_shapes;
+                item->setDepth(++num_shapes);
                 enqueue(item);
             }
         }
@@ -36,16 +37,16 @@ namespace map::util{
 
         ~ThreadSafeQueue() = default;
 
-        void enqueue(const T& item) {
+        void enqueue(shapes::Shape* const& item) {
             std::lock_guard<std::mutex> lock{mutex};
             queue.push(item);
             cv.notify_one();
         }
 
-        T dequeue() {
+        shapes::Shape* dequeue() {
             std::unique_lock<std::mutex> lock{mutex};
             cv.wait(lock, [this] { return !queue.empty(); });
-            T frontItem = queue.front();
+            shapes::Shape* frontItem = queue.front();
             queue.pop();
             return frontItem;
         }

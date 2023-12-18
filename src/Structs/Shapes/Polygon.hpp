@@ -14,7 +14,6 @@ namespace map::shapes{
             bool filled{};
         };
 
-        bool filled;
 
         Polygon(std::vector<Point> pts, Data &&);
 

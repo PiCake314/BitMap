@@ -3,7 +3,7 @@
 
 
 map::shapes::Triangle::Triangle(Point p1, Point p2, Point p3, Data &&d)
-: Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, d.color, d.thickness, {p1, p2, p3})
+: Shape({(p1.x + p2.x + p3.x)/3, (p1.y + p2.y + p3.y)/3}, d.color, false, d.thickness, {p1, p2, p3})
 {}
 
 

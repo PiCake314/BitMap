@@ -45,6 +45,10 @@ namespace map{
             /*constexpr*/ friend std::ostream& operator<<(std::ostream &os, const RGB &c){
                 return (os << c.red << " " << c.green << " " << c.blue);
             }
+
+            static RGB RAND(){
+                return RGB{std::rand() % 255, std::rand() % 255, std::rand() % 255};
+            }
         };
 
         const RGB RED{255, 0, 0};

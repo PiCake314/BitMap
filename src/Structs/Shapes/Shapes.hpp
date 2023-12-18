@@ -34,14 +34,16 @@ namespace map{
             Point center;
             const Point velocity;
             const Point acceleration;
-            const clr::RGB color;
+            clr::RGB color;
+            bool filled;
             const int thickness;     
             std::vector<Point> points;
-            int depth;
 
 
-            Shape(Point p, clr::RGB c, int t, std::vector<Point> pts = std::vector<Point>(), int d = 0)
-            : center(p), color(c), thickness(t), points(pts), depth{d} {}
+            Shape(Point p, clr::RGB c, bool f, int t, std::vector<Point> pts = std::vector<Point>())
+            : center(p), color(c), filled{f}, thickness(t), points(pts) {
+                color.depth = 1;
+            }
 
             // Shape(const Shape& other) = default;
 
@@ -89,49 +91,110 @@ namespace map{
                 if(points.empty()) return lockIndices;
 
                 // calculate the bounding box
-                Point
-                left{std::numeric_limits<double>::infinity(), 0.},
-                top{0., std::numeric_limits<double>::infinity()},
-                right{-std::numeric_limits<double>::infinity(), 0.},
-                bottom{0., -std::numeric_limits<double>::infinity()};
+                int left = points[0].x;
+                int top = points[0].y;
+                int right = points[0].x;
+                int bottom = points[0].y;
 
                 for(const auto& point : points){
-                    if(point.x < left.x)   left   = point;
-                    if(point.y < top.y)    top    = point;
-                    if(point.x > right.x)  right  = point;
-                    if(point.y > bottom.y) bottom = point;
+                    if(point.x < left)    left   = point.x;
+                    if(point.y < top)     top    = point.y;
+                    if(point.x > right)   right  = point.x;
+                    if(point.y > bottom)  bottom = point.y;
                 }
 
+                const int half_thickness = thickness/2;
 
-                // std::clog << "left: " << left << std::endl;
-                // std::clog << "top: " << top << std::endl;
-                // std::clog << "right: " << right << std::endl;
-                // std::clog << "bottom: " << bottom << std::endl;
+                const int x1 = std::max(left - half_thickness, 0);
+                const int x2 = std::min(right + half_thickness, int(size.width) -1);
+                const int y1 = std::max(top - half_thickness, 0);
+                const int y2 = std::min(bottom + half_thickness, int(size.height) -1);
 
-
-                // determine the locks associated
-                for(int y = top.y; y <= bottom.y; ++y){
-                    for(int x = left.x; x <= right.x; ++x){
-                        Point p{x, y};
-                        // std::clog << "p: " << p << std::endl;
-                        int i = y == size.height ?
-                        y/root_pix_per_lock - 1 : y/root_pix_per_lock;
-                        int j = x == size.width ?
-                        x/root_pix_per_lock - 1 : x/root_pix_per_lock;
-
-                        // std::clog << "i: " << i << std::endl;
-                        // std::clog << "j: " << j << std::endl;
-
-                        lockIndices.push_back({i, j});
+                if(filled){
+                    for(int i = y1; i <= y2; ++i){
+                        for(int j = x1; j <= x2; ++j){
+                            if(insideShape({j, i})){
+                                // puts("meow");
+                                lockIndices.push_back({i/root_pix_per_lock, j/root_pix_per_lock});
+                                j = ((j/root_pix_per_lock) + 1) * root_pix_per_lock;
+                            }
+                        }
                     }
                 }
+                else{
+                    // only add the points that are on the border
+                    for(int i = y1; i <= y2; ++i){
+                        for(int j = x1; j <= x2; ++j){
+                            if(onBorder({j, i})){
+                                lockIndices.push_back({i/root_pix_per_lock, j/root_pix_per_lock});
+                                j = ((j/root_pix_per_lock) + 1) * root_pix_per_lock;
+                            }
+                        }
+                    }
 
-                // Remove duplicate lock indices
-                std::sort(lockIndices.begin(), lockIndices.end());
+                    // Remove duplicate lock indices
+                }
+                std::ranges::sort(lockIndices);
                 lockIndices.erase(std::unique(lockIndices.begin(), lockIndices.end()), lockIndices.end());
 
                 return lockIndices;
             }
+
+            void setDepth(int depth){ color.depth = depth; }
+
+            [[nodiscard]] int getDepth() const { return color.depth; }
+
+            [[nodiscard]] virtual bool onBorder(const Point& p) const {
+                if (points.size() < 2) {
+                    return points.empty() ? false : points[0] == p;
+                }
+
+                for(int i = 0, j = points.size() - 1; i < points.size(); j = i++){
+                    if(
+                    (points[i].y == p.y) && ((points[i].x <= p.x && p.x <= points[j].x) || (points[j].x <= p.x && p.x <= points[i].x)) ||
+                    (points[i].x == p.x) && ((points[i].y <= p.y && p.y <= points[j].y) || (points[j].y <= p.y && p.y <= points[i].y)) ||
+                    (std::abs(points[i].x - p.x) < 2 && std::abs(points[i].y - p.y) < 2)
+                    )
+                        return true;
+                }
+
+                return false;
+            }
+
+            [[nodiscard]] bool insideShape(const Point& p) const {
+                if (points.size() < 3) {
+                    if(points.size() == 1)
+                        return points[0] == p;
+                    else if(points.size() == 2){
+                        // taken from Line::on()
+                        const Point& p1 = points[0];
+                        const Point& p2 = points[1];
+
+                        if(p.x < std::min(p1.x, p2.x) || p.x > std::max(p1.x, p2.x) || p.y < std::min(p1.y, p2.y) || p.y > std::max(p1.y, p2.y))
+                            return false;
+
+                        const double a = p2.y - p1.y;
+                        const double b = p1.x - p2.x;
+                        const double c = p2.x*p1.y - p1.x*p2.y;
+
+                        // calculates distance the distance squared 
+                        return (std::abs(a*p.x + b*p.y + c) * std::abs(a*p.x + b*p.y + c))/(a*a + b*b) <= std::pow(this->thickness/2., 2);
+                    }
+                    return false;
+                }
+
+                bool inside = false;
+
+                for(int i = 0, j = points.size() - 1; i < points.size(); j = i++){
+                    if(((points[i].y > p.y) != (points[j].y > p.y))
+                    && (p.x < (points[j].x - points[i].x) * (p.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
+                        inside = !inside;
+                }
+
+                return inside;
+            }
+
+
 
 
             virtual ~Shape() = default;
@@ -145,6 +208,7 @@ namespace map{
         };
     }
 }
+
 
 #include "Line.hpp"
 #include "Circle.hpp"

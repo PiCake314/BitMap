@@ -61,6 +61,11 @@ bool setup(int argc, char **argv, std::string &filename, size_t &h, size_t &w, i
 
 
 int main(int argc, char **argv){
+	if(argc < 2){
+		std::cerr << "Usage: " << argv[0] << " <reset/load> <image/video> <filename> <height> <width> <fps(opt)>\n";
+		return 1;
+	}
+
 	srand(time(NULL));
 	/* --------------------------- Meta Data --------------------------- */
 
