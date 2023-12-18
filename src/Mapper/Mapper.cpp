@@ -30,8 +30,8 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 
     if(m_Size.height * m_Size.width > m_Root_pix_per_lock){
         // each lock will be responsible for m_Root_pix_per_lock^2 pixels
-        const int h = m_Size.height/m_Root_pix_per_lock;
-        const int w = m_Size.width/m_Root_pix_per_lock;
+        const int h = m_Size.height/m_Root_pix_per_lock +1;
+        const int w = m_Size.width/m_Root_pix_per_lock +1;
 
         m_Locks.resize(h);
         // for(auto &row : m_Locks) row.reserve(w);
@@ -761,18 +761,17 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
 }
 
 
+
 template <bool locked>
 void map::Mapper::draw(const map::shapes::Shape *s){
 
     if constexpr(locked){
         std::vector<std::unique_lock<std::mutex>> locks;
         for(auto [i, j] : s->getLocks(m_Size, m_Root_pix_per_lock)){
-            // std::clog << i*width/m_Root_pix_per_lock + j << ' ';
             locks.emplace_back(m_Locks[i][j]);
         }
 
         s->draw(this);
-
     }
     else s->draw(this);
 

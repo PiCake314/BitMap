@@ -12,7 +12,7 @@ void canvas(map::Mapper &m){
 
 
     // // make a bunch of shapes
-    // auto s1 = shapes::Rect{{}, 100, 100, {.color = clr::RED, .filled = true, .rectAlignment = RectAlignment::top_right}};
+    auto s1 = shapes::Rect{{}, int(width/4), int(height/4), {.color = clr::RED, .filled = true, .rectAlignment = RectAlignment::top_right}};
     auto s2 = shapes::Circle{{}, static_cast<int>(width/4), {.color = clr::BLUE, .filled = true, .alignment = Alignment::center}};
     // auto s3 = shapes::Ellipse{{}, 50, 100, {.color = clr::GREEN, .filled = true, .alignment = Alignment::bottom}};
     // map::shapes::Polygon non_convex{{
@@ -28,6 +28,9 @@ void canvas(map::Mapper &m){
 
     // std::vector<shapes::Shape*> shapes = {&s1, &s2, &s3, &non_convex};
 
+    // m.draw(shapes, 5);
+
+// ==============================================
 
     // std::vector<Shape*> shapes;
     // for(int i = 0; i < 3'333; ++i){
@@ -71,12 +74,24 @@ void canvas(map::Mapper &m){
 
 // ==============================================
 
-    std::vector<Shape*> shapes;
-    for(int i = 0; i < 10'000; ++i){
-        shapes.push_back(new Rect{{rand() % width, rand() % height}, int(rand() % width), int(rand() % height), {.color = clr::RGB::RAND(), .filled = false}});
-    }
+    // std::vector<Shape*> shapes;
+    // for(int i = 0; i < 10'000; ++i){
+    //     shapes.push_back(new Circle{{rand() % width, rand() % height}, rand() % 500 , {.color = clr::RGB::RAND(), .filled = true}});
+    // }
 
     // shapes.push_back(&s2);
+
+    // m.draw(shapes, 5);
+
+
+// ==============================================
+
+    std::vector<Shape*> shapes;
+    for(int i = 0; i < 10'000; ++i){
+        shapes.push_back(new Rect{{rand() % width, rand() % height}, int(rand() % 500), int(rand() % 500), {.color = clr::RGB::RAND(), .filled = true}});
+    }
+
+    shapes.push_back(&s1);
 
     m.draw(shapes, 5);
 

@@ -31,7 +31,9 @@ namespace map::shapes{
 
         [[nodiscard]] ShapePtr rotated(double angle) const override;
 
-        [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size, const int) const override;
+        [[nodiscard]] std::vector<std::pair<int, int>> getLocks(Size, const int) const override;
+
+        [[nodiscard]] bool onBorder(const Point&) const override;
 
         protected:
         void draw(Mapper *m) const override;

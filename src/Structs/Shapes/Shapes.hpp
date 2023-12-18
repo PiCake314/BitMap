@@ -105,16 +105,15 @@ namespace map{
 
                 const int half_thickness = thickness/2;
 
-                const int x1 = std::max(left - half_thickness, 0);
-                const int x2 = std::min(right + half_thickness, int(size.width) -1);
-                const int y1 = std::max(top - half_thickness, 0);
-                const int y2 = std::min(bottom + half_thickness, int(size.height) -1);
+                const int x1 = std::clamp(left - half_thickness, 0, int(size.width) -1);
+                const int x2 = std::clamp(right + half_thickness, 0, int(size.width) -1);
+                const int y1 = std::clamp(top - half_thickness, 0, int(size.height) -1);
+                const int y2 = std::clamp(bottom + half_thickness, 0, int(size.height) -1);
 
                 if(filled){
                     for(int i = y1; i <= y2; ++i){
                         for(int j = x1; j <= x2; ++j){
                             if(insideShape({j, i})){
-                                // puts("meow");
                                 lockIndices.push_back({i/root_pix_per_lock, j/root_pix_per_lock});
                                 j = ((j/root_pix_per_lock) + 1) * root_pix_per_lock;
                             }
