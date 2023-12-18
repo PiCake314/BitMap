@@ -1,6 +1,6 @@
 DEP = mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp
 
-CC = clang++
+CC = g++
 
 CVER = -std=c++20
 FLAGS = -pthread
