@@ -150,8 +150,8 @@ namespace map{
 
                 for(int i = 0, j = points.size() - 1; i < points.size(); j = i++){
                     if(
-                    (points[i].y == p.y) && ((points[i].x <= p.x && p.x <= points[j].x) || (points[j].x <= p.x && p.x <= points[i].x)) ||
-                    (points[i].x == p.x) && ((points[i].y <= p.y && p.y <= points[j].y) || (points[j].y <= p.y && p.y <= points[i].y)) ||
+                    ((points[i].y == p.y) && ((points[i].x <= p.x && p.x <= points[j].x) || (points[j].x <= p.x && p.x <= points[i].x))) ||
+                    ((points[i].x == p.x) && ((points[i].y <= p.y && p.y <= points[j].y) || (points[j].y <= p.y && p.y <= points[i].y))) ||
                     (std::abs(points[i].x - p.x) < 2 && std::abs(points[i].y - p.y) < 2)
                     )
                         return true;

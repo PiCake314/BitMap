@@ -3,6 +3,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include "../Structs/Shapes/Shapes.hpp"
 
 namespace map::util{
 

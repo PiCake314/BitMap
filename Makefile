@@ -1,6 +1,6 @@
 DEP = mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp
 
-CC = g++
+CC = clang++
 
 CVER = -std=c++20
 FLAGS = -pthread
@@ -43,4 +43,4 @@ count:
 
 
 wc: $(DEP)
-	$(CC) $(CVER) -S $(DEP) -Wall -Wno-attributes; make count; rm *.s
+	$(CC) $(CVER) $(OPT) -S $(DEP) -Wall -Wno-attributes; make count; rm *.s
