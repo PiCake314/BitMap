@@ -66,4 +66,4 @@
     - See  "Compilation Instructions".
 
 # Extant Bugs:
-    - Other than the fact that the filled shapes render faster than the unfilled ones, I don't think there are any..
+    - Other than the fact that the filled shapes render faster than the unfilled ones, I don't think there are any...
