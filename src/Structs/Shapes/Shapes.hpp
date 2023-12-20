@@ -136,6 +136,11 @@ namespace map{
                 std::ranges::sort(lockIndices);
                 lockIndices.erase(std::unique(lockIndices.begin(), lockIndices.end()), lockIndices.end());
 
+                // for(auto [i, j] : lockIndices){
+                //     std::cout << (i*size.width/root_pix_per_lock) + j << ", ";
+                // }
+                // puts("");
+
                 return lockIndices;
             }
 
@@ -160,8 +165,8 @@ namespace map{
                 return false;
             }
 
-            [[nodiscard]] bool insideShape(const Point& p) const {
-                if (points.size() < 3) {
+            [[nodiscard]] virtual bool insideShape(const Point& p) const {
+                if(points.size() < 3){
                     if(points.size() == 1)
                         return points[0] == p;
                     else if(points.size() == 2){
@@ -175,9 +180,10 @@ namespace map{
                         const double a = p2.y - p1.y;
                         const double b = p1.x - p2.x;
                         const double c = p2.x*p1.y - p1.x*p2.y;
+                        const double eq = std::abs(a*p.x + b*p.y + c);
 
                         // calculates distance the distance squared 
-                        return (std::abs(a*p.x + b*p.y + c) * std::abs(a*p.x + b*p.y + c))/(a*a + b*b) <= std::pow(this->thickness/2., 2);
+                        return (eq * eq)/(a*a + b*b) <= std::pow(thickness/2., 2);
                     }
                     return false;
                 }

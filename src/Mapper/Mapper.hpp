@@ -160,12 +160,12 @@ namespace map{
 
             
             template <bool locked = false>
-            void draw(const shapes::Shape *shape);
+            void draw(const shapes::ShapePtr shape);
 
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(const std::vector<shapes::Shape*> &shapes, const int num_threads = 2);
+            void draw(std::vector<shapes::ShapePtr> &shapes, const int num_threads = 2);
 
 
             /**
@@ -202,6 +202,9 @@ namespace map{
             void animate(map::shapes::ShapePtr (*)(const int, const int, const double), float seconds);
 
             // void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
+
+
+            void animate(std::vector<map::shapes::ShapePtr> (*)(const int, const int, const double), float seconds);
 
 
             // ----------------------- Video Related Functions -----------------------

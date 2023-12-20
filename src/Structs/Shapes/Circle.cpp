@@ -88,6 +88,7 @@ std::vector<std::pair<int, int>> map::shapes::Circle::getLocks(Size size, const 
     }
 
 
+
     return locks;
 }
 
@@ -102,6 +103,10 @@ bool map::shapes::Circle::onBorder(const Point& p) const {
 
     return dist <= r*r && dist >= R*R;
 }
+
+
+// bool map::Shapes::Circle
+
 
 
 void map::shapes::Circle::draw(Mapper *m) const {

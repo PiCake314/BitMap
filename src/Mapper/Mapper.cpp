@@ -30,8 +30,8 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 
     if(m_Size.height * m_Size.width > m_Root_pix_per_lock){
         // each lock will be responsible for m_Root_pix_per_lock^2 pixels
-        const int h = m_Size.height/m_Root_pix_per_lock +1;
-        const int w = m_Size.width/m_Root_pix_per_lock +1;
+        const int h = m_Size.height/m_Root_pix_per_lock;
+        const int w = m_Size.width/m_Root_pix_per_lock;
 
         m_Locks.resize(h);
         // for(auto &row : m_Locks) row.reserve(w);
@@ -545,14 +545,15 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
                 }
     }
     else for(int i = i_start; i < i_end; i++)
-            for(int j = j_start; j < j_end; j++)
+            for(int j = j_start; j < j_end; j++){
+                const auto eq = (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x);
                 if(
-                    (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) >= r*r - thickness*r
-                 && (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x) <= r*r + r
+                    eq >= r*r - thickness*r && eq <= r*r + r
                 ){
                     auto &pixel = m_Map[i*m_Size.width + j];
                     if(color.depth > pixel.depth) pixel = color;
                 }
+            }
 
     // for(int i=top; i<top+2*r; i++){
     //     for(int j=left; j<left+2*r; j++){
@@ -763,7 +764,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
 
 
 template <bool locked>
-void map::Mapper::draw(const map::shapes::Shape *s){
+void map::Mapper::draw(map::shapes::ShapePtr s){
 
     if constexpr(locked){
         std::vector<std::unique_lock<std::mutex>> locks;
@@ -794,11 +795,15 @@ void map::Mapper::draw(const map::shapes::Shape *s){
 // template<template<typename> typename FR, typename T>
 // requires std::ranges::forward_range<FR<T>> &&
 // std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
-void map::Mapper::draw(const std::vector<shapes::Shape*> &shapes, const int num_threads){
-    // // naive implementation
-    // for(const auto &shape : shapes){
-    //     draw(shape);
-    // }
+void map::Mapper::draw(std::vector<shapes::ShapePtr> &shapes, const int num_threads){
+    // naive implementation
+    if(num_threads == 1){
+        for(auto &shape : shapes){
+            draw(std::move(shape));
+        }
+
+        return;
+    }
 
     map::util::ThreadSafeQueue/*<shapes::Shape*>*/ queue{shapes};
     constexpr bool multithreaded = true;
@@ -807,8 +812,8 @@ void map::Mapper::draw(const std::vector<shapes::Shape*> &shapes, const int num_
     for(int i = 0; i < num_threads; ++i){
         threads.emplace_back([&queue, this]{
             while(!queue.isEmpty()){
-                shapes::Shape *shape = queue.dequeue();
-                draw<multithreaded>(shape);
+                shapes::ShapePtr shape = queue.dequeue();
+                draw<multithreaded>(std::move(shape));
             }
         });
     }
@@ -1030,7 +1035,7 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
         memcpy(m_Map, &temp[0], temp_size);
         // auto shape = provider(frame, frames, delta);
         auto shape = provider(frame, frames, delta);
-        draw(shape.get());
+        draw(std::move(shape));
         if(!m_Set_state) setState();
         saveFrame();
         std::clog << frame << '/' << frames << '\n';
@@ -1042,6 +1047,38 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
 
     std::clog << "Scene Ended!\n";
 }
+
+
+void map::Mapper::animate(std::vector<map::shapes::ShapePtr> (*provider)(const int, const int, const double), float seconds){
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
+
+
+    std::clog << "Beginning Scene:\n";
+    const int frames = seconds * m_FPS;
+
+    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+
+    for(int frame = 0; frame <= frames; frame++){
+        // copy(temp, m_Map); // can be replaced with memcpy
+        memcpy(m_Map, &temp[0], temp_size);
+        // auto shape = provider(frame, frames, delta);
+        auto shape = provider(frame, frames, delta);
+        draw(shape, 1);
+        if(!m_Set_state) setState();
+        saveFrame();
+        std::clog << frame << '/' << frames << '\n';
+
+        // delete shape; // for non unique_ptr
+    }
+    // copy(temp, m_Map); // can be replaced with memcpy
+    memcpy(m_Map, &temp[0], temp_size);
+
+    std::clog << "Scene Ended!\n";
+}
+
+
 
 
 // ----------------------- Video Related Functions ----------------------- //

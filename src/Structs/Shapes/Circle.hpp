@@ -30,6 +30,8 @@ namespace map::shapes{
 
         [[nodiscard]] bool onBorder(const Point&) const override;
 
+        // [[nodiscard]] bool insideShape(const Point&) const override;
+
         protected:
         void draw(Mapper *m) const override;
     };
