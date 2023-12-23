@@ -18,9 +18,9 @@ namespace map::shapes{
         double angle;
         public:
 
-        Line(Point c, int len, double angle, Data &&);
+        Line(Point c, int len, double angle, Data && = Data{.color = clr::RGB{}, .thickness = 1});
 
-        Line(Point s, Point e, Data &&);
+        Line(Point s, Point e, Data && = Data{.color = clr::RGB{}, .thickness = 1});
 
         Point start() const;
 

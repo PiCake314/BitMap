@@ -57,7 +57,7 @@ namespace map{
             
             // for video only
             const int m_FPS;
-            const double delta;
+            const double m_Delta;
             int m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;

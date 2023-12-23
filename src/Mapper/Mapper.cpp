@@ -14,7 +14,7 @@ using namespace map::util;
 map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
 : m_Filename(fn),
 m_Size{size.width, size.height},
-m_FPS{0}, delta{0}, m_Current_frame{0},
+m_FPS{0}, m_Delta{0}, m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
 m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 {
@@ -51,7 +51,7 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
 : m_Filename(MANGLED_PPM), m_Filename_vid(fn),
 m_Size{size.width, size.height},
-m_FPS(fps), delta(1./fps), m_Current_frame{0},
+m_FPS(fps), m_Delta(1./fps), m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
 m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 {
@@ -1033,8 +1033,8 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
-        // auto shape = provider(frame, frames, delta);
-        auto shape = provider(frame, frames, delta);
+        // auto shape = provider(frame, frames, m_Delta);
+        auto shape = provider(frame, frames, m_Delta);
         draw(std::move(shape));
         if(!m_Set_state) setState();
         saveFrame();
@@ -1063,8 +1063,8 @@ void map::Mapper::animate(std::vector<map::shapes::ShapePtr> (*provider)(const i
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
-        // auto shape = provider(frame, frames, delta);
-        auto shape = provider(frame, frames, delta);
+        // auto shape = provider(frame, frames, m_Delta);
+        auto shape = provider(frame, frames, m_Delta);
         draw(shape, 1);
         if(!m_Set_state) setState();
         saveFrame();

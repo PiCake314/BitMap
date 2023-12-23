@@ -9,7 +9,7 @@ namespace map::shapes{
         struct Data{
             // DO NOT ACCESS THESE DIRECTLY
             clr::RGB color{};
-            bool filled{false};
+            bool filled{true};
             bool inverted{false};
             int thickness{1};
             map::Alignment alignment{map::Alignment::none};
@@ -20,7 +20,7 @@ namespace map::shapes{
         bool inverted;
         map::Alignment alignment;
 
-        Circle(Point p, int r, Data &&);
+        Circle(Point p, int r, Data && = Data{.color = clr::RGB{}, .filled = true, .inverted = false, .thickness = 1, .alignment = map::Alignment::none});
 
         void rotate(double angle) override;
 
