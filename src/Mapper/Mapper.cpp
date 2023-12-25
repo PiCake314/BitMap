@@ -179,10 +179,10 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
     const int half_thickness = thickness/2;
 
     int i_start = std::clamp(std::min(p1.y, p2.y) - half_thickness, 0., m_Size.height -1.);
-    int i_end = std::clamp(std::max(p1.y, p2.y) - half_thickness, 0., m_Size.height -1.);
+    int i_end = std::clamp(std::max(p1.y, p2.y) + half_thickness, 0., m_Size.height -1.);
 
     int j_start = std::clamp(std::min(p1.x, p2.x) - half_thickness, 0., m_Size.width -1.);
-    int j_end = std::clamp(std::max(p1.x, p2.x) - half_thickness, 0., m_Size.width -1.);
+    int j_end = std::clamp(std::max(p1.x, p2.x) + half_thickness, 0., m_Size.width -1.);
 
 
     if(p2.x - p1.x != 0){

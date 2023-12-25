@@ -37,7 +37,7 @@
 #define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
 
 
-#define DEGREES * M_PI / 180
+#define DEGREES /180 * M_PI
 
 namespace map{
 
