@@ -32,8 +32,8 @@ namespace map{
 
             // Shared
             Point center;
-            const Point velocity;
-            const Point acceleration;
+            // const Point velocity;
+            // const Point acceleration;
             clr::RGB color;
             bool filled;
             const int thickness;     
@@ -55,16 +55,16 @@ namespace map{
 
 
             virtual void rotate(double angle){
-                double ROT_MATT[2][2] = {
-                    {cos(angle), -sin(angle)},
-                    {sin(angle), cos(angle)}
-                };
+                for(auto& point : points){
+                    point.rotate(angle, center);
+                }
+            }
 
-                double (*ROT_MAT)[2] = ROT_MATT;
 
-                std::ranges::for_each(points, [ROT_MAT, this](Point &point){
-                    point.rotate(ROT_MAT, center);
-                });
+            virtual void rotate(double angle, const Point& cent){
+                for(auto& point : points){
+                    point.rotate(angle, cent);
+                }
             }
 
             [[nodiscard]] virtual ShapePtr rotated(double angle) const {
@@ -73,12 +73,12 @@ namespace map{
                 return s;
             }
 
-            virtual void shift(Point p){
+            virtual void shift(const Point& p){
                 center += p;
                 std::ranges::for_each(points, [p](Point &pt){pt += p;});
             }
 
-            [[nodiscard]] virtual ShapePtr shifted(Point p) const {
+            [[nodiscard]] virtual ShapePtr shifted(const Point& p) const {
                 ShapePtr s = std::make_unique<Shape>(*this);
                 s->shift(p);
                 return s;

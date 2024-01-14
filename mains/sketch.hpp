@@ -3,120 +3,111 @@
 #include <array>
 
 extern size_t height, width; // importing the height and width of the canvas
+using Shapes = std::vector<map::shapes::ShapePtr>;
 
+std::unique_ptr<map::shapes::Text> getIndex(int index, const map::Point& location){
+    return std::make_unique(std::to_string(index), location + map::Point{10, 10});
+}
 
-const map::Point3D center{width / 2., height / 2., 0};
-
-constexpr double shape_size = 200.;
-// constexpr double square_size_half = square_size / 2.;
-constexpr int DIM = 4;
-constexpr int ARR_SIZE = 16;
-std::array<map::PointND<DIM>, ARR_SIZE> points = {
-    map::PointND<DIM>{-.5, -.5, -.5, .5},
-    {.5, -.5, -.5, .5},
-    {.5, .5, -.5, .5},
-    {-.5, .5, -.5, .5},
-    {-.5, -.5, .5, .5},
-    {.5, -.5, .5, .5},
-    {.5, .5, .5, .5},
-    {-.5, .5, .5, .5},
-    {-.5, -.5, -.5, -.5},
-    {.5, -.5, -.5, -.5},
-    {.5, .5, -.5, -.5},
-    {-.5, .5, -.5, -.5},
-    {-.5, -.5, .5, -.5},
-    {.5, -.5, .5, -.5},
-    {.5, .5, .5, -.5},
-    {-.5, .5, .5, -.5}
-};
-
-
-
-
-double angle = 0;
-std::vector<map::shapes::ShapePtr> spinningCube(const int frame, const int frames, double delta){
+Shapes helper(int w, int h, int order){
     using namespace map;
-    using namespace map::shapes;
+    using namespace shapes;
 
-    // // const double angle = M_PI * .5 / frames;
-    // const double angle = 120 * delta DEGREES;
+    Shapes shapes;
 
-    Point projected[ARR_SIZE];
-    constexpr double distance = 1.5;
+    const double qW = w/4.;
+    const double qH = h/4.;
+    if(order <= 1){
+        shapes.emplace_back(std::make_unique<Line>(Point{w - qW, qH}, Point{w - qW, h - qH}));
+        // shapes.push_back
+        shapes.emplace_back(std::make_unique<Line>(Point{w - qW, h - qH}, Point{qW, h - qH}));
+        shapes.emplace_back(std::make_unique<Line>(Point{qW, h - qH}, Point{qW, qH}));
 
-    // doing necessary rotations
-    for(int i = 0; i < ARR_SIZE; ++i){
-        auto p = points[i].rotated<1, 2>(angle);
-        // p.rotate<2, 3>(angle);
-        p.rotate<2, 3>(angle);
-
-        // projection matrix
-        const double z = 1 / (distance - (p[DIM -1]));
-
-        double projection_matrix[DIM][DIM] = {};
-        for(int j = 0; j < 2; ++j){
-            projection_matrix[j][j] = z;
-        }
-
-        projected[i] = (projection_matrix * p).toPoint();
-
-        // scaling and translating
-        projected[i] *= shape_size;
-        projected[i] += center.toPoint();
+        return shapes;
     }
 
+    auto up_left = helper(2*qW, 2*qH, order -1);
+    auto down_left = helper(2*qW, 2*qH, order -1); // up_left;
+    auto down_right = helper(2*qW, 2*qH, order -1); // up_left;
+    auto up_right = helper(2*qW, 2*qH, order -1); // up_left;
 
-    std::vector<ShapePtr> shapes;
-
-    for(const auto &point : projected){
-        shapes.push_back(std::make_unique<Circle>(point, 5, Circle::Data{.color = clr::RED, .thickness = 10}));
+    for(auto& line : up_left){
+        line->rotate(-90 DEGREES, {qW, qH});
     }
 
+    for(auto& line : down_left){
+        line->shift({0, 2*qH});
+    }
+    
+    for(auto& line : down_right){
+        line->shift({2*qW, 2*qH});
+    }
+    
+    for(auto& line : up_right){
+        line->rotate(90 DEGREES, {qW, qH});
+        line->shift({2*qW, 0});
+    }
 
-    // drawing the lines for the tessaract
-    // for(int i = 0; i < ARR_SIZE; ++i){
-    //     for(int j = i + 1; j < ARR_SIZE; ++j){
-    //         if(__builtin_popcount(i ^ j) == 1){
-    //             shapes.push_back(std::make_unique<Line>(projected[i], projected[j], Line::Data{.color = clr::BLUE}));
-    //         }
-    //     }
+    // const int depth = order -2;
+    shapes.emplace_back(std::make_unique<Line>(up_left.back()->points[1], down_left.back()->points[1]));
+    shapes.emplace_back(std::make_unique<Line>(down_left.front()->points[0], down_right.back()->points[1]));
+    shapes.emplace_back(std::make_unique<Line>(down_right.front()->points[0], up_right.front()->points[0]));
+
+
+    // for(auto it = up_left.rbegin(); it != up_left.rend(); ++it){
+    //     std::swap((*it)->points[0], (*it)->points[1]);
+    //     shapes.push_back(std::move(*it));
     // }
 
-    // doing it manually
-    for(int i = 0; i < 4; ++i){
-        shapes.push_back(std::make_unique<Line>(projected[i], projected[(i + 1) % 4], Line::Data{.color = clr::BLUE}));
-        shapes.push_back(std::make_unique<Line>(projected[i + 4], projected[((i + 1) % 4) + 4], Line::Data{.color = clr::BLUE}));
-        shapes.push_back(std::make_unique<Line>(projected[i], projected[i + 4], Line::Data{.color = clr::BLUE}));
+    for(auto& line : up_right){
+        shapes.push_back(std::move(line));
     }
 
-    for(int i = 0; i < 4; ++i){
-        // connect(8, i, (i + 1) % 4, projected3d); // 8 is the offset
-        shapes.push_back(std::make_unique<Line>(projected[i + 8], projected[(i + 1) % 4 + 8], Line::Data{.color = clr::BLUE}));
-        // connect(8, i + 4, ((i + 1) % 4) + 4, projected3d);
-        shapes.push_back(std::make_unique<Line>(projected[i + 8 + 4], projected[((i + 1) % 4) + 4 + 8], Line::Data{.color = clr::BLUE}));
-        // connect(8, i, i + 4, projected3d);
-        shapes.push_back(std::make_unique<Line>(projected[i + 8], projected[i + 8 + 4], Line::Data{.color = clr::BLUE}));
+    for(auto& line : down_right){
+        shapes.push_back(std::move(line));
     }
 
-    for(int i = 0; i < 4; ++i){
-        // connect(0, i, i + 8, projected3d);
-        shapes.push_back(std::make_unique<Line>(projected[i], projected[i + 8], Line::Data{.color = clr::BLUE}));
+    for(auto& line : down_left){
+        shapes.push_back(std::move(line));
     }
 
-    
+    for(auto& line : up_left){
+        shapes.push_back(std::move(line));
+    }
+
+    // for(auto it = up_right.rbegin(); it != up_right.rend(); ++it){
+    //     std::swap((*it)->points[0], (*it)->points[1]);
+    //     shapes.push_back(std::move(*it));
+    // }
 
 
-    angle += 100 * delta DEGREES;
     return shapes;
 }
+
+
+// Shapes hilbertCurves(const int, const int, const double delta){
+//     using namespace map;
+//     using namespace shapes;
+
+//     constexpr int order = 1;
+
+
+
+//     return helper(width, height, order);
+
+// }
 
 
 void canvas(map::Mapper &m){
     using namespace map;
     using namespace shapes;
 
+    m.loadFont("Default");
 
-    m.animate(spinningCube, 4.5);
+    constexpr int order = 3;
+
+    auto shapes = helper(width, height, order);
+    m.draw(shapes);
 
 }
 

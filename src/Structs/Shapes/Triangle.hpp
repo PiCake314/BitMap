@@ -16,13 +16,15 @@ namespace map::shapes{
 
         Triangle(Point p1, Point p2, Point p3, Data &&);
 
-        void rotate(double angle) override;
 
-        [[nodiscard]] ShapePtr rotated(double angle) const override;
+        // // don't need to be overriden (I think)
+        // void rotate(double angle) override;
 
-        void shift(Point p) override;
+        // [[nodiscard]] ShapePtr rotated(double angle) const override;
 
-        [[nodiscard]] ShapePtr shifted(Point p) const override;
+        // void shift(const Point& p) override;
+
+        // [[nodiscard]] ShapePtr shifted(const Point& p) const override;
 
         protected:
         void draw(Mapper *m) const override;

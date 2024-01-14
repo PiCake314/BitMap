@@ -13,16 +13,16 @@ map::shapes::ShapePtr map::shapes::Text::rotated(double angle) const{
 }
 
 
-void map::shapes::Text::shift(Point p){
-    center += p;
-}
+// void map::shapes::Text::shift(const Point& p){
+//     center += p;
+// }
 
 
-map::shapes::ShapePtr map::shapes::Text::shifted(Point p) const{
-    ShapePtr t = std::make_unique<Text>(text, center, Data{.font = font, .alignment = alignment});
-    t->shift(p);
-    return t;
-}
+// map::shapes::ShapePtr map::shapes::Text::shifted(const Point p) const{
+//     ShapePtr t = std::make_unique<Text>(text, center, Data{.font = font, .alignment = alignment});
+//     t->shift(p);
+//     return t;
+// }
 
 
 size_t map::shapes::Text::size() const{
