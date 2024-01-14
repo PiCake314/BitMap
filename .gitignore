@@ -1,6 +1,6 @@
 output/
 .vscode/
-./main
+main
 .DS_Store
 .gitignore
 CMakelists.txt
