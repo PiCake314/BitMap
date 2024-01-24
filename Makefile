@@ -34,7 +34,7 @@ clean:
 
 
 install:
-	mkdir output; mkdir output/ppms; output/pngs;
+	mkdir output; mkdir output/ppms; mkdir output/pngs;
 	# brew install ImageMagick && brew install ffmpeg
 
 
