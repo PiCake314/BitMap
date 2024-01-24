@@ -59,11 +59,11 @@ namespace map::fnt{
             loadlettersinfo();
         }
 
-        [[nodiscard]] std::string_view getFontname() const{
+        [[nodiscard]] std::string_view getFontname() const {
             return m_Fontname;
         }
 
-        [[nodiscard]] int getFontSize() const{
+        [[nodiscard]] int getFontSize() const {
             return m_Fontsize;
         }
 
