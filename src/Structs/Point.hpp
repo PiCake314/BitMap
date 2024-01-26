@@ -50,7 +50,7 @@ namespace map{
         constexpr bool operator==(const Point& p) const = default;
 
         constexpr double distSqrd(const Point& p) const {
-            return pow(x - p.x, 2) + pow(y - p.y, 2);
+            return std::pow(x - p.x, 2) + std::pow(y - p.y, 2);
         }
 
         constexpr double dist(const Point& p) const {
