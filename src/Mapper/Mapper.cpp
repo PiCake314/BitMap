@@ -1058,6 +1058,7 @@ void map::Mapper::saveFrame(){
 
 void map::Mapper::render(const std::string& output_file) const {
     // ffmpeg -framerate 10 -i output/vids/.temp/%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output/vids/vid.mp4
+    
 	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
 }
 

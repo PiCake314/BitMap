@@ -53,8 +53,8 @@ namespace map{
     class Mapper{
 
         private:
-            std::string m_Filename;
-            std::string m_Filename_vid;
+            const std::string m_Filename;
+            const std::string m_Filename_vid;
             Size m_Size;
             
             // for video only
@@ -65,7 +65,7 @@ namespace map{
             std::vector<fnt::Font> m_Fonts;
 
             // Meta Data
-            std::string m_PType;
+            std::string_view m_PType;
             int m_Max;
             /* volatile */ clr::RGB *m_Map = nullptr; // The canvas (2D array of RGB values)
 
