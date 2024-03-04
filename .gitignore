@@ -5,3 +5,4 @@ main
 .gitignore
 CMakelists.txt
 build/
+WRITEUP.md
