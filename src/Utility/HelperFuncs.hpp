@@ -14,7 +14,7 @@ namespace map::util{
         return true;
     }
 
-    bool isValidP(std::string P){
+    bool isValidP(std::string_view P){
         return (P == "P3" || P == "P5" || P == "P6");
     }
 
@@ -30,7 +30,7 @@ namespace map::util{
         return (max <= 255);
     }
 
-    bool areValid(std::string fn, std::string P, int h, int w, int M){
+    bool areValid(const std::string& fn, std::string_view P, int h, int w, int M){
         return (isValidP(P) && isValidHeight(h) && isValidWidth(w) && isValidMax(M));
     }
 

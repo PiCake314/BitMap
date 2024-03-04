@@ -20,6 +20,7 @@ video:  $(DEP)
 image: $(DEP)
 	$(CC) $(CVER) -o main $(DEP) $(FLAGS) $(NoWarn) $(OPT) && ./main r image def$(filename) 0$(h) 0$(w)
 
+
 run_image: $(DEP)
 	./main r image def$(filename) 0$(h) 0$(w)
 
@@ -44,3 +45,7 @@ count:
 
 wc: $(DEP)
 	$(CC) $(CVER) $(OPT) -S $(DEP) -Wall -Wno-attributes; make count; rm *.s
+
+
+png:
+	convert output/ppms/$(filename).ppm output/pngs/$(filename).png

@@ -67,21 +67,37 @@ map::clr::RGB image(map::Point coord){
 
 
 void canvas(map::Mapper &m){
-    using namespace map;
-    using namespace shapes;
+    // using namespace map;
+    // using namespace shapes;
 
-    const int frames = m.getFPS() * 2;
+    // const int frames = m.getFPS() * 2;
 
-    for(int frame{}; frame < frames; ++frame){
-        for(int i = 0; i < height; ++i){
-            for(int j = 0; j < width; ++j){
-                m[{j, i}] = image({j, i});
-            }
-        }
+    // for(int frame{}; frame < frames; ++frame){
+    //     for(int i = 0; i < height; ++i){
+    //         for(int j = 0; j < width; ++j){
+    //             m[{j, i}] = image({j, i});
+    //         }
+    //     }
 
-        m.setState();
-        m.saveFrame();
-        timer += double(2 * M_PI) / frames;
-    }
+    //     m.setState();
+    //     m.saveFrame();
+    //     timer += double(2 * M_PI) / frames;
+    // }
+
+
+    // make a star with 5 points
+    // std::vector<map::Point> stars;
+    // for(int i{}; i < 5; ++i){
+    //     stars.push_back({cos(2 * M_PI * i / 5), sin(2 * M_PI * i / 5)});
+    //     stars[i] *= 100; // scale to make it visible
+    //     stars[i] += {width / 2, height / 2}; // center the star
+    // }
+
+    // for(int i{}; i < 5; ++i){
+    //     m.drawLine(stars[i], stars[(i + 2) % 5], map::clr::RGB{245, 191, 79});
+    // }
+
+
+    m.drawCircle({width / 2, height / 2}, 70, map::clr::RED, true, false, 2, map::Alignment::center);
 
 }

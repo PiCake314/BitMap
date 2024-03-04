@@ -7,11 +7,11 @@
 namespace map{
     namespace clr{
         struct RGB{
-            uint16_t red{};
-            uint16_t green{};
-            uint16_t blue{};
+            uint8_t red{};
+            uint8_t green{};
+            uint8_t blue{};
 
-            uint16_t depth{};
+            uint8_t depth{};
 
             constexpr RGB() = default;
             // red(0),
@@ -49,8 +49,8 @@ namespace map{
 
             constexpr bool operator==(const RGB& rgb) const = default;
 
-            /*constexpr*/ friend std::ostream& operator<<(std::ostream &os, const RGB &c){
-                return (os << c.red << " " << c.green << " " << c.blue);
+            friend std::ostream& operator<<(std::ostream &os, const RGB &c){
+                return (os << int(c.red) << " " << int(c.green) << " " << int(c.blue));
             }
 
             static RGB RAND(){
