@@ -85,19 +85,21 @@ void canvas(map::Mapper &m){
     // }
 
 
-    // make a star with 5 points
-    // std::vector<map::Point> stars;
-    // for(int i{}; i < 5; ++i){
-    //     stars.push_back({cos(2 * M_PI * i / 5), sin(2 * M_PI * i / 5)});
-    //     stars[i] *= 100; // scale to make it visible
-    //     stars[i] += {width / 2, height / 2}; // center the star
-    // }
+    // make a star with 5 pointsstd::vector<map::Point> points;
+    std::vector<map::Point> points;
+    for(int i{}; i < 10; ++i){
+        double angle = i * 2 * M_PI / 10;
+        double x = cos(angle);
+        double y = sin(angle);
+        if(i % 2 == 0){
+            x *= .5;
+            y *= .5;
+        }
+        points.push_back({int(x * 100 + width / 2), int(y * 100 + height / 2)});
+    }
 
-    // for(int i{}; i < 5; ++i){
-    //     m.drawLine(stars[i], stars[(i + 2) % 5], map::clr::RGB{245, 191, 79});
-    // }
+    map::shapes::Polygon star{points, {.color = {245, 191, 79}, .filled = true}};
 
-
-    m.drawCircle({width / 2, height / 2}, 70, map::clr::RED, true, false, 2, map::Alignment::center);
+    m.draw(&star);
 
 }
