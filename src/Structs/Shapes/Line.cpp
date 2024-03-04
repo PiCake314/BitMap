@@ -50,5 +50,5 @@ bool map::shapes::Line::on(Point p) const {
 
 
 void map::shapes::Line::draw(Mapper *m) const {
-    m->drawLine(start(), end(), color, thickness);
+    m->drawLine<true>(start(), end(), color, thickness);
 }

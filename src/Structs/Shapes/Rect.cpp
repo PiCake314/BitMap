@@ -46,5 +46,5 @@ width_(w), height_(h), rectAlignment(d.rectAlignment)
 }
 
 void map::shapes::Rect::draw(Mapper *m) const {
-    m->drawRect(center, height_, width_, color, filled, thickness, rectAlignment);
+    m->drawRect<true>(center, height_, width_, color, filled, thickness, rectAlignment);
 }

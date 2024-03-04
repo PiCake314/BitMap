@@ -13,5 +13,5 @@ map::shapes::Polygon::Polygon(std::vector<Point> pts, Data &&d)
 {}
 
 void map::shapes::Polygon::draw(Mapper *m) const {
-    m->drawPolygon(points, color, filled, thickness);
+    m->drawPolygon<true>(points, color, filled, thickness);
 }

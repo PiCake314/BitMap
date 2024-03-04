@@ -42,5 +42,5 @@ map::shapes::Triangle::Triangle(Point p1, Point p2, Point p3, Data &&d)
 
 
 void map::shapes::Triangle::draw(Mapper *m) const {
-    // m->drawTriangle(points[0], points[1], points[2], color, thickness);
+    // m->drawTriangle<true>(points[0], points[1], points[2], color, thickness);
 }

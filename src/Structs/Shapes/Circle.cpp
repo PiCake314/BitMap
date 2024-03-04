@@ -110,5 +110,5 @@ bool map::shapes::Circle::onBorder(const Point& p) const {
 
 
 void map::shapes::Circle::draw(Mapper *m) const {
-    m->drawCircle(center, radius, color, filled, inverted, thickness, alignment);
+    m->drawCircle<true>(center, radius, color, filled, inverted, thickness, alignment);
 }

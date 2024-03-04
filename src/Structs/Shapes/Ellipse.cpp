@@ -106,5 +106,5 @@ bool map::shapes::Ellipse::onBorder(const Point& p) const {
 
 
 void map::shapes::Ellipse::draw(Mapper *m) const {
-    m->drawEllipse(center, r1, r2, color, filled, inverted, thickness, alignment);
+    m->drawEllipse<true>(center, r1, r2, color, filled, inverted, thickness, alignment);
 }
