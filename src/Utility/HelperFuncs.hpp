@@ -7,7 +7,7 @@
 namespace map::util{
 
     bool isNumber(std::string s){
-        for(char &c : s)
+        for(char c : s)
             if(!isdigit(c))
                 return false;
 
