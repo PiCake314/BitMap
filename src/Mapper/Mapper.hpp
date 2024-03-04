@@ -108,7 +108,7 @@ namespace map{
             */
             void setState();
 
-            void setFile(std::string);
+            // void setFile(std::string);
 
             Size getSize() const;
 
@@ -127,18 +127,23 @@ namespace map{
             [[deprecated]]
             void drawAt(Point, clr::RGB);
 
+            template <bool called_from_shape_class = false>
             void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
 
+            template <bool called_from_shape_class = false>
             void drawTri(Point p1, Point p2, Point p3, clr::RGB = clr::RGB(), int thickness = 0);
 
+            [[deprecated]]
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
 
+            template <bool called_from_shape_class = false>
             void drawPolygon(const std::vector<Point>&, clr::RGB = clr::RGB(), bool filled = false, int thick = 1);
 
 
             /**
              * @param height/width: negative values will result in them being 10% of the height.
              */
+            template <bool called_from_shape_class = false>
             void drawRect(Point center, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
 
 
@@ -146,12 +151,14 @@ namespace map{
              * @param r: negative values will result in them being 10% of the height.
              * @param alignment: sets the alignment of the shape.
              */
+            template <bool called_from_shape_class = false>
             void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
 
 
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
+           template <bool called_from_shape_class = false>
             void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
 
@@ -160,9 +167,11 @@ namespace map{
             */
             void drawText(std::string_view, Point, std::string font = "Default", Alignment = Alignment::none);
 
-            
+
+            void draw(shapes::Shape*);
+
             template <bool locked = false>
-            void draw(const shapes::ShapePtr shape);
+            void draw(const shapes::ShapePtr);
 
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&

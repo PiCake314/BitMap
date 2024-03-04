@@ -100,9 +100,9 @@ void map::Mapper::noSet(){
 }
 
 
-void map::Mapper::setFile(std::string fn){
-    m_Filename = fn;
-}
+// void map::Mapper::setFile(std::string fn){
+//     m_Filename = fn;
+// }
 
 
 map::Size map::Mapper::getSize() const{
@@ -171,6 +171,7 @@ void map::Mapper::drawAt(Point p, map::clr::RGB color){
 
 
 
+template <bool called_from_shape_class>
 void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thickness){
     if(thickness < 2) thickness = 2;
 
@@ -209,7 +210,14 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
 }
 
 
+template <>
+void map::Mapper::drawLine<false>(Point p1, Point p2, clr::RGB color, int thickness){
+    color.depth = 1;
+    drawLine<true>(p1, p2, color, thickness);
+}
 
+
+template <bool called_from_shape_class>
 void map::Mapper::drawTri(Point p1, Point p2, Point p3, map::clr::RGB color, int thickness){
     bool s = m_Set_state;
     m_Set_state = false;
@@ -221,6 +229,12 @@ void map::Mapper::drawTri(Point p1, Point p2, Point p3, map::clr::RGB color, int
     m_Set_state = s;
 
     if(m_Set_state) setState();
+}
+
+template <>
+void map::Mapper::drawTri<false>(Point p1, Point p2, Point p3, map::clr::RGB color, int thickness){
+    color.depth = 1;
+    drawTri<true>(p1, p2, p3, color, thickness);
 }
 
 
@@ -263,6 +277,7 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
 }
 
 
+template <bool called_from_shape_class>
 void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
     assert(points.size() > 2);
 
@@ -321,7 +336,15 @@ void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB co
 }
 
 
+template <>
+void map::Mapper::drawPolygon<false>(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
+    color.depth = 1;
+    drawPolygon<true>(points, color, filled, thick);
+}
 
+
+
+template <bool called_from_shape_class>
 void map::Mapper::drawRect(Point center, float height, float width, map::clr::RGB color, bool filled, bool thick , RectAlignment alignment){
     if(height < 0) height = m_Size.height/10;
     
@@ -437,7 +460,14 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
 }
 
 
+template <>
+void map::Mapper::drawRect<false>(Point center, float height, float width, map::clr::RGB color, bool filled, bool thick, RectAlignment alignment){
+    color.depth = 1;
+    drawRect<true>(center, height, width, color, filled, thick, alignment);
+}
 
+
+template <bool called_from_shape_class>
 void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
     thickness = thickness < 2 ? 2 : thickness;
 
@@ -527,8 +557,14 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
     if(m_Set_state) setState();
 }
 
+template <>
+void map::Mapper::drawCircle<false>(Point center, int r, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+    color.depth = 1;
+    drawCircle<true>(center, r, color, filled, inverted, thickness, alignment);
+}
 
 
+template <bool called_from_shape_class>
 void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
     float thick = float(thickness) / 100;
 
@@ -637,6 +673,12 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
     if(m_Set_state) setState();
 }
 
+template <>
+void map::Mapper::drawEllipse<false>(Point center, int r1, int r2, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+    color.depth = 1;
+    drawEllipse<true>(center, r1, r2, color, filled, inverted, thickness, alignment);
+}
+
 
 
 void map::Mapper::drawText(std::string_view text, Point center, std::string fontname, Alignment alignment){
@@ -723,9 +765,13 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
 }
 
 
+void map::Mapper::draw(map::shapes::Shape* s){
+    s->draw(this);
+}
+
 
 template <bool locked>
-void map::Mapper::draw(map::shapes::ShapePtr s){
+void map::Mapper::draw(const map::shapes::ShapePtr s){
 
     if constexpr(locked){
         std::vector<std::unique_lock<std::mutex>> locks;
@@ -737,12 +783,7 @@ void map::Mapper::draw(map::shapes::ShapePtr s){
     }
     else s->draw(this);
 
-    // else if constexpr(std::is_same_v<T, Polygon>){
-    //     drawPolygon(shape.pts, shape.color, shape.filled, shape.inverted);
-    // }
-    // else if constexpr(std::is_same_v<T, Text>){
-    //     drawText(shape.text, shape.top, shape.left, shape.color, shape.alignment);
-    // }
+
     // else if constexpr(std::is_same_v<T, Image>){
     //     drawImage(shape.img, shape.top, shape.left, shape.alignment);
     // }
