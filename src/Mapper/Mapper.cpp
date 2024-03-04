@@ -1050,6 +1050,8 @@ void map::Mapper::animate(std::vector<map::shapes::ShapePtr> (*provider)(const i
 // ----------------------- Video Related Functions ----------------------- //
 
 void map::Mapper::saveFrame(){
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+
     const std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH MANGLED_PNG(m_Current_frame);
     std::system(command.c_str());
     m_Current_frame++;
@@ -1057,13 +1059,15 @@ void map::Mapper::saveFrame(){
 
 
 void map::Mapper::render(const std::string& output_file) const {
-    // ffmpeg -framerate 10 -i output/vids/.temp/%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output/vids/vid.mp4
-    
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+
 	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
 }
 
 
 void map::Mapper::clearFrames() const {
+    assert(m_FPS > 0 && "FPS must be greater than 0!");
+
     std::system("rm " VIDEO_TEMP_PATH "*.png");
     std::system(("rm " + (OUTPUT_PATH + m_Filename)).c_str());
 }
