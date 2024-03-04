@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include "Point.hpp"
 
 namespace map{
     namespace clr{
@@ -18,7 +19,7 @@ namespace map{
             // blue(0)
             // {}
 
-            constexpr RGB(int v):
+            constexpr explicit RGB(int v):
             red(std::clamp(v, 0, 255)),
             green(std::clamp(v, 0, 255)),
             blue(std::clamp(v, 0, 255))
@@ -28,6 +29,12 @@ namespace map{
             red(std::clamp(r, 0, 255)),
             green(std::clamp(g, 0, 255)),
             blue(std::clamp(b, 0, 255))
+            {}
+
+            constexpr RGB(const map::Point3D& p):
+            red(std::clamp(int(p.x), 0, 255)),
+            green(std::clamp(int(p.y), 0, 255)),
+            blue(std::clamp(int(p.z), 0, 255))
             {}
 
             constexpr void invert(){

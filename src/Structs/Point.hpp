@@ -3,6 +3,7 @@
 #include <concepts>
 #include <array>
 #include <cmath>
+#include <compare>
 
 namespace map{
     struct Point{
@@ -10,24 +11,25 @@ namespace map{
         double y{};
 
         constexpr Point() : x(0), y(0) {}
+        constexpr explicit Point(double i) : x(i), y(i) {}
         constexpr Point(double x_, double y_) : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
         
         constexpr Point(std::integral auto x_, std::integral auto y_) : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
 
-        constexpr Point operator+(const Point& p){
+        [[nodiscard]] constexpr Point operator+(const Point& p) const {
             return {x + p.x, y + p.y};
         }
 
-        constexpr Point operator-(const Point& p){
+        [[nodiscard]] constexpr Point operator-(const Point& p) const {
             return {x - p.x, y - p.y};
         }
 
-        constexpr Point operator*(double f){
+        [[nodiscard]] constexpr Point operator*(double f) const {
             return {x * f, y * f};
         }
 
-        constexpr Point operator/(double f){
+        [[nodiscard]] constexpr Point operator/(double f) const {
             return {x / f, y / f};
         }
 
@@ -49,40 +51,58 @@ namespace map{
 
         constexpr bool operator==(const Point& p) const = default;
 
-        constexpr double distSqrd(const Point& p) const {
+        // constexpr auto operator<=>(const Point&) const = default; // un-needed
+
+        [[nodiscard]] constexpr Point abs() const {
+            return {std::abs(x), std::abs(y)};
+        }
+
+        [[nodiscard]] constexpr double magSqrd() const {
+            return x * x + y * y;
+        }
+
+        [[nodiscard]] constexpr double mag() const {
+            return std::sqrt(magSqrd());
+        }
+
+        constexpr void normalize(){
+            double m = mag();
+            if(m != 0){
+                x /= m;
+                y /= m;
+            }
+        }
+
+        [[nodiscard]] constexpr Point normalized() const {
+            Point p = *this;
+            p.normalize();
+            return p;
+        }
+
+        [[nodiscard]] constexpr Point max(const Point& p) const {
+            return {std::max(x, p.x), std::max(y, p.y)};
+        }
+
+        [[nodiscard]] constexpr Point min(const Point& p) const {
+            return {std::min(x, p.x), std::min(y, p.y)};
+        }
+
+        [[nodiscard]] constexpr double distSqrd(const Point& p) const {
             return std::pow(x - p.x, 2) + std::pow(y - p.y, 2);
         }
 
-        constexpr double dist(const Point& p) const {
-            return std::sqrt(this->distSqrd(p));
+        [[nodiscard]] constexpr double dist(const Point& p) const {
+            return std::sqrt(distSqrd(p));
         }
 
-        // specific use case
-        constexpr bool isBetween(const Point& a, const Point& b, int thickness) const {
-            // if(a.x == b.x){
-            //     return x == a.x && y >= std::min(a.y, b.y) && y <= std::max(a.y, b.y);
-            // }
-            // else if(a.y == b.y){
-            //     return y == a.y && x >= std::min(a.x, b.x) && x <= std::max(a.x, b.x);
-            // }
-            // else{
-            //     // check if the point is on the line
-            //     const double slope = (b.y - a.y) / (b.x - a.x);
-            //     const double y_intercept = a.y - slope * a.x;
+        // why..
+        // static constexpr double dist(const Point& a, const Point& b){
+        //     return a.dist(b);
+        // }
 
-            //     return std::abs(y - (slope * x + y_intercept)) < 1;
-            // }
-
-            return (a.y - thickness < y && b.y + thickness > y) || (b.y - thickness < y && a.y + thickness > y);
-        }
-
-        static constexpr double dist(const Point& a, const Point& b){
-            return a.dist(b);
-        }
-
-        static constexpr double distSqrd(const Point& a, const Point& b){
-            return a.distSqrd(b);
-        }
+        // static constexpr double distSqrd(const Point& a, const Point& b){
+        //     return a.distSqrd(b);
+        // }
 
         constexpr friend Point operator * (const double matrix[2][2], const Point& p){
             return {
@@ -141,29 +161,30 @@ namespace map{
 
 
         constexpr Point3D() : x{}, y{}, z{} {}
+        constexpr explicit Point3D(double i) : x{i}, y{i}, z{i} {}
         constexpr Point3D(double x_, double y_, double z_) : x{x_}, y{y_}, z{z_} {}
         
         constexpr Point3D(std::integral auto x_, std::integral auto y_, std::integral auto z_)
         : x{static_cast<double>(x_)}, y{static_cast<double>(y_)}, z{static_cast<double>(z_)} {}
 
 
-        constexpr Point toPoint() const {
+        [[nodiscard]] constexpr Point toPoint() const {
             return {x, y};
         }
 
-        constexpr Point3D operator+(const Point3D& p){
+        [[nodiscard]] constexpr Point3D operator+(const Point3D& p) const {
             return {x + p.x, y + p.y, z + p.z};
         }
 
-        constexpr Point3D operator-(const Point3D& p){
+        [[nodiscard]] constexpr Point3D operator-(const Point3D& p) const {
             return {x - p.x, y - p.y, z - p.z};
         }
 
-        constexpr Point3D operator*(double f){
+        [[nodiscard]] constexpr Point3D operator*(double f) const {
             return {x * f, y * f, z * f};
         }
 
-        constexpr Point3D operator/(double f){
+        [[nodiscard]] constexpr Point3D operator/(double f) const {
             return {x / f, y / f, z / f};
         }
 
@@ -185,21 +206,59 @@ namespace map{
 
         constexpr bool operator==(const Point3D& p) const = default;
 
-        constexpr double distSqrd(const Point3D& p) const {
+        // constexpr auto operator<=>(const Point3D&) const = default; // un-needed
+
+        [[nodiscard]] constexpr Point3D abs() const {
+            return {std::abs(x), std::abs(y), std::abs(z)};
+        }
+
+        [[nodiscard]] constexpr double magSqrd() const {
+            return x * x + y * y + z * z;
+        }
+
+        [[nodiscard]] constexpr double mag() const {
+            return std::sqrt(magSqrd());
+        }
+
+        constexpr void normalize(){
+            double m = mag();
+            if(m != 0){
+                x /= m;
+                y /= m;
+                z /= m;
+            }
+        }
+
+        [[nodiscard]] constexpr Point3D normalized() const {
+            Point3D p = *this;
+            p.normalize();
+            return p;
+        }
+
+        [[nodiscard]] constexpr Point3D max(const Point3D& p) const {
+            return {std::max(x, p.x), std::max(y, p.y), std::max(z, p.z)};
+        }
+
+        [[nodiscard]] constexpr Point3D min(const Point3D& p) const {
+            return {std::min(x, p.x), std::min(y, p.y), std::min(z, p.z)};
+        }
+
+        [[nodiscard]] constexpr double distSqrd(const Point3D& p) const {
             return (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) + (z - p.z) * (z - p.z);
         }
 
-        constexpr double dist(const Point3D& p) const {
+        [[nodiscard]] constexpr double dist(const Point3D& p) const {
             return std::sqrt(this->distSqrd(p));
         }
 
-        static constexpr double dist(const Point3D& a, const Point3D& b){
-            return a.dist(b);
-        }
+        // no
+        // static constexpr double dist(const Point3D& a, const Point3D& b){
+        //     return a.dist(b);
+        // }
 
-        static constexpr double distSqrd(const Point3D& a, const Point3D& b){
-            return a.distSqrd(b);
-        }
+        // static constexpr double distSqrd(const Point3D& a, const Point3D& b){
+        //     return a.distSqrd(b);
+        // }
 
         constexpr friend Point3D operator * (const double matrix[3][3], const Point3D& p){
             return {
@@ -249,7 +308,7 @@ namespace map{
         }
 
         friend std::ostream& operator << (std::ostream &os, const Point3D& p){
-            return os << p.x << ", " << p.y;
+            return os << p.x << ", " << p.y << ", " << p.z;
         }
     };
 
@@ -350,6 +409,42 @@ namespace map{
 
         constexpr bool operator==(const PointND &p) const = default;
 
+        [[nodiscard]] constexpr PointND abs() const {
+            PointND result;
+            for(size_t i = 0; i < N; ++i){
+                result.coords[i] = std::abs(coords[i]);
+            }
+            return result;
+        }
+
+        constexpr void normalize(){
+            double m = mag();
+            if(m != 0){
+                for(size_t i = 0; i < N; ++i){
+                    coords[i] /= m;
+                }
+            }
+        }
+
+        [[nodiscard]] constexpr PointND normalized() const {
+            PointND p = *this;
+            p.normalize();
+            return p;
+        }
+
+        [[nodiscard]] constexpr double magSqrd() const {
+            double result = 0;
+            for(size_t i = 0; i < N; ++i){
+                result += coords[i] * coords[i];
+            }
+            return result;
+        }
+
+        [[nodiscard]] constexpr double mag() const {
+            return std::sqrt(magSqrd());
+        }
+
+
         constexpr double distSqrd(const PointND &p) const {
             double result = 0;
             for(size_t i = 0; i < N; ++i){
@@ -362,13 +457,14 @@ namespace map{
             return std::sqrt(this->distSqrd(p));
         }
 
-        static constexpr double dist(const PointND &a, const PointND &b){
-            return a.dist(b);
-        }
+        // please stop
+        // static constexpr double dist(const PointND &a, const PointND &b){
+        //     return a.dist(b);
+        // }
 
-        static constexpr double distSqrd(const PointND &a, const PointND &b){
-            return a.distSqrd(b);
-        }
+        // static constexpr double distSqrd(const PointND &a, const PointND &b){
+        //     return a.distSqrd(b);
+        // }
 
         constexpr friend PointND operator * (const double matrix[N][N], const PointND &p){
             PointND result;

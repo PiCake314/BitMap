@@ -37,6 +37,8 @@
 #define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
 
 
+#define DEFUALT_FONT "Default"
+
 #define DEGREES /180. * M_PI
 
 namespace map{
@@ -84,13 +86,13 @@ namespace map{
 
         public:
             // Mapper();
-            Mapper(std::string, Size, Loadtype = Loadtype::reset);
-            Mapper(std::string, Size, int fps, Loadtype = Loadtype::reset);
+            Mapper(std::string_view, Size, Loadtype = Loadtype::reset);
+            Mapper(std::string_view, Size, int fps, Loadtype = Loadtype::reset);
             // Mapper(Mapper &&);
 
             ~Mapper();
 
-            void loadFont(std::string_view);
+            void loadFont(std::string_view = DEFUALT_FONT);
 
             // void setFPS(int);
 
@@ -209,19 +211,23 @@ namespace map{
 
             // ----------------------- Video Related Functions -----------------------
 
-            private:
+            // private:
             void saveFrame();
             
             public:
-            void render(const std::string &output_file = "out.mp4") const;
+            void render(const std::string& output_file = "out.mp4") const;
 
             void clearFrames() const;
 
             // ----------------------- Operators -----------------------
 
             clr::RGB &operator[](const Point&);
+            
+            map::clr::RGB &at(const Point&);
 
             clr::RGB &operator[](int);
+
+            map::clr::RGB &at(int i);
 
             clr::RGB *begin();
 

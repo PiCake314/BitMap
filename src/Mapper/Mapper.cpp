@@ -6,12 +6,11 @@
 #include <mutex>
 
 #define INIT_STATE false
-#define DEFUALT_FONT "Default"
 
 using namespace map::util;
 
 // image mode
-map::Mapper::Mapper(std::string fn, Size size, Loadtype type)
+map::Mapper::Mapper(std::string_view fn, Size size, Loadtype type)
 : m_Filename(fn),
 m_Size{size.width, size.height},
 m_FPS{0}, m_Delta{0}, m_Current_frame{0},
@@ -48,15 +47,15 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 }
 
 // video mode
-map::Mapper::Mapper(std::string fn, Size size, int fps, Loadtype type)
+map::Mapper::Mapper(std::string_view fn, Size size, int fps, Loadtype type)
 : m_Filename(MANGLED_PPM), m_Filename_vid(fn),
 m_Size{size.width, size.height},
 m_FPS(fps), m_Delta(1./fps), m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
 m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 {
-    assert(fn.length() > 4 );
-    assert(fn.substr(fn.length()-4, 4) == ".mp4");
+    assert(fn.length() > 4 && "Filename too short");
+    assert(fn.substr(fn.length()-4, 4) == ".mp4" && "Only .mp4 files are supported");
 
     if(type == Loadtype::edit) loadFile();
     else resetFile();
@@ -72,11 +71,10 @@ map::Mapper::~Mapper(){
 
 void map::Mapper::loadFont(std::string_view fontname){
 
-    std::find_if(m_Fonts.begin(), m_Fonts.end(),
-    [&fontname](const fnt::Font &f){
-        return f.getFontname() == fontname;
-    }) == m_Fonts.end()?
-    m_Fonts.push_back(fnt::Font{fontname}) : void();
+    if(std::find_if(m_Fonts.begin(), m_Fonts.end(),
+        [&fontname](const fnt::Font &f){ return f.getFontname() == fontname; }
+    ) == m_Fonts.end())
+        m_Fonts.push_back(fnt::Font{fontname});
 
     // m_Fonts.push_back(fnt::Font{fontname});
 }
@@ -317,43 +315,6 @@ void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB co
                 }
             }
         }
-
-        // // old garbae implementation :)
-        // for(int i = 0; i < m_Size.height; i++){
-
-        //     int count = 0;
-        //     for(int j = 0; j < m_Size.width; j++){
-
-        //         for(size_t ind = 0; ind < s; ++ind){
-        //             const auto &line = lines[ind];
-        //             Point p{j, i};
-
-        //             if(line.on(p)){ 
-        //                 ++count;
-        //                 for(; line.on(p); ++j, ++p.x);
-
-        //                 if(auto prev = lines[(ind-1 + s) % s]; prev.on(p)){
-        //                     if(!p.isBetween(prev.start(), line.end(), thick)){
-        //                         ++count;
-        //                         break;
-        //                     }
-        //                 }
-
-        //                 else if(auto next = lines[(ind+1) % s]; next.on(p)){
-        //                     if(!p.isBetween(line.start(), next.end(), thick)){
-        //                         ++count;
-        //                         break;
-        //                     }
-        //                 }
-
-        //                 break;
-        //             }
-        //         }
-
-        //         if(count % 2 == 1) m_Map[i*m_Size.width + j] = color;
-
-        //     }
-        // }
     }
 
     if(m_Set_state) setState();
@@ -809,6 +770,8 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &shapes, const int num_thre
     constexpr bool multithreaded = true;
 
     std::vector<std::thread> threads;
+    bool s = m_Set_state;
+    m_Set_state = false;
     for(int i = 0; i < num_threads; ++i){
         threads.emplace_back([&queue, this]{
             while(!queue.isEmpty()){
@@ -819,6 +782,9 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &shapes, const int num_thre
     }
 
     for(auto &thread : threads) thread.join();
+    
+    this->m_Set_state = s;
+    if(this->m_Set_state) this->setState();
 }
 
 
@@ -1084,19 +1050,19 @@ void map::Mapper::animate(std::vector<map::shapes::ShapePtr> (*provider)(const i
 // ----------------------- Video Related Functions ----------------------- //
 
 void map::Mapper::saveFrame(){
-    std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH MANGLED_PNG(m_Current_frame);
+    const std::string command = "convert " OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH MANGLED_PNG(m_Current_frame);
     std::system(command.c_str());
     m_Current_frame++;
 }
 
 
-void map::Mapper::render(const std::string &output_file) const{
+void map::Mapper::render(const std::string& output_file) const {
     // ffmpeg -framerate 10 -i output/vids/.temp/%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output/vids/vid.mp4
 	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
 }
 
 
-void map::Mapper::clearFrames() const{
+void map::Mapper::clearFrames() const {
     std::system("rm " VIDEO_TEMP_PATH "*.png");
     std::system(("rm " + (OUTPUT_PATH + m_Filename)).c_str());
 }
@@ -1105,9 +1071,11 @@ void map::Mapper::clearFrames() const{
 // ----------------------- Operators ----------------------- //
 
 map::clr::RGB &map::Mapper::operator[](const Point& p){
-    assert(p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height);
+    return m_Map[int(p.y) * m_Size.width + int(p.x)];
+}
 
-    // return m_Map[int(p.y * m_Size.width + p.x)]; // buggy..
+
+map::clr::RGB &map::Mapper::at(const Point& p){
     return m_Map[int(p.y) * m_Size.width + int(p.x)];
 }
 
@@ -1117,6 +1085,10 @@ map::clr::RGB &map::Mapper::operator[](int i){
     return m_Map[i];
 }
 
+map::clr::RGB &map::Mapper::at(int i){
+    assert(i >= 0 && i < m_Size.height * m_Size.width);
+    return m_Map[i];
+}
 
 // void map::Mapper::operator=(map::Mapper &&other){
 //     m_Filename = other.m_Filename;

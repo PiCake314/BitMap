@@ -13,7 +13,7 @@ m_end({center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)})
 
 map::shapes::Line::Line(Point s, Point e, Data &&d)
 : Shape({(s.x + e.x)/2, (s.y + e.y)/2}, d.color, d.thickness, {}),
-length(Point::dist(s, e)),
+length(s.dist(e)),
 angle(std::atan2(e.y - s.y, e.x - s.x)),
 m_start(s), m_end(e)
 {
