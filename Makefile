@@ -33,9 +33,10 @@ test: unit_tests/test.cpp src/Mapper/Mapper.cpp
 clean: 
 	rm main test
 
+dir:
+	mkdir output; mkdir output/ppms; mkdir output/pngs; mkdir output/vids; mkdir output/vids/.temp;
 
 install:
-	mkdir output; mkdir output/ppms; mkdir output/pngs;
 	# brew install ImageMagick && brew install ffmpeg
 
 

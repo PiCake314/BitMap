@@ -67,39 +67,20 @@ map::clr::RGB image(map::Point coord){
 
 
 void canvas(map::Mapper &m){
-    // using namespace map;
-    // using namespace shapes;
+    using namespace map;
+    using namespace shapes;
 
-    // const int frames = m.getFPS() * 2;
+    const int frames = m.getFPS() * 2;
 
-    // for(int frame{}; frame < frames; ++frame){
-    //     for(int i = 0; i < height; ++i){
-    //         for(int j = 0; j < width; ++j){
-    //             m[{j, i}] = image({j, i});
-    //         }
-    //     }
-
-    //     m.setState();
-    //     m.saveFrame();
-    //     timer += double(2 * M_PI) / frames;
-    // }
-
-
-    // make a star with 5 pointsstd::vector<map::Point> points;
-    std::vector<map::Point> points;
-    for(int i{}; i < 10; ++i){
-        double angle = i * 2 * M_PI / 10;
-        double x = cos(angle);
-        double y = sin(angle);
-        if(i % 2 == 0){
-            x *= .5;
-            y *= .5;
+    for(int frame{}; frame < frames; ++frame){
+        for(int i = 0; i < height; ++i){
+            for(int j = 0; j < width; ++j){
+                m[{j, i}] = image({j, i});
+            }
         }
-        points.push_back({int(x * 100 + width / 2), int(y * 100 + height / 2)});
+
+        m.setState();
+        m.saveFrame();
+        timer += double(2 * M_PI) / frames;
     }
-
-    map::shapes::Polygon star{points, {.color = {245, 191, 79}, .filled = true}};
-
-    m.draw(&star);
-
 }

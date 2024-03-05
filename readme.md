@@ -1,14 +1,4 @@
 
-# TODO:
-- Fix readme IoI
-- Fix shape includes in mapper header file
-- Implement multi-threading
-- Implement triangle
-- Implement complex polygon
-- Add text
-- Add image
-- Implement multiple arg passing for Alignment
-- Deprecate unused functions/enums/structs
 
 # Download:
 To use the stable version:\
@@ -89,8 +79,8 @@ Make sure you have them installed before using Mapper.
     std::vector<map::Point> points;
     for(int i{}; i < 5; ++i){
         points.push_back({cos(2 * M_PI * i / 5), sin(2 * M_PI * i / 5)});
-        points[i] *= 100; // scale to make it visible
-        points[i] += {width / 2, height / 2}; // center the point
+        points[i] *= 100;
+        points[i] += {width / 2, height / 2};
     }
 
     std::vector<map::shapes::Line> lines;
@@ -105,7 +95,7 @@ Make sure you have them installed before using Mapper.
 
     ```
     
-    We can also refactor this a little bit since the `map::Mapper::draw` function can take a `std::vector<map::shapes::ShapePtr`>. That, combined with a little bit of refactoring, we get this:
+    The `map::Mapper::draw` function can take a `std::vector<map::shapes::ShapePtr`>. That, combined with a little bit of refactoring, we get this:
     ```cpp
     using LineData = map::shapes::Line::Data;
 
@@ -129,8 +119,8 @@ Make sure you have them installed before using Mapper.
     std::vector<map::Point> points;
     for(int i{}, j{}; i < 5; ++i, j += 2){
         points.push_back({cos(2 * M_PI * (j % 5) / 5), sin(2 * M_PI * (j % 5) / 5)});
-        points[i] *= 100; // scale to make it visible
-        points[i] += {width / 2, height / 2}; // center the point
+        points[i] *= 100;
+        points[i] += {width / 2, height / 2};
     }
 
     map::shapes::Polygon star{points, {.color = {245, 191, 79}}};
@@ -138,7 +128,7 @@ Make sure you have them installed before using Mapper.
     m.draw(&star);
     ```
     
-    It's better to use this class because now we have better control over this shape, such as having the option to fill it with color:
+    It's better to use this class because now we have better control over this shape, such as having the option to fill it with color (I'll also change some math involved to make it more convenient):
     ```cpp
     
     std::vector<map::Point> points;
@@ -167,6 +157,11 @@ Make sure you have them installed before using Mapper.
     The output image should look like this:\
     - TODO: add image
 
+---
+
+- Hard: **Ray Marching!**
+
+
 
 
 \
@@ -175,7 +170,14 @@ Make sure you have them installed before using Mapper.
 \
 \
 \
-\
-\
-\
-\
+
+# TODO:
+- [x] Fix readme IoI
+- [] Fix shape includes in mapper header file
+- [x] Implement multi-threading
+- [] Implement triangle
+- [x] Implement complex polygon
+- [x] Add text
+- [] Add image
+- [] Implement multiple arg passing for Alignment
+- [x] Deprecate unused functions/enums/structs
