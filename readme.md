@@ -13,6 +13,9 @@ To use the latest _unstable_ version:\
 This library depends on 2 libraries:
 - [ffmpeg](https://ffmpeg.org)
 - [ImageMagick](https://imagemagick.org)
+- [Make](https://www.gnu.org/software/make/)
+
+(Make) is not fully necessary, but it makes the process of compiling and running the code much easier. If you don't have it, you can still compile and run the code by running the commands found in the `Makefile` file.
 
 Make sure you have them installed before using Mapper.
 
