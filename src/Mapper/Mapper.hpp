@@ -47,6 +47,7 @@ namespace map{
     namespace shapes{
         struct Shape;
         using ShapePtr = std::unique_ptr<Shape>;
+        using Shapes = std::vector<ShapePtr>;
     }
     
 
@@ -176,7 +177,7 @@ namespace map{
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(std::vector<shapes::ShapePtr> &shapes, const int num_threads = 2);
+            void draw(shapes::Shapes &shapes, const int num_threads = 2);
 
 
             /**

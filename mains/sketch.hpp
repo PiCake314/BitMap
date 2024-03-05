@@ -4,7 +4,6 @@
 
 
 extern size_t height, width; // importing the height and width of the canvas
-using Shapes = std::vector<map::shapes::ShapePtr>;
 
 double timer{};
 
