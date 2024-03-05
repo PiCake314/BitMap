@@ -173,11 +173,11 @@ Make sure you have them installed before using Mapper.
 
 # TODO:
 - [x] Fix readme IoI
-- [] Fix shape includes in mapper header file
+- [ ] Fix shape includes in mapper header file
 - [x] Implement multi-threading
-- [] Implement triangle
+- [ ] Implement triangle
 - [x] Implement complex polygon
 - [x] Add text
-- [] Add image
-- [] Implement multiple arg passing for Alignment
+- [ ] Add image
+- [ ] Implement multiple arg passing for Alignment
 - [x] Deprecate unused functions/enums/structs
