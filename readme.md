@@ -53,14 +53,14 @@ Make sure you have them installed before using Mapper.
     To convert the image from a ppm into a png:\
     `make png filename=japan`
     
-    The output image should look like this:\
-    - TODO: add image
+    The output image should look like this:
+    - ![japanense flag](.readme_files/japan.png)
 
 ---
 
 - Medium: **Star**
 
-    to make a star, we need to calculate the position of the 5 mains points. Copy and paste following code in the `canvas` function found in `BitMap/mains/sketch.hpp`:
+    To make a star, we need to calculate the position of the 5 mains points. Copy and paste following code in the `canvas` function found in `BitMap/mains/sketch.hpp`:
     ```cpp
     std::vector<map::Point> points;
     for(int i{}; i < 5; ++i){
@@ -154,15 +154,109 @@ Make sure you have them installed before using Mapper.
     To convert the image from a ppm into a png:\
     `make png filename=star`
     
-    The output image should look like this:\
-    - TODO: add image
+    The output image should look like this:
+    - ![star](.readme_files/star.png)
 
 ---
 
 - Hard: **Ray Marching!**
 
+    **Note that this is not a ray marching tutorial. This code was taken line by line from [this video](https://www.youtube.com/watch?v=khblXafu7i) by [kishimisu](https://www.youtube.com/@kishimisu).**\
+    We'll start by defining some useful functions that will help us define our world:
+    ```cpp
+    double smoothMin(const double a, const double b, const double k){
+        const double h = std::max(k - std::abs(a - b), 0.) / k;
+        return std::min(a, b) - h * h * h * k * (1./6.);
+    }
 
+    double sphere(const map::Point3D& p, const double r){
+        return p.mag() - r;
+    }
 
+    double cube(const map::Point3D& p, const map::Point3D& s){
+        const map::Point3D d = p.abs() - s;
+        return (d.max({0, 0, 0}) + map::Point3D{std::min(std::max(d.x, std::max(d.y, d.z)), 0.)}).mag();
+    }
+    ```
+    Now we can define our world by caclulating the distance to the closest object:
+    ```cpp
+    double world(const map::Point3D& p){
+        const map::Point3D s1_pos = {3, 0, 0};
+        const auto sphere1 = sphere(p - s1_pos, 1);
+
+        const auto box1 = cube(p, map::Point3D{.75});
+
+        const double ground = - p.y + .75; // inverted because origin is at the top left
+
+        return smoothMin(ground, smoothMin(sphere1, box1, 2), 1);
+    }
+    ```
+    I want to make the camera rotate around the scene, so I'll add a timer _global_ variable:
+    ```cpp
+    double timer{};
+    ```
+
+    Now I will define the function that will be called for each pixel:
+    ```cpp
+    map::clr::RGB image(const map::Point& coord){
+        const map::Point uv = (coord * 2. - map::Point{width, height}) / height;
+
+        map::Point3D ro{0, -1, -5};      // ray origin
+        map::Point3D rd = map::Point3D{uv.x, uv.y, 1}.normalized(); // ray direction
+
+        double t{}; // distance
+
+        ro.rotate<map::Point3D::Axis::Y>(timer); // rotating the camera
+        rd.rotate<map::Point3D::Axis::Y>(timer); // rotating the ray direction
+
+        // raymarching
+        for(int i{}; i < 80; ++i){
+            map::Point3D p = ro + rd * t; // position along the ray
+
+            double d = world(p); // distance to the shape
+
+            t += d; // marching...
+
+            if(d < .001 || t > 100) break; // if we are close enough to the shape or if we are too far away, we stop
+        }
+
+        map::Point3D color = {t, t, t}; // creating grayscale image
+        color *= 255; // rescaling (0-1) to (0-255)
+        color *= .05; // the intensity of the depth (the higher the darker)
+
+        return color;
+    }
+    ```
+
+    Lastly, in the `canvas` function, we'll call the function on every pixel for every frame.:
+    ```cpp
+    void canvas(map::Mapper &m){
+        using namespace map;
+        using namespace shapes;
+
+        const int frames = m.getFPS() * 2; // 2 seconds
+
+        for(int frame{}; frame < frames; ++frame){
+            for(int i = 0; i < height; ++i){
+                for(int j = 0; j < width; ++j){
+                    m[{j, i}] = image({j, i}); // calling the function for each pixel
+                }
+            }
+
+            m.setState(); // updating the buffer
+            m.saveFrame(); // saving the frame to a temporary file
+            timer += double(2 * M_PI) / frames; // updating the timer
+        }
+    }
+    ```
+    Notice that this is also where incriment the timer.\
+    \
+    To create the video, run the following command:\
+    `make video filename=ray_marching.mp4 h=300 w=300 fps=30`
+
+    Keep in mind that this **will** be slow. Usually, ray marching is done on the GPU, not the CPU.\
+    Final result should look something like this:
+    - ![ray marching](.readme_files/ray_marching.gif)
 
 \
 \

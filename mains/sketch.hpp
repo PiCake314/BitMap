@@ -34,7 +34,7 @@ double world(const map::Point3D& p){
 }
 
 
-map::clr::RGB image(map::Point coord){
+map::clr::RGB image(const map::Point& coord){
     const map::Point uv = (coord * 2. - map::Point{width, height}) / height;
 
     map::Point3D ro{0, -1, -5};      // ray origin
