@@ -1040,7 +1040,6 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
-        // auto shape = provider(frame, frames, m_Delta);
         auto shape = provider(frame, frames, m_Delta);
         draw(std::move(shape));
         if(!m_Set_state) setState();

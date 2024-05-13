@@ -23,14 +23,14 @@ double cube(const map::Point3D& p, const map::Point3D& s){
 
 
 double world(const map::Point3D& p){
-    const map::Point3D s1_pos = {3, 0, 0};
+    const map::Point3D s1_pos = {std::sin(timer)*3, 0, 0};
     const auto sphere1 = sphere(p - s1_pos, 1);
 
-    const auto box1 = cube(p, map::Point3D{.75});
+    const auto cube1 = cube(p, map::Point3D{.75});
 
     const double ground = - p.y + .75; // inverted since origin is at the top left
 
-    return smoothMin(ground, smoothMin(sphere1, box1, 2), 1);
+    return smoothMin(ground, smoothMin(sphere1, cube1, 2), 1);
 }
 
 

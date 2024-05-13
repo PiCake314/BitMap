@@ -89,7 +89,11 @@ namespace map{
             // Mapper();
             Mapper(std::string_view, Size, Loadtype = Loadtype::reset);
             Mapper(std::string_view, Size, int fps, Loadtype = Loadtype::reset);
-            // Mapper(Mapper &&);
+
+            Mapper(Mapper &&) = delete;
+            Mapper(const Mapper &) = delete;
+            Mapper &operator=(Mapper &&) = delete;
+            Mapper &operator=(const Mapper &) = delete;
 
             ~Mapper();
 
@@ -246,7 +250,7 @@ namespace map{
 
             // ----------------------- Private funcs -----------------------
         private:
-            bool safePoint(map::Point p){
+            bool safePoint(const map::Point& p){
                 return p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height;
             }
 
