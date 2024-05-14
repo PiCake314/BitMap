@@ -67,22 +67,23 @@ namespace map{
                 }
             }
 
-            [[nodiscard]] virtual ShapePtr rotated(double angle) const {
-                ShapePtr s = std::make_unique<Shape>(*this);
-                s->rotate(angle);
-                return s;
-            }
+            // commented methods are buggy
+            // [[nodiscard]] virtual ShapePtr rotated(double angle) const {
+            //     ShapePtr s = std::make_unique<Shape>(*this);
+            //     s->rotate(angle);
+            //     return s;
+            // }
 
             virtual void shift(const Point& p){
                 center += p;
                 std::ranges::for_each(points, [p](Point &pt){pt += p;});
             }
 
-            [[nodiscard]] virtual ShapePtr shifted(const Point& p) const {
-                ShapePtr s = std::make_unique<Shape>(*this);
-                s->shift(p);
-                return s;
-            }
+            // [[nodiscard]] virtual ShapePtr shifted(const Point& p) const {
+            //     ShapePtr s = std::make_unique<Shape>(*this);
+            //     s->shift(p);
+            //     return s;
+            // }
 
 
             [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size size, const int root_pix_per_lock) const {
@@ -205,9 +206,7 @@ namespace map{
             virtual ~Shape() = default;
 
             protected:
-            virtual void draw(Mapper*) const {
-                throw std::runtime_error("draw() not implemented for base class.");
-            };
+            virtual void draw(Mapper*) const = 0;
 
 
         };

@@ -43,11 +43,11 @@ void map::shapes::Ellipse::rotate(double angle) {
     throw std::runtime_error("Ellipse::rotate() is not implemented");
 }
 
-map::shapes::ShapePtr map::shapes::Ellipse::rotated(double angle) const {
-    throw std::runtime_error("Ellipse::rotated() is not implemented");
+// map::shapes::ShapePtr map::shapes::Ellipse::rotated(double angle) const {
+//     throw std::runtime_error("Ellipse::rotated() is not implemented");
 
-    return std::make_unique<Ellipse>(*this);
-}
+//     return std::make_unique<Ellipse>(*this);
+// }
 
 std::vector<std::pair<int, int>> map::shapes::Ellipse::getLocks(Size size, const int root_pix_per_lock) const {
     std::vector<std::pair<int, int>> locks;

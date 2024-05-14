@@ -42,7 +42,7 @@ map::shapes::Circle::Circle(Point p, int r, Data &&d)
 void map::shapes::Circle::rotate(double angle) {}
 
 
-map::shapes::ShapePtr map::shapes::Circle::rotated(double angle) const { return std::make_unique<Circle>(*this); }
+// map::shapes::ShapePtr map::shapes::Circle::rotated(double angle) const { return std::make_unique<Circle>(*this); }
 
 
 std::vector<std::pair<int, int>> map::shapes::Circle::getLocks(Size size, const int root_pix_per_lock) const {

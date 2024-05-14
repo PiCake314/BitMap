@@ -27,7 +27,7 @@ namespace map::fnt{
         map::clr::RGB *buffer = nullptr;
 
 
-        operator char() const{
+        explicit operator char() const{
             return static_cast<char>(ID);
         }
 

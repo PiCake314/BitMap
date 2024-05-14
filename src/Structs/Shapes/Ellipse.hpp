@@ -29,7 +29,7 @@ namespace map::shapes{
 
         void rotate(double angle) override;
 
-        [[nodiscard]] ShapePtr rotated(double angle) const override;
+        // [[nodiscard]] ShapePtr rotated(double angle) const override;
 
         [[nodiscard]] std::vector<std::pair<int, int>> getLocks(Size, const int) const override;
 

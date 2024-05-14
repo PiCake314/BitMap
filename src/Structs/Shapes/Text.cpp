@@ -8,9 +8,9 @@ map::shapes::Text::Text(std::string t, Point p, Data &&d)
 void map::shapes::Text::rotate(double angle){ /* do nothing */ }
 
 
-map::shapes::ShapePtr map::shapes::Text::rotated(double angle) const{
-    return std::make_unique<Text>(text, center, Data{.font = font, .alignment = alignment});
-}
+// map::shapes::ShapePtr map::shapes::Text::rotated(double angle) const{
+//     return std::make_unique<Text>(*this);
+// }
 
 
 // void map::shapes::Text::shift(const Point& p){

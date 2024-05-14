@@ -21,7 +21,7 @@ namespace map::shapes{
 
         void rotate(double angle) override;
 
-        [[nodiscard]] ShapePtr rotated(double angle) const override;
+        // [[nodiscard]] ShapePtr rotated(double angle) const override;
 
         // void shift(const Point& p) override; // doesn't need to be overriden (I think)
 
