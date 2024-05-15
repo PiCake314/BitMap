@@ -45,13 +45,13 @@ namespace map{
                 color.depth = 1;
             }
 
-            Shape(const Shape& other) = delete;
+            Shape(const Shape& other) = default;
 
-            Shape(Shape&& other) = delete;
+            Shape(Shape&& other) = default;
 
-            Shape& operator=(const Shape& other) = delete;
+            Shape& operator=(const Shape& other) = default;
 
-            Shape& operator=(Shape&& other) = delete;
+            Shape& operator=(Shape&& other) = default;
 
 
             virtual void rotate(double angle){
