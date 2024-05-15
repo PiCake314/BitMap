@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Shapes.hpp"
 
 namespace map::shapes{

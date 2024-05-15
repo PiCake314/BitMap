@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Shapes.hpp"
 
 namespace map::shapes{
@@ -13,9 +14,9 @@ namespace map::shapes{
         };
 
 
-        std::string text;
-        std::string font;
-        map::Alignment alignment;
+        const std::string text;
+        const std::string font;
+        const map::Alignment alignment;
 
         Text(std::string, Point, Data &&);
 
