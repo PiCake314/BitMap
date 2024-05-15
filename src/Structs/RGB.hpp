@@ -11,7 +11,7 @@ namespace map{
             uint8_t green{};
             uint8_t blue{};
 
-            uint8_t depth{};
+            mutable uint8_t depth{};
 
             constexpr RGB() = default;
             // red(0),
