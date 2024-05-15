@@ -48,3 +48,7 @@ width_(w), height_(h), rectAlignment(d.rectAlignment)
 void map::shapes::Rect::draw(Mapper *m) const {
     m->drawRect<true>(center, height_, width_, color, filled, thickness, rectAlignment);
 }
+
+map::shapes::ShapePtr map::shapes::Rect::clone() const {
+    return std::make_unique<Rect>(*this);
+}

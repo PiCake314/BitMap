@@ -34,5 +34,6 @@ namespace map::shapes{
 
         protected:
         void draw(Mapper *m) const override;
+        ShapePtr clone() const override;
     };
 }

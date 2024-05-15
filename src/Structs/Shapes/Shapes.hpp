@@ -36,7 +36,7 @@ namespace map{
             // const Point acceleration;
             clr::RGB color;
             bool filled;
-            const int thickness;     
+            int thickness;
             std::vector<Point> points;
 
 
@@ -45,13 +45,13 @@ namespace map{
                 color.depth = 1;
             }
 
-            // Shape(const Shape& other) = default;
+            Shape(const Shape& other) = default;
 
-            // Shape(Shape&& other) = default;
+            Shape(Shape&& other) = default;
 
-            // Shape& operator=(const Shape& other) = default;
+            Shape& operator=(const Shape& other) = default;
 
-            // Shape& operator=(Shape&& other) = default;
+            Shape& operator=(Shape&& other) = default;
 
 
             virtual void rotate(double angle){
@@ -67,23 +67,25 @@ namespace map{
                 }
             }
 
-            // commented methods are buggy
-            // [[nodiscard]] virtual ShapePtr rotated(double angle) const {
-            //     ShapePtr s = std::make_unique<Shape>(*this);
-            //     s->rotate(angle);
-            //     return s;
-            // }
+
+            [[nodiscard]] virtual ShapePtr rotated(double angle) const {
+                // ShapePtr s = std::make_unique<Shape>(*this); // apparently this is a bug
+                ShapePtr s = this->clone();
+                s->rotate(angle);
+                return s;
+            }
 
             virtual void shift(const Point& p){
                 center += p;
                 std::ranges::for_each(points, [p](Point &pt){pt += p;});
             }
 
-            // [[nodiscard]] virtual ShapePtr shifted(const Point& p) const {
-            //     ShapePtr s = std::make_unique<Shape>(*this);
-            //     s->shift(p);
-            //     return s;
-            // }
+            [[nodiscard]] virtual ShapePtr shifted(const Point& p) const {
+                // ShapePtr s = std::make_unique<Shape>(*this);
+                ShapePtr s = this->clone();
+                s->shift(p);
+                return s;
+            }
 
 
             [[nodiscard]] virtual std::vector<std::pair<int, int>> getLocks(Size size, const int root_pix_per_lock) const {
@@ -207,6 +209,7 @@ namespace map{
 
             protected:
             virtual void draw(Mapper*) const = 0;
+            virtual ShapePtr clone() const = 0;
 
 
         };

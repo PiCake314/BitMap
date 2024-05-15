@@ -33,3 +33,7 @@ size_t map::shapes::Text::size() const{
 void map::shapes::Text::draw(Mapper *m) const{
     m->drawText(text, center, font, alignment);
 }
+
+map::shapes::ShapePtr map::shapes::Text::clone() const{
+    return std::make_unique<Text>(*this);
+}

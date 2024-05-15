@@ -112,3 +112,7 @@ bool map::shapes::Circle::onBorder(const Point& p) const {
 void map::shapes::Circle::draw(Mapper *m) const {
     m->drawCircle<true>(center, radius, color, filled, inverted, thickness, alignment);
 }
+
+std::unique_ptr<map::shapes::Shape> map::shapes::Circle::clone() const {
+    return std::make_unique<Circle>(*this);
+}

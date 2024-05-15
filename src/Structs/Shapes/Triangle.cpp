@@ -44,3 +44,7 @@ map::shapes::Triangle::Triangle(Point p1, Point p2, Point p3, Data &&d)
 void map::shapes::Triangle::draw(Mapper *m) const {
     // m->drawTriangle<true>(points[0], points[1], points[2], color, thickness);
 }
+
+map::shapes::ShapePtr map::shapes::Triangle::clone() const {
+    return std::make_unique<Triangle>(*this);
+}

@@ -52,3 +52,7 @@ bool map::shapes::Line::on(Point p) const {
 void map::shapes::Line::draw(Mapper *m) const {
     m->drawLine<true>(start(), end(), color, thickness);
 }
+
+map::shapes::ShapePtr map::shapes::Line::clone() const {
+    return std::make_unique<Line>(*this);
+}
