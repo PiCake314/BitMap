@@ -25,11 +25,6 @@ void map::shapes::Text::rotate(double angle){ /* do nothing */ }
 // }
 
 
-size_t map::shapes::Text::size() const{
-    return text.size();
-}
-
-
 void map::shapes::Text::draw(Mapper *m) const{
     m->drawText(text, center, font, alignment);
 }

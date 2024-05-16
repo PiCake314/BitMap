@@ -28,8 +28,6 @@ namespace map::shapes{
 
         // [[nodiscard]] ShapePtr shifted(const Point& p) const override;
 
-        [[nodiscard]] size_t size() const;
-
         protected:
         void draw(Mapper *m) const override;
         ShapePtr clone() const override;

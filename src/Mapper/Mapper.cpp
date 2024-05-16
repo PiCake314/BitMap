@@ -685,7 +685,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
     if(fontname == "") fontname = m_Fonts.back().getFontname();
 
     int index = -1;
-    for(size_t i = 0; i < m_Fonts.size(); i++){
+    for(size_t i = 0; i < m_Fonts.size(); ++i){
         if(m_Fonts[i].getFontname() == fontname){
             index = i;
             break;
@@ -705,9 +705,6 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
         textWidth += font[c].xadvance;
     }
 
-    const int i_base = std::max(center.y - textHeight/2, 0.0);
-
-    int j_start = std::max(center.x - textWidth/2, 0.0);
 
     switch(alignment){
         case Alignment::center:
@@ -738,6 +735,9 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
         case Alignment::none:
             break;
     }
+    
+    const int i_base = std::max(center.y - textHeight/2, 0.0);
+    int j_start = std::max(center.x - textWidth/2, 0.0);
 
     const clr::RGB transparent_color = font.getTransparentColor();
 
@@ -844,10 +844,12 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB co
         std::vector<std::vector<Point>> lerpVec = {pts};
         for(int i = 1; i < l; i++){
             if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
+
             for(int j = 1; j < l + 1 - i; j++){
                 drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], map::clr::RGB(200, 150, 0));
                 lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], d));
             }
+
         }
         curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], d);
 

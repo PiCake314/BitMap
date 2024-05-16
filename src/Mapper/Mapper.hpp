@@ -32,6 +32,9 @@
 #define OUTPUT_PATH "output/ppms/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/.temp/"
+
+#define AUDIO_INPUT_PATH "sounds/"
+
 #define MANGLED "__out__"
 #define MANGLED_PPM MANGLED ".ppm"
 #define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
