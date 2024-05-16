@@ -739,7 +739,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string font
     const int i_base = std::max(center.y - textHeight/2, 0.0);
     int j_start = std::max(center.x - textWidth/2, 0.0);
 
-    const clr::RGB transparent_color = font.getTransparentColor();
+    const clr::RGB &transparent_color = font.getTransparentColor();
 
     // drawing the text
     for(char c : text){
