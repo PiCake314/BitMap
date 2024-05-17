@@ -52,7 +52,7 @@ namespace map::util{
             return frontItem;
         }
 
-        bool isEmpty() const {
+        [[nodiscard]] bool isEmpty() const {
             std::lock_guard<std::mutex> lock{mutex};
             return queue.empty();
         }
