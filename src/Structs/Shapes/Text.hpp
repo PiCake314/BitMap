@@ -14,11 +14,11 @@ namespace map::shapes{
         };
 
 
-        const std::string text;
-        const std::string font;
-        const map::Alignment alignment;
+        std::string text;
+        std::string font;
+        map::Alignment alignment;
 
-        Text(std::string, Point, Data &&);
+        Text(const std::string&, const Point&, Data &&);
 
         void rotate(double angle) override;
 

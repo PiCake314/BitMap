@@ -224,3 +224,4 @@ namespace map{
 #include "Ellipse.hpp"
 #include "Polygon.hpp"
 #include "Text.hpp"
+#include "Audio.hpp"
