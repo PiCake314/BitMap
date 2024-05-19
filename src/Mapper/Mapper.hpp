@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <set>
 #include <fstream>
 #include <cmath>
 #include <cassert>
@@ -15,6 +16,7 @@
 #include <memory>
 #include <mutex>
 #include <concepts>
+#include <utility>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
@@ -38,6 +40,7 @@
 #define MANGLED "__out__"
 #define MANGLED_PPM MANGLED ".ppm"
 #define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
+#define MANGLED_MP4 MANGLED ".mp4"
 
 
 #define DEFUALT_FONT "Default"
@@ -51,6 +54,8 @@ namespace map{
         struct Shape;
         using ShapePtr = std::unique_ptr<Shape>;
         using Shapes = std::vector<ShapePtr>;
+
+        struct Audio;
     }
     
 
@@ -67,6 +72,10 @@ namespace map{
             int m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;
+
+            friend struct shapes::Audio;
+            using Frame = int;
+            std::vector<std::pair<shapes::Audio, Frame>> m_Sounds;
 
             // Meta Data
             std::string_view m_PType;
@@ -218,12 +227,21 @@ namespace map{
 
             // void animate(map::shapes::ShapePtr (*)(const double), float seconds);
 
+            /**
+             * @brief Animates the canvas by calling the given function for each frame.
+             * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a shape.
+             * @param seconds: the total time of the animation.
+            */
             void animate(map::shapes::ShapePtr (*)(const int, const int, const double), float seconds);
 
             // void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
 
-
-            void animate(std::vector<map::shapes::ShapePtr> (*)(const int, const int, const double), float seconds);
+            /**
+             * @brief Animates the canvas by calling the given function for each frame.
+             * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a vector of shapes.
+             * @param seconds: the total time of the animation.
+            */
+            void animate(map::shapes::Shapes (*)(const int, const int, const double), float seconds);
 
 
             // ----------------------- Video Related Functions -----------------------

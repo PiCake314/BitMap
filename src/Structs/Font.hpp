@@ -1,6 +1,12 @@
 #pragma once
-#include "fstream"
+#include <fstream>
 #include <vector>
+#include <string>
+#include <string_view>
+#include <cassert>
+#include <memory>
+#include <utility>
+
 #include "RGB.hpp"
 #include "Size.hpp"
 
@@ -55,8 +61,8 @@ namespace map::fnt{
             assert(m_PPM_Filename.substr(m_PPM_Filename.length() - 4) == ".ppm");
 
             loadinfo();
-            loadimage();
-            loadlettersinfo();
+            auto image_buffer = loadimage();
+            loadlettersinfoFrom(std::move(image_buffer));
         }
 
         [[nodiscard]] std::string_view getFontname() const {
@@ -79,7 +85,7 @@ namespace map::fnt{
             return m_Spacing;
         }
 
-        [[nodiscard]] clr::RGB getTransparentColor() const {
+        [[nodiscard]] const clr::RGB &getTransparentColor() const {
             return m_Transparent_color;
         }
 
@@ -87,27 +93,27 @@ namespace map::fnt{
             return m_Letters.size();
         }
 
-        [[nodiscard]] const Letter& operator [](Alphabet ID) const {
+        [[nodiscard]] const Letter &operator [](Alphabet ID) const {
             return m_Letters[static_cast<int>(ID) - static_cast<int>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter& operator [](char c) const {
+        [[nodiscard]] const Letter &operator [](char c) const {
             return m_Letters[static_cast<int>(c) - static_cast<int>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter& operator [](int index) const {
+        [[nodiscard]] const Letter &operator [](int index) const {
             return m_Letters[index];
         }
 
 
         private:
-        std::string m_FNT_Filename;
-        std::string m_PPM_Filename;
+        const std::string m_FNT_Filename;
+        const std::string m_PPM_Filename;
 
         int m_Num_letters{};
 
         map::Size m_Image_size;
-        map::clr::RGB *m_Image_buffer = nullptr;
+        // map::clr::RGB *m_Image_buffer = nullptr;
 
 
         void loadinfo(){
@@ -155,13 +161,13 @@ namespace map::fnt{
             m_Num_letters = std::stoi(num_letters.substr(6));
 
             m_Image_size = {std::stoul(w.substr(7)), std::stoul(h.substr(7))};
-            m_Image_buffer = new map::clr::RGB[m_Image_size.width * m_Image_size.height];
+            // m_Image_buffer = new map::clr::RGB[m_Image_size.width * m_Image_size.height];
 
-            file.close();
+            // file.close(); // not needed. RAII takes care of it.
         }
 
 
-        void loadimage(){
+        std::unique_ptr<clr::RGB> loadimage(){
             std::ifstream file{FONT_PATH + m_PPM_Filename};
             assert(file.is_open());
 
@@ -170,20 +176,24 @@ namespace map::fnt{
             std::getline(file, line);
             std::getline(file, line);
 
+            std::unique_ptr<clr::RGB> image_buffer{new clr::RGB[m_Image_size.width * m_Image_size.height]};
+            auto buffer = image_buffer.get();
+
             for(int i = 0; i < m_Image_size.height; i++){
                 for(int j = 0; j < m_Image_size.width; j++){
                     int r, g, b;
                     file >> r >> g >> b;
 
-                    m_Image_buffer[i*m_Image_size.width + j] = {r, g, b};
+                    buffer[i*m_Image_size.width + j] = {r, g, b};
                 }
             }
 
-            file.close();
+            // file.close(); // not needed. RAII takes care of it.
+            return image_buffer;
         }
 
 
-        void loadlettersinfo(){
+        void loadlettersinfoFrom(const std::unique_ptr<map::clr::RGB> image_buffer){
             std::ifstream file{FONT_PATH + m_FNT_Filename};
             assert(file.is_open());
 
@@ -194,6 +204,8 @@ namespace map::fnt{
             std::getline(file, line);
             std::getline(file, line);
             std::getline(file, line);
+
+            map::clr::RGB* buffer = image_buffer.get();
 
             for(int index = 0; index < m_Num_letters && !file.eof(); index++){
                 file >> line;
@@ -232,13 +244,11 @@ namespace map::fnt{
 
                     for(int i = 0; i < height; ++i){
                         for(int j = 0; j < width; ++j){
-                            m_Letters[index].buffer[i*width + j] = m_Image_buffer[(y + i)* m_Image_size.width + (x + j)];
+                            m_Letters[index].buffer[i*width + j] = buffer[(y + i)* m_Image_size.width + (x + j)];
                         }
                     }
                 }
             }
-
-            delete[] m_Image_buffer;
         }
     };
 }

@@ -4,6 +4,7 @@
 #include "../Utility/HelperFuncs.hpp"
 #include <thread>
 #include <mutex>
+#include "../Utility/Command.hpp"
 
 #define INIT_STATE false
 
@@ -1039,9 +1040,10 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
     const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
 
-    for(int frame = 0; frame <= frames; frame++){
+    for(int frame = 0; frame <= frames; ++frame){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
+
         auto shape = provider(frame, frames, m_Delta);
         draw(std::move(shape));
         if(!m_Set_state) setState();
@@ -1057,7 +1059,7 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
 }
 
 
-void map::Mapper::animate(std::vector<map::shapes::ShapePtr> (*provider)(const int, const int, const double), float seconds){
+void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, const double), float seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
 
@@ -1103,7 +1105,67 @@ void map::Mapper::saveFrame(){
 void map::Mapper::render(const std::string& output_file) const {
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-	std::system(("ffmpeg -framerate " + std::to_string(m_FPS) + " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p " VIDEO_OUTPUT_PATH + output_file).c_str());
+    std::string video_command =
+        "ffmpeg -framerate " + std::to_string(m_FPS) +
+        " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
+    
+    video_command += m_Sounds.size() ? VIDEO_TEMP_PATH MANGLED_MP4 : VIDEO_OUTPUT_PATH + output_file;
+
+	std::system(video_command.c_str());
+
+    if(auto size = m_Sounds.size(); size){
+
+        // std::string audio_command = "ffmpeg -i " VIDEO_TEMP_PATH MANGLED_MP4;
+        Command audio_command;
+        audio_command.addInput(VIDEO_TEMP_PATH MANGLED_MP4);
+
+        // getting unique sounds
+        std::set<shapes::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
+        for(const auto& [sound, frame] : m_Sounds) sounds.insert(sound);
+
+        // adding all the sounds to the command
+        for(const auto &sound : sounds){
+            audio_command.addInput(AUDIO_INPUT_PATH + sound.filename);
+        }
+
+
+        // audio_command += " -filter_complex \""; // begin filter_complex
+        audio_command.startFilter();
+
+        for(size_t i = 0; i < size; ++i){
+            int index = 1;
+            for(const auto &sound : sounds){
+                if(m_Sounds[i].first.filename == sound.filename) break; // there will be only one sound with the same filename
+                
+                ++index;
+            }
+
+
+            audio_command.pickInput(index);
+
+            const int delay = m_Sounds[i].second * 1'000 / m_FPS; // in milliseconds
+            audio_command.addDelay(delay);
+
+            if(m_Sounds[i].first.speed != 1)
+                audio_command.addSpeed(m_Sounds[i].first.speed);
+            
+            if(m_Sounds[i].first.loop)
+                audio_command.addLoop();
+        }
+
+        if(size > 1){
+            audio_command.mixAudios();
+        }
+
+        audio_command.endFilter();
+
+        audio_command.addOutput(VIDEO_OUTPUT_PATH + output_file);
+
+
+        std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
+        std::system(audio_command.getCommand().c_str());
+    
+    }
 }
 
 
@@ -1112,6 +1174,8 @@ void map::Mapper::clearFrames() const {
 
     std::system("rm " VIDEO_TEMP_PATH "*.png");
     std::system(("rm " + (OUTPUT_PATH + m_Filename)).c_str());
+
+    if(m_Sounds.size()) std::system("rm " VIDEO_TEMP_PATH MANGLED_MP4);
 }
 
 

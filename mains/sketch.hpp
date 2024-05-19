@@ -7,6 +7,7 @@ extern size_t height, width; // importing the height and width of the canvas
 
 map::shapes::Shapes bunchOfShapes(const int frame, const int frames, const double dt){
     using Data = map::shapes::Circle::Data;
+    using std::operator""s;
 
     map::shapes::Shapes shapes;
     const int NUM_SHAPES = 10;
@@ -18,12 +19,11 @@ map::shapes::Shapes bunchOfShapes(const int frame, const int frames, const doubl
         const double y = 0.5 * height + 0.3 * height * sin(t);
         const double r = 0.1 * width + 0.05 * width * sin(t);
         const map::clr::RGB color = map::clr::RGB{int((0.5 + 0.5 * cos(t)) * 255), int((0.5 + 0.5 * sin(t)) * 255), int((0.5 + 0.5 * cos(t + 0.5)) * 255)};
-        std::clog << "Color: " << color << std::endl;
         shapes.push_back(std::make_unique<map::shapes::Circle>(map::Point{x, y}, r, Data{.color = color}));
     }
 
-    if(frame == frames/4){
-        
+    if(const int quarter_frames = frames/4; frame % quarter_frames == 0){ // every 1/4 of the frames
+        shapes.push_back(std::make_unique<map::shapes::Audio>("click.mp3"s));
     }
 
     return shapes;

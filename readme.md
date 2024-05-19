@@ -270,11 +270,12 @@ Make sure you have them installed before using Mapper.
 
 # TODO:
 - [x] Fix readme IoI
-- [ ] Fix shape includes in mapper header file
+- [x] Fix shape includes in mapper header file
 - [x] Implement multi-threading
-- [ ] Implement triangle
+- [x] Implement triangle
 - [x] Implement complex polygon
 - [x] Add text
 - [ ] Add image
 - [ ] Implement multiple arg passing for Alignment using pipe '|'
 - [x] Deprecate unused functions/enums/structs
+- [ ] Implement builder pattern for command creation for FFMPEG

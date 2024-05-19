@@ -26,6 +26,7 @@ namespace map::util{
         bool m_Applied_option;
         bool m_Done_filter;
         bool m_Mixed_audio;
+        int m_Audios_filtered;;
 
         std::vector<std::pair<std::string, bool>> m_Inputs;
         std::string m_Output;
@@ -40,7 +41,8 @@ namespace map::util{
         m_First_filter{true},
         m_Applied_option{false},
         m_Done_filter{false},
-        m_Mixed_audio{false}
+        m_Mixed_audio{false},
+        m_Audios_filtered{0}
         {};
 
         Command &addInput(const std::string& input){
@@ -60,7 +62,7 @@ namespace map::util{
             assert(not m_In_filter);
             assert(not m_Done_filter);
 
-            m_Command += " \n-filter_complex \"\n";
+            m_Command += "  -filter_complex \" ";
             m_In_filter = true;
             return *this;
         }
@@ -68,15 +70,15 @@ namespace map::util{
         Command &endFilter(){
             assert(m_In_filter);
 
-            if(m_Inputs.size() == 2){
+            if(m_Audios_filtered == 2){
                 m_Command += "[audio_out]";
                 m_Mixed_audio = true;
             }
 
-            m_Command += "\n\"\n";
+            m_Command += " \" ";
 
             if(m_Mixed_audio){
-                m_Command += "-map 0:v -map \"[audio_out]\"\n";
+                m_Command += "-map 0:v -map \"[audio_out]\" ";
             }
 
 
@@ -90,14 +92,14 @@ namespace map::util{
             assert(m_In_filter && "Not in filter");
             assert(input > 0 and input < m_Inputs.size() && "Invalid input");
             assert(not m_Mixed_audio && "Audio has already been mixed");
-            assert(not m_Inputs[input].second && "Cannot apply filter to the same input twice");
+            // assert(m_Inputs[input].second && "Cannot apply filter to the same input twice");
 
             if(not m_First_filter){
                 assert(m_Applied_option);
 
-                m_Command += "[a" + std::to_string(m_Current_input) + "];\n";
+                m_Command += "[a" + std::to_string(m_Audios_filtered) + "]; ";
 
-                // m_Command += ";\n";
+                // m_Command += "; ";
             }
 
             m_Current_input = input;
@@ -106,6 +108,7 @@ namespace map::util{
             m_Applied_option = false;
             m_First_filter = false;
             m_Inputs[input].second = true;
+            ++m_Audios_filtered;
 
             return *this;
         }
@@ -164,29 +167,29 @@ namespace map::util{
 
         Command &mixAudios(){
             assert(m_In_filter && "Not in filter");
-            assert(m_Inputs.size() > 2 && "Cannot mix audios with less than 2 audio inputs");
+            assert(m_Audios_filtered > 1 && "Cannot mix audios with less than 2 audio inputs");
 
             if(not m_First_filter){
                 assert(m_Applied_option);
-                if(m_Current_input != 0){
-                    m_Command += "[a" + std::to_string(m_Current_input) + "]";
+                if(m_Audios_filtered != 0){
+                    m_Command += "[a" + std::to_string(m_Audios_filtered) + "]";
                 }
 
-                m_Command += ";\n";
+                m_Command += "; ";
             }
 
             for(int i = 1; i < m_Inputs.size(); i++){
                 if(not m_Inputs[i].second){
-                    m_Command += '[' + std::to_string(i) + ":a]anull[a" + std::to_string(i) + "];\n";
+                    m_Command += '[' + std::to_string(i) + ":a]anull[a" + std::to_string(i) + "]; ";
                 }
             }
 
 
-            for(int i = 1; i < m_Inputs.size(); i++){
+            for(int i = 1; i <= m_Audios_filtered; i++){
                 m_Command += "[a" + std::to_string(i) + "]";
             }
 
-            m_Command += "amix=inputs=" + std::to_string(m_Inputs.size() -1) + ":duration=longest[audio_out]";
+            m_Command += "amix=inputs=" + std::to_string(m_Audios_filtered) + ":duration=longest[audio_out]";
             m_Mixed_audio = true;
 
             return *this;
