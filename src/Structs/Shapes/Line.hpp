@@ -4,7 +4,7 @@
 
 namespace map::shapes{
 
-    struct Line : Shape{
+    struct Line final : Shape{
 
         // use for named arguments
         struct Data{

@@ -3,7 +3,8 @@
 #include "Shapes.hpp"
 
 namespace  map::shapes{
-    struct Rect : Shape{
+
+    struct Rect final : Shape{
 
         // use for named arguments
         struct Data{

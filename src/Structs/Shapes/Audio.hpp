@@ -4,7 +4,7 @@
 
 namespace map::shapes{
 
-    struct Audio : Shape{
+    struct Audio final : Shape{
 
         std::string filename;
         double volume;
