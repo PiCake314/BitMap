@@ -118,7 +118,7 @@ namespace map::fnt{
 
         void loadinfo(){
             std::ifstream file{FONT_PATH + m_FNT_Filename};
-            if(!file.is_open())
+            // if(!file.is_open()) // this is not needed haha
             assert(file.is_open());
 
             std::string line;

@@ -80,8 +80,8 @@ int main(int argc, char **argv){
 	// else m.emplace(filename, map::Size{width, height}, loadtype);
 
 	auto m = vid ?
-		map::Mapper(filename, map::Size{width, height}, fps, loadtype) :
-		map::Mapper(filename, map::Size{width, height}, loadtype);
+		map::Mapper(filename, map::Size{width, height}, fps, loadtype):
+		map::Mapper(filename, map::Size{width, height}, 	 loadtype);
 
 
 	/* ----------------------------------------------------------------- */
