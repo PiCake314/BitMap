@@ -10,7 +10,7 @@ map::shapes::Shapes bunchOfShapes(const int frame, const int frames, const doubl
     using std::operator""s;
 
     map::shapes::Shapes shapes;
-    const int NUM_SHAPES = 10;
+    constexpr int NUM_SHAPES = 10;
 
     // create NUM_SHAPES circles with rainbow colors
     for(int i = 0; i < NUM_SHAPES; i++){
@@ -22,9 +22,9 @@ map::shapes::Shapes bunchOfShapes(const int frame, const int frames, const doubl
         shapes.push_back(std::make_unique<map::shapes::Circle>(map::Point{x, y}, r, Data{.color = color}));
     }
 
-    if(const int quarter_frames = frames/4; frame % quarter_frames == 0){ // every 1/4 of the frames
-        shapes.push_back(std::make_unique<map::shapes::Audio>("click.mp3"s));
-    }
+    // if(const int quarter_frames = frames/4; frame % quarter_frames == 0){ // every 1/4 of the frames
+    //     shapes.push_back(std::make_unique<map::shapes::Audio>("click.mp3"s));
+    // }
 
     return shapes;
 }
