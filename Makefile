@@ -34,7 +34,7 @@ clean:
 	rm main test
 
 dir:
-	mkdir output; mkdir output/ppms; mkdir output/pngs; mkdir output/vids; mkdir output/vids/.temp;
+	mkdir output; mkdir output/ppms; mkdir output/pngs; mkdir output/vids; mkdir output/vids/.temp; mkdir sounds
 
 install:
 	# brew install ImageMagick && brew install ffmpeg
