@@ -1,4 +1,4 @@
-DEP = mains/main.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp
+DEP = mains/main.cpp src/Structs/Shapes/*.cpp src/Mapper/Mapper.cpp
 
 CC = g++
 
@@ -13,7 +13,7 @@ compile: $(DEP)
 	# -Wextra -Weverything -Wno-c++98-compat
 
 
-video:  $(DEP)
+video: $(DEP)
 	$(CC) $(CVER) -o main $(DEP) $(NoWarn) $(OPT) && ./main r video def$(filename) 0$(h) 0$(w) 0$(fps)
 
 

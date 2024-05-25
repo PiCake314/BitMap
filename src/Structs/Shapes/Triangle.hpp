@@ -4,7 +4,7 @@
 
 namespace map::shapes{
 
-    struct Triangle : Shape{
+    struct Triangle final : Shape{
 
         // use for named arguments
         struct Data{

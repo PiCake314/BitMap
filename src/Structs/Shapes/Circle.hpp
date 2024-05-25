@@ -4,7 +4,7 @@
 
 namespace map::shapes{
 
-    struct Circle : Shape{
+    struct Circle final : Shape{
 
         // use for named arguments
         struct Data{

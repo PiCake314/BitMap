@@ -26,7 +26,7 @@ namespace map::util{
         bool m_Applied_option;
         bool m_Done_filter;
         bool m_Mixed_audio;
-        int m_Audios_filtered;;
+        int m_Audios_filtered;
 
         std::vector<std::pair<std::string, bool>> m_Inputs;
         std::string m_Output;

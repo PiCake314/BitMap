@@ -4,7 +4,7 @@
 
 namespace map::shapes{
 
-    struct Text : Shape{
+    struct Text final : Shape{
 
         // use for named arguments
         struct Data{

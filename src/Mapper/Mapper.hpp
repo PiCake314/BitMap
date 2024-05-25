@@ -53,7 +53,7 @@ namespace map{
     namespace shapes{
         struct Shape;
         using ShapePtr = std::unique_ptr<Shape>;
-        using Shapes = std::vector<ShapePtr>;
+        using Shapes   = std::vector<ShapePtr>;
 
         struct Audio;
     }
@@ -134,8 +134,10 @@ namespace map{
 
             void fill(clr::RGB = clr::WHITE);
 
+            template <bool grey_scale>
             void randomize();
 
+            [[deprecated]]
             void randomizeGrey();
 
             [[deprecated]]
@@ -145,10 +147,10 @@ namespace map{
             void drawAt(Point, clr::RGB);
 
             template <bool called_from_shape_class = false>
-            void drawLine(Point p1, Point p2, clr::RGB = clr::RGB(), int thickness = 0);
+            void drawLine(const Point &p1, const Point &p2, clr::RGB = clr::RGB(), int thickness = 0);
 
             template <bool called_from_shape_class = false>
-            void drawTri(Point p1, Point p2, Point p3, clr::RGB = clr::RGB(), int thickness = 0);
+            void drawTri(const Point &p1, const Point &p2, const Point &p3, clr::RGB = clr::RGB(), int thickness = 0);
 
             [[deprecated]]
             void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
@@ -175,8 +177,8 @@ namespace map{
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
-           template <bool called_from_shape_class = false>
-            void drawEllipse(Point center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
+            template <bool called_from_shape_class = false>
+            void drawEllipse(const Point &center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
 
             /**

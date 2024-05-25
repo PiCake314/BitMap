@@ -4,7 +4,7 @@
 
 namespace map::shapes{
     
-    struct Polygon : Shape{
+    struct Polygon final : Shape{
 
         // use for named arguments
         struct Data{

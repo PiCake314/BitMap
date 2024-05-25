@@ -74,7 +74,7 @@ void map::Mapper::loadFont(std::string_view fontname){
 
     if(std::find_if(m_Fonts.begin(), m_Fonts.end(),
         [&fontname](const fnt::Font &f){ return f.getFontname() == fontname; }
-    ) == m_Fonts.end())
+    ) == m_Fonts.end()) // making sure the font doesn't already exist
         m_Fonts.push_back(fnt::Font{fontname});
 
     // m_Fonts.push_back(fnt::Font{fontname});
@@ -86,19 +86,12 @@ void map::Mapper::loadFont(std::string_view fontname){
 // }
 
 
-int map::Mapper::getFPS() const{
-    return m_FPS;
-}
+int map::Mapper::getFPS() const { return m_FPS; }
+
+void map::Mapper::doSet(){ m_Set_state = true ; }
+void map::Mapper::noSet(){ m_Set_state = false; }
 
 
-void map::Mapper::doSet(){
-    m_Set_state = true;
-}
-
-
-void map::Mapper::noSet(){
-    m_Set_state = false;
-}
 
 
 // void map::Mapper::setFile(std::string fn){
@@ -111,18 +104,18 @@ map::Size map::Mapper::getSize() const{
 }
 
 
-
+// deprecated
 void map::Mapper::fillWhite(){
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
-            m_Map[i*m_Size.width + j] = map::clr::RGB(255, 255, 255);
+            m_Map[i*m_Size.width + j] = clr::RGB(255, 255, 255);
 
     if(m_Set_state) setState();
 }
 
 
 
-void map::Mapper::fill(map::clr::RGB color){
+void map::Mapper::fill(clr::RGB color){
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
             *(m_Map + i * m_Size.width + j) = color;
@@ -132,21 +125,26 @@ void map::Mapper::fill(map::clr::RGB color){
 
 
 
+template <bool grey_scale>
 void map::Mapper::randomize(){
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++)
-            *(m_Map + i * m_Size.width + j) = map::clr::RGB(rand()%256, rand()%256, rand()%256);
+            if constexpr(grey_scale){
+                const int c = rand()%256;
+                 *(m_Map + i * m_Size.width + j) = clr::RGB(c, c, c);
+            }
+            else *(m_Map + i * m_Size.width + j) = clr::RGB(rand()%256, rand()%256, rand()%256);
 
     if(m_Set_state) setState();
 }
 
 
-
+// deprecated
 void map::Mapper::randomizeGrey(){
     for(int i=0; i<m_Size.height; i++)
         for(int j=0; j<m_Size.width; j++){
             int c = rand()%256;
-            *(m_Map + i * m_Size.width + j) = map::clr::RGB(c, c, c);
+            *(m_Map + i * m_Size.width + j) = clr::RGB(c, c, c);
         }
 
     if(m_Set_state) setState();
@@ -158,12 +156,12 @@ map::clr::RGB map::Mapper::getColorAt(Point p){
     if(p.x >= 0 && p.x < m_Size.height && p.y >= 0 && p.y < m_Size.width)
         return *(m_Map + int(p.x * m_Size.width + p.y));
 
-    return map::clr::RGB();
+    return clr::RGB();
 }
 
 
 // deprecated
-void map::Mapper::drawAt(Point p, map::clr::RGB color){
+void map::Mapper::drawAt(Point p, clr::RGB color){
     if(p.x >= 0 && p.x < m_Size.height && p.y >= 0 && p.y < m_Size.width)
         m_Map[int(p.x*m_Size.width + p.y)] = color;
 
@@ -173,7 +171,13 @@ void map::Mapper::drawAt(Point p, map::clr::RGB color){
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thickness){
+void map::Mapper::drawLine(const Point &p1, const Point &p2, clr::RGB color, int thickness){
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
+
+
     if(thickness < 2) thickness = 2;
 
     const int half_thickness = thickness/2;
@@ -210,16 +214,24 @@ void map::Mapper::drawLine(Point p1, Point p2, map::clr::RGB color, int thicknes
     if(m_Set_state) setState();
 }
 
+template void map::Mapper::drawLine<true> (const Point&, const Point&, clr::RGB, int);
+template void map::Mapper::drawLine<false>(const Point&, const Point&, clr::RGB, int);
 
-template <>
-void map::Mapper::drawLine<false>(Point p1, Point p2, clr::RGB color, int thickness){
-    color.depth = 1;
-    drawLine<true>(p1, p2, color, thickness);
-}
+// template <>
+// void map::Mapper::drawLine<false>(Point p1, Point p2, clr::RGB color, int thickness){
+//     color.depth = 1;
+//     drawLine<true>(p1, p2, color, thickness);
+// }
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawTri(Point p1, Point p2, Point p3, map::clr::RGB color, int thickness){
+void map::Mapper::drawTri(const Point &p1, const Point &p2, const Point &p3, clr::RGB color, int thickness){
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
+
+
     bool s = m_Set_state;
     m_Set_state = false;
 
@@ -232,22 +244,25 @@ void map::Mapper::drawTri(Point p1, Point p2, Point p3, map::clr::RGB color, int
     if(m_Set_state) setState();
 }
 
-template <>
-void map::Mapper::drawTri<false>(Point p1, Point p2, Point p3, map::clr::RGB color, int thickness){
-    color.depth = 1;
-    drawTri<true>(p1, p2, p3, color, thickness);
-}
+template void map::Mapper::drawTri<true> (const Point&, const Point&, const Point&, clr::RGB, int);
+template void map::Mapper::drawTri<false>(const Point&, const Point&, const Point&, clr::RGB, int);
+
+// template <>
+// void map::Mapper::drawTri<false>(Point p1, Point p2, Point p3, clr::RGB color, int thickness){
+//     color.depth = 1;
+//     drawTri<true>(p1, p2, p3, color, thickness);
+// }
 
 
 
-void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick){
+void map::Mapper::drawFourPoints(Point points[], clr::RGB color, bool thick){
 
     // orderFourPoints(points);
 
-    Point p1 = points[0];
-    Point p2 = points[1];
-    Point p3 = points[2];
-    Point p4 = points[3];
+    const Point &p1 = points[0];
+    const Point &p2 = points[1];
+    const Point &p3 = points[2];
+    const Point &p4 = points[3];
 
     float slope1 = (p2.y - p1.y)/(p2.x - p1.x);
     float b1 = p1.y - slope1*p1.x;
@@ -279,8 +294,12 @@ void map::Mapper::drawFourPoints(Point points[], map::clr::RGB color, bool thick
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
-    assert(points.size() > 2);
+void map::Mapper::drawPolygon(const std::vector<Point>& points, clr::RGB color, bool filled, int thick){
+    assert(points.size() > 2 && "use drawLine() when size() == 2");
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
 
 
     if(!filled){
@@ -305,8 +324,8 @@ void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB co
 
             for(int ind = 0; ind < size; ++ind){
                 const auto& line = lines[ind];
-                Point p1 = line.start();
-                Point p2 = line.end();
+                const Point &p1 = line.start();
+                const Point &p2 = line.end();
 
                 // Check if the scanline intersects with the current line segment
                 if((p1.y <= i && p2.y > i) || (p2.y <= i && p1.y > i)){
@@ -336,22 +355,27 @@ void map::Mapper::drawPolygon(const std::vector<Point>& points, map::clr::RGB co
     if(m_Set_state) setState();
 }
 
+template void map::Mapper::drawPolygon<true> (const std::vector<Point>&, clr::RGB, bool, int);
+template void map::Mapper::drawPolygon<false>(const std::vector<Point>&, clr::RGB, bool, int);
 
-template <>
-void map::Mapper::drawPolygon<false>(const std::vector<Point>& points, map::clr::RGB color, bool filled, int thick){
-    color.depth = 1;
-    drawPolygon<true>(points, color, filled, thick);
-}
+// template <>
+// void map::Mapper::drawPolygon<false>(const std::vector<Point>& points, clr::RGB color, bool filled, int thick){
+//     color.depth = 1;
+//     drawPolygon<true>(points, color, filled, thick);
+// }
 
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawRect(Point center, float height, float width, map::clr::RGB color, bool filled, bool thick , RectAlignment alignment){
+void map::Mapper::drawRect(Point center, float height, float width, clr::RGB color, bool filled, bool thick , RectAlignment alignment){
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
+
+
     if(height < 0) height = m_Size.height/10;
-    
-
-
-    if(width < 0) width = m_Size.height/10;
+    if(width < 0) width   = m_Size.height/10;
 
     if(height < 1)
         height *= m_Size.height;
@@ -460,17 +484,26 @@ void map::Mapper::drawRect(Point center, float height, float width, map::clr::RG
     if(m_Set_state) setState();
 }
 
+template void map::Mapper::drawRect<true> (Point, float, float, clr::RGB, bool, bool, RectAlignment);
+template void map::Mapper::drawRect<false>(Point, float, float, clr::RGB, bool, bool, RectAlignment);
 
-template <>
-void map::Mapper::drawRect<false>(Point center, float height, float width, map::clr::RGB color, bool filled, bool thick, RectAlignment alignment){
-    color.depth = 1;
-    drawRect<true>(center, height, width, color, filled, thick, alignment);
-}
+// template <>
+// void map::Mapper::drawRect<false>(Point center, float height, float width, clr::RGB color, bool filled, bool thick, RectAlignment alignment){
+//     color.depth = 1;
+//     drawRect<true>(center, height, width, color, filled, thick, alignment);
+// }
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
-    thickness = thickness < 2 ? 2 : thickness;
+void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
+
+
+    // thickness = thickness < 2 ? 2 : thickness;
+    if(thickness < 2) thickness = 2; // this does the above but without the unnecessary assignment
 
     if(r < 0) r = m_Size.height/10;
 
@@ -558,15 +591,26 @@ void map::Mapper::drawCircle(Point center, int r, map::clr::RGB color, bool fill
     if(m_Set_state) setState();
 }
 
-template <>
-void map::Mapper::drawCircle<false>(Point center, int r, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
-    color.depth = 1;
-    drawCircle<true>(center, r, color, filled, inverted, thickness, alignment);
-}
+template void map::Mapper::drawCircle<true> (Point, int, clr::RGB, bool, bool, int, Alignment);
+template void map::Mapper::drawCircle<false>(Point, int, clr::RGB, bool, bool, int, Alignment);
+
+
+// !!! so apparently these templates need to be instantiated manually (why?) and the function bellow was doing that for me. The 2 lines above are need to explicitly instantiate the templates but I'm not sure why the compiler cannot do that on its own..
+// template <>
+// void map::Mapper::drawCircle<false>(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+//     color.depth = 1;
+//     drawCircle<true>(center, r, color, filled, inverted, thickness, alignment);
+// }
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+void map::Mapper::drawEllipse(const Point &center, int r1, int r2, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+
+    if constexpr(not called_from_shape_class){
+        color.depth = 1;
+    }
+
+
     float thick = float(thickness) / 100;
 
     if(r1 < 0) r1 = m_Size.height/10;
@@ -631,7 +675,7 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
     // }
     
     if(inverted){
-        map::clr::RGB invColor = color.inverted();
+        clr::RGB invColor = color.inverted();
         for(int i = 0; i < m_Size.height; i++){
             for(int j = 0; j < m_Size.width; j++){
                 float equation = std::pow((i - top - r1), 2) / std::pow(r1, 2) + std::pow((j - left - r2), 2) / std::pow(r2, 2);
@@ -674,11 +718,14 @@ void map::Mapper::drawEllipse(Point center, int r1, int r2, map::clr::RGB color,
     if(m_Set_state) setState();
 }
 
-template <>
-void map::Mapper::drawEllipse<false>(Point center, int r1, int r2, map::clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
-    color.depth = 1;
-    drawEllipse<true>(center, r1, r2, color, filled, inverted, thickness, alignment);
-}
+template void map::Mapper::drawEllipse<true> (const Point&, int, int, clr::RGB, bool, bool, int, Alignment);
+template void map::Mapper::drawEllipse<false>(const Point&, int, int, clr::RGB, bool, bool, int, Alignment);
+
+// template <>
+// void map::Mapper::drawEllipse<false>(Point center, int r1, int r2, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+//     color.depth = 1;
+//     drawEllipse<true>(center, r1, r2, color, filled, inverted, thickness, alignment);
+// }
 
 
 
@@ -830,7 +877,7 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &shapes, const int num_thre
 }
 
 
-void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB color, bool thick){
+void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, clr::RGB color, bool thick){
     assert(pts.size() >= 2);
 
     const int l = pts.size();
@@ -847,7 +894,7 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB co
             if(l + 1 - i > 1) lerpVec.push_back(std::vector<Point>());
 
             for(int j = 1; j < l + 1 - i; j++){
-                drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], map::clr::RGB(200, 150, 0));
+                drawLine(lerpVec[i-1][j-1], lerpVec[i-1][j], clr::RGB(200, 150, 0));
                 lerpVec[i].push_back(lerp(lerpVec[i-1][j-1], lerpVec[i-1][j], d));
             }
 
@@ -865,7 +912,7 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, float dt, map::clr::RGB co
 
 
 
-void map::Mapper::plot(int(*func)(int), map::clr::RGB color, bool thick){
+void map::Mapper::plot(int(*func)(int), clr::RGB color, bool thick){
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             int value = (m_Size.height/2 - func(j - m_Size.width/2));
@@ -880,7 +927,7 @@ void map::Mapper::plot(int(*func)(int), map::clr::RGB color, bool thick){
 
 
 
-void map::Mapper::plotXY(double(*func)(double, double), double(*res)(double, double), map::clr::RGB color){
+void map::Mapper::plotXY(double(*func)(double, double), double(*res)(double, double), clr::RGB color){
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             if (abs(func(j - m_Size.width/2, m_Size.height/2 - i) - (res(j - m_Size.width/2, m_Size.height/2 - i))) <= 5){
@@ -894,7 +941,7 @@ void map::Mapper::plotXY(double(*func)(double, double), double(*res)(double, dou
 
 
 
-void map::Mapper::plotIfTrue(bool (*func)(int x, int y), map::clr::RGB color){
+void map::Mapper::plotIfTrue(bool (*func)(int x, int y), clr::RGB color){
     for (int i = 0; i < m_Size.height; i++)
         for (int j = 0; j < m_Size.width; j++){
             if (func(j, i)){
@@ -946,7 +993,7 @@ void map::Mapper::fold(Fold f){
 
 
 void map::Mapper::rotate(float angle){
-    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
     
     bool s = m_Set_state;
     m_Set_state = false;
@@ -977,8 +1024,8 @@ void map::Mapper::rotate(float angle){
 //     std::clog << "Beginning Scene:\n";
 //     const int frames = seconds * m_FPS;
 
-//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-//     const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+//     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+//     const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
 //     for(int frame = 0; frame <= frames; frame++){
 //         // copy(temp, m_Map); // can be replaced with memcpy
@@ -1007,8 +1054,8 @@ void map::Mapper::rotate(float angle){
 //     std::clog << "Beginning Scene:\n";
 //     const int frames = seconds * m_FPS;
 
-//     std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-//     const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+//     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+//     const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
 //     for(int frame = 0; frame <= frames; frame++){
 //         // copy(temp, m_Map); // can be replaced with memcpy
@@ -1037,8 +1084,8 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
     std::clog << "Beginning Scene:\n";
     const int frames = seconds * m_FPS;
 
-    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+    std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
     for(int frame = 0; frame <= frames; ++frame){
         // copy(temp, m_Map); // can be replaced with memcpy
@@ -1067,8 +1114,8 @@ void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, 
     std::clog << "Beginning Scene:\n";
     const int frames = seconds * m_FPS;
 
-    std::vector<map::clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-    const size_t temp_size = temp.size() * sizeof(map::clr::RGB);
+    std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+    const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
     for(int frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
@@ -1132,7 +1179,9 @@ void map::Mapper::render(const std::string& output_file) const {
         // audio_command += " -filter_complex \""; // begin filter_complex
         audio_command.startFilter();
 
+        // applying the filters to every sound
         for(size_t i = 0; i < size; ++i){
+            // finding the index of the sound in the set
             int index = 1;
             for(const auto &sound : sounds){
                 if(m_Sounds[i].first.filename == sound.filename) break; // there will be only one sound with the same filename
@@ -1143,6 +1192,7 @@ void map::Mapper::render(const std::string& output_file) const {
 
             audio_command.pickInput(index);
 
+            // every sound must have a delay (0 delay is beginning of the video)
             const int delay = m_Sounds[i].second * 1'000 / m_FPS; // in milliseconds
             audio_command.addDelay(delay);
 
@@ -1162,7 +1212,7 @@ void map::Mapper::render(const std::string& output_file) const {
         audio_command.addOutput(VIDEO_OUTPUT_PATH + output_file);
 
 
-        std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
+        // std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
         std::system(audio_command.getCommand().c_str());
     
     }
@@ -1268,7 +1318,7 @@ void map::Mapper::resetFile(){
 
     std::clog << "Width: " << m_Size.width << '\n';
     std::clog << "Height: " << m_Size.height << '\n';
-    m_Map = new map::clr::RGB[m_Size.height * m_Size.width];
+    m_Map = new clr::RGB[m_Size.height * m_Size.width];
     fill();
 }
 
@@ -1312,12 +1362,12 @@ void map::Mapper::loadFile(){
     std::string garbage;
     
     if(m_Map) delete[] m_Map;
-    m_Map = new map::clr::RGB[m_Size.height*m_Size.width];
+    m_Map = new clr::RGB[m_Size.height*m_Size.width];
 
     for(int i = 0; i < m_Size.height; i++){
         for(int j = 0; j < m_Size.width; j++){
             fin >> r >> g >> b;
-            m_Map[i*m_Size.width + j] = map::clr::RGB(r, g, b);
+            m_Map[i*m_Size.width + j] = clr::RGB(r, g, b);
         }
         std::getline(fin, garbage);
     }
