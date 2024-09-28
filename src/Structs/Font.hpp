@@ -28,7 +28,8 @@ namespace map::fnt{
 
     struct Letter{
         Alphabet ID{};
-        int width{}, height{}, xoffset{}, yoffset{}, xadvance{};
+        int xoffset{}, yoffset{}, xadvance{};
+        size_t width{}, height{};
 
         map::clr::RGB *buffer = nullptr;
 
@@ -37,17 +38,17 @@ namespace map::fnt{
             return static_cast<char>(ID);
         }
 
-        ~Letter(){
-            // if(buffer)
-            //     delete[] buffer;
-        }
+        // ~Letter(){
+        //     // if(buffer)
+        //     //     delete[] buffer;
+        // }
     };
 
 
     class Font{
         const std::string m_Fontname;
         std::vector<fnt::Letter> m_Letters;
-        int m_Fontsize{};
+        size_t m_Fontsize{};
         bool m_Bold = false;
         bool m_Italic = false;
         Size m_Spacing = {0, 0};
@@ -65,43 +66,54 @@ namespace map::fnt{
             loadlettersinfoFrom(std::move(image_buffer));
         }
 
-        [[nodiscard]] std::string_view getFontname() const {
+        [[nodiscard]] std::string_view getFontname() const noexcept {
             return m_Fontname;
         }
 
-        [[nodiscard]] int getFontSize() const {
+        [[nodiscard]] size_t getFontSize() const noexcept {
             return m_Fontsize;
         }
 
-        [[nodiscard]] bool isBold() const {
+        [[nodiscard]] bool isBold() const noexcept {
             return m_Bold;
         }
 
-        [[nodiscard]] bool isItalic() const {
+        [[nodiscard]] bool isItalic() const noexcept {
             return m_Italic;
         }
 
-        [[nodiscard]] Size getSpacing() const {
+        [[nodiscard]] Size getSpacing() const noexcept {
             return m_Spacing;
         }
 
-        [[nodiscard]] const clr::RGB &getTransparentColor() const {
+        [[nodiscard]] const clr::RGB &getTransparentColor() const noexcept {
             return m_Transparent_color;
         }
 
-        [[nodiscard]] size_t size() const {
+        [[nodiscard]] size_t size() const noexcept {
             return m_Letters.size();
         }
 
-        [[nodiscard]] const Letter &operator [](Alphabet ID) const {
-            return m_Letters[static_cast<int>(ID) - static_cast<int>(Alphabet::SPACE)];
+        [[nodiscard]] const Letter &operator [](Alphabet ID) const noexcept {
+            return m_Letters[static_cast<size_t>(ID) - static_cast<size_t>(Alphabet::SPACE)];
+        }
+        [[nodiscard]] Letter &operator [](Alphabet ID) noexcept {
+            return m_Letters[static_cast<size_t>(ID) - static_cast<size_t>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter &operator [](char c) const {
-            return m_Letters[static_cast<int>(c) - static_cast<int>(Alphabet::SPACE)];
+
+        [[nodiscard]] const Letter &operator [](char c) const noexcept {
+            return m_Letters[static_cast<size_t>(c) - static_cast<size_t>(Alphabet::SPACE)];
+        }
+        [[nodiscard]] Letter &operator [](char c) noexcept {
+            return m_Letters[static_cast<size_t>(c) - static_cast<size_t>(Alphabet::SPACE)];
         }
 
-        [[nodiscard]] const Letter &operator [](int index) const {
+
+        [[nodiscard]] const Letter &operator [](size_t index) const noexcept {
+            return m_Letters[index];
+        }
+        [[nodiscard]] Letter &operator [](size_t index) noexcept {
             return m_Letters[index];
         }
 
@@ -110,7 +122,7 @@ namespace map::fnt{
         const std::string m_FNT_Filename;
         const std::string m_PPM_Filename;
 
-        int m_Num_letters{};
+        size_t m_Num_letters{};
 
         map::Size m_Image_size;
         // map::clr::RGB *m_Image_buffer = nullptr;
@@ -131,7 +143,7 @@ namespace map::fnt{
             size_t size_ind = line.find("size=");
             assert(size_ind != std::string::npos);
             std::string size_str = line.substr(size_ind + 5);
-            m_Fontsize = std::stoi(size_str.substr(0, size_str.find(" ")));
+            m_Fontsize = std::stoul(size_str.substr(0, size_str.find(" ")));
 
 
             size_t bold_ind = line.find("bold=");
@@ -149,8 +161,8 @@ namespace map::fnt{
             size_t spacing_ind = line.find("spacing=");
             assert(spacing_ind != std::string::npos);
             std::string spacing_str = line.substr(spacing_ind + 8);
-            m_Spacing.width = std::stoi(spacing_str.substr(0, spacing_str.find(",")));
-            m_Spacing.height = std::stoi(spacing_str.substr(spacing_str.find(",") + 1));
+            m_Spacing.width = std::stoul(spacing_str.substr(0, spacing_str.find(",")));
+            m_Spacing.height = std::stoul(spacing_str.substr(spacing_str.find(",") + 1));
 
 
             file >> line >> line >> line >> w >> h;
@@ -158,7 +170,7 @@ namespace map::fnt{
             std::getline(file, line);
             file >> line >> num_letters;
 
-            m_Num_letters = std::stoi(num_letters.substr(6));
+            m_Num_letters = std::stoul(num_letters.substr(6));
 
             m_Image_size = {std::stoul(w.substr(7)), std::stoul(h.substr(7))};
             // m_Image_buffer = new map::clr::RGB[m_Image_size.width * m_Image_size.height];
@@ -179,8 +191,8 @@ namespace map::fnt{
             std::unique_ptr<clr::RGB> image_buffer{new clr::RGB[m_Image_size.width * m_Image_size.height]};
             auto buffer = image_buffer.get();
 
-            for(int i = 0; i < m_Image_size.height; i++){
-                for(int j = 0; j < m_Image_size.width; j++){
+            for(size_t i = 0; i < m_Image_size.height; i++){
+                for(size_t j = 0; j < m_Image_size.width; j++){
                     int r, g, b;
                     file >> r >> g >> b;
 
@@ -207,22 +219,23 @@ namespace map::fnt{
 
             map::clr::RGB* buffer = image_buffer.get();
 
-            for(int index = 0; index < m_Num_letters && !file.eof(); index++){
+            for(size_t index = 0; index < m_Num_letters && !file.eof(); ++index){
                 file >> line;
 
                 if(line == "char"){
-                    int id, x, y, width, height, xoffset, yoffset, xadvance;
+                    size_t id, x, y, width, height;
+                    int xoffset, yoffset, xadvance;
 
                     file >> line;
-                    id = std::stoi(line.substr(3));
+                    id = std::stoul(line.substr(3));
                     file >> line;
-                    x = std::stoi(line.substr(2));
+                    x = std::stoul(line.substr(2));
                     file >> line;
-                    y = std::stoi(line.substr(2));
+                    y = std::stoul(line.substr(2));
                     file >> line;
-                    width = std::stoi(line.substr(6));
+                    width = std::stoul(line.substr(6));
                     file >> line;
-                    height = std::stoi(line.substr(7));
+                    height = std::stoul(line.substr(7));
                     file >> line;
                     xoffset = std::stoi(line.substr(8));
                     file >> line;
@@ -242,8 +255,8 @@ namespace map::fnt{
 
                     m_Letters[index].buffer = new map::clr::RGB[width * height];
 
-                    for(int i = 0; i < height; ++i){
-                        for(int j = 0; j < width; ++j){
+                    for(size_t i = 0; i < height; ++i){
+                        for(size_t j = 0; j < width; ++j){
                             m_Letters[index].buffer[i*width + j] = buffer[(y + i)* m_Image_size.width + (x + j)];
                         }
                     }

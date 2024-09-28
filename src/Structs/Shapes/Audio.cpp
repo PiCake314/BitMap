@@ -1,8 +1,8 @@
 #include "Audio.hpp"
 
 
-map::shapes::Audio::Audio(const std::string &filename, double volume, double speed, bool loop)
-: Shape{Point{}, clr::RGB{}, false, 0}, filename{filename}, volume{volume}, speed{speed}, loop{loop}
+map::shapes::Audio::Audio(const std::string &fname, double vol, double spd, bool loops)
+: Shape{Point{}, clr::RGB{}, false, 0}, filename{fname}, volume{vol}, speed{spd}, loop{loops}
 {}
 
 void map::shapes::Audio::draw(Mapper *m) const {

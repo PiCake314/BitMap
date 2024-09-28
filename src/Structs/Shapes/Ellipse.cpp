@@ -1,8 +1,8 @@
 #include "Ellipse.hpp"
 
 
-map::shapes::Ellipse::Ellipse(Point p, int r1, int r2, Data &&d)
-: Shape(p, d.color, d.filled, d.thickness), r1(r1), r2(r2), inverted(d.inverted), alignment(d.alignment)
+map::shapes::Ellipse::Ellipse(Point p, int radius_1, int radius_2, Data &&d)
+: Shape(p, d.color, d.filled, d.thickness), r1(radius_1), r2(radius_2), inverted(d.inverted), alignment(d.alignment)
 {
     switch(alignment){
         // case Alignment::top_left:
@@ -24,13 +24,13 @@ map::shapes::Ellipse::Ellipse(Point p, int r1, int r2, Data &&d)
             center = {double(r1), height/2.};
             break;
         case Alignment::right:
-            center = {double(width - r1), height/2.};
+            center = {double(width - size_t(r1)), height/2.};
             break;
         case Alignment::top:
             center = {width/2. , double(r2)};
             break;
         case Alignment::bottom:
-            center = {width/2., double(height - r2)};
+            center = {width/2., double(height - size_t(r2))};
             break;
         case Alignment::none:
             center = p;
@@ -39,7 +39,7 @@ map::shapes::Ellipse::Ellipse(Point p, int r1, int r2, Data &&d)
 }
 
 
-void map::shapes::Ellipse::rotate(double angle) {
+void map::shapes::Ellipse::rotate([[maybe_unused]] double angle) {
     throw std::runtime_error("Ellipse::rotate() is not implemented");
 }
 
@@ -49,26 +49,26 @@ void map::shapes::Ellipse::rotate(double angle) {
 //     return std::make_unique<Ellipse>(*this);
 // }
 
-std::vector<std::pair<int, int>> map::shapes::Ellipse::getLocks(Size size, const int root_pix_per_lock) const {
-    std::vector<std::pair<int, int>> locks;
+std::vector<std::pair<size_t, size_t>> map::shapes::Ellipse::getLocks(Size size, const size_t root_pix_per_lock) const {
+    std::vector<std::pair<size_t, size_t>> locks;
 
-    const int x = center.x;
-    const int y = center.y;
-    const int half_thickness = this->thickness/2;
+    const size_t x = size_t(center.x);
+    const size_t y = size_t(center.y);
+    const size_t half_thickness = size_t(thickness/2);
 
-    const int x1 = std::max(x - r1 - half_thickness, 0);
-    const int x2 = std::min(x + r1 + half_thickness, int(size.width) -1);
-    const int y1 = std::max(y - r2 - half_thickness, 0);
-    const int y2 = std::min(y + r2 + half_thickness, int(size.height) -1);
+    const size_t x1 = std::max(x - size_t(r1) - half_thickness, size_t(0));
+    const size_t x2 = std::min(x + size_t(r1) + half_thickness, size.width -1);
+    const size_t y1 = std::max(y - size_t(r2) - half_thickness, size_t(0));
+    const size_t y2 = std::min(y + size_t(r2) + half_thickness, size.height -1);
     
     if(filled){
-        const int x1_lock = x1 / root_pix_per_lock;
-        const int x2_lock = x2 / root_pix_per_lock;
-        const int y1_lock = y1 / root_pix_per_lock;
-        const int y2_lock = y2 / root_pix_per_lock;
+        const size_t x1_lock = x1 / root_pix_per_lock;
+        const size_t x2_lock = x2 / root_pix_per_lock;
+        const size_t y1_lock = y1 / root_pix_per_lock;
+        const size_t y2_lock = y2 / root_pix_per_lock;
 
-        for(int i = y1_lock; i <= y2_lock; ++i){
-            for(int j = x1_lock; j <= x2_lock; ++j){
+        for(size_t i = y1_lock; i <= y2_lock; ++i){
+            for(size_t j = x1_lock; j <= x2_lock; ++j){
                 locks.push_back({i, j});
             }
         }
@@ -77,15 +77,15 @@ std::vector<std::pair<int, int>> map::shapes::Ellipse::getLocks(Size size, const
         // locks.erase(std::unique(locks.begin(), locks.end()), locks.end()); // hopefully not needed :))
     }
     else{
-        // only need to lock the border of the circle
-        for(int i = y1; i <= y2; ++i){
-            for(int j = x1; j <= x2; ++j){
+                                                // only need to lock the border of the circle
+        for(size_t i = y1; i <= y2; ++i){
+            for(size_t j = x1; j <= x2; ++j){
                 if(onBorder({j, i})){
                     locks.push_back({i / root_pix_per_lock, j / root_pix_per_lock});
                 }
             }
         }
-        
+
 
         std::ranges::sort(locks);
         locks.erase(std::unique(locks.begin(), locks.end()), locks.end());
@@ -95,8 +95,8 @@ std::vector<std::pair<int, int>> map::shapes::Ellipse::getLocks(Size size, const
 }
 
 bool map::shapes::Ellipse::onBorder(const Point& p) const {
-    const int dx = p.x - center.x;
-    const int dy = p.y - center.y;
+    const int dx = int(p.x - center.x);
+    const int dy = int(p.y - center.y);
     const int radius1 = r1 + thickness / 2;
     const int radius2 = r2 + thickness / 2;
 

@@ -8,7 +8,7 @@ struct Complex{
     double I;
 
     Complex() : R(0), I(0) {}
-    Complex(double r, double i) : R(r), I(i) {};
+    Complex(double r, double i) : R(r), I(i) {}
 
     Complex operator+(Complex other){
         return Complex(R + other.R, I + other. I);

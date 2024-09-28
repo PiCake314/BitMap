@@ -10,13 +10,13 @@ width_(w), height_(h), rectAlignment(d.rectAlignment)
             center = {w/2, h/2};
             break;
         case RectAlignment::top_right:
-            center = {width - w/2, h/2};
+            center = {width - size_t(w/2), h/2};
             break;
         case RectAlignment::bottom_left:
-            center = {w/2, height - h/2};
+            center = {w/2, height - size_t(h/2)};
             break;
         case RectAlignment::bottom_right:
-            center = {width - w/2, height - h/2};
+            center = {width - size_t(w/2), height - size_t(h/2)};
             break;
         case RectAlignment::center:
             center = {width/2., height/2.};

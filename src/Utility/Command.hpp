@@ -21,12 +21,12 @@ namespace map::util{
         std::string m_Command;
         bool m_Is_there_output;
         bool m_In_filter;
-        int m_Current_input;
+        size_t m_Current_input;
         bool m_First_filter;
         bool m_Applied_option;
         bool m_Done_filter;
         bool m_Mixed_audio;
-        int m_Audios_filtered;
+        size_t m_Audios_filtered;
 
         std::vector<std::pair<std::string, bool>> m_Inputs;
         std::string m_Output;
@@ -43,7 +43,7 @@ namespace map::util{
         m_Done_filter{false},
         m_Mixed_audio{false},
         m_Audios_filtered{0}
-        {};
+        {}
 
         Command &addInput(const std::string& input){
             m_Command += " -i " + input;
@@ -88,9 +88,9 @@ namespace map::util{
             return *this;
         }
 
-        Command &pickInput(const int input){
+        Command &pickInput(const size_t input){
             assert(m_In_filter && "Not in filter");
-            assert(input > 0 and input < m_Inputs.size() && "Invalid input");
+            assert(input < m_Inputs.size() && "Invalid input");
             assert(not m_Mixed_audio && "Audio has already been mixed");
             // assert(m_Inputs[input].second && "Cannot apply filter to the same input twice");
 
@@ -113,7 +113,7 @@ namespace map::util{
             return *this;
         }
 
-        Command &addDelay(const int delay){
+        Command &addDelay(const size_t delay){
             assert(m_In_filter && "Not in filter");
 
             if(m_Applied_option){
@@ -178,14 +178,14 @@ namespace map::util{
                 m_Command += "; ";
             }
 
-            for(int i = 1; i < m_Inputs.size(); i++){
+            for(size_t i = 1; i < m_Inputs.size(); i++){
                 if(not m_Inputs[i].second){
                     m_Command += '[' + std::to_string(i) + ":a]anull[a" + std::to_string(i) + "]; ";
                 }
             }
 
 
-            for(int i = 1; i <= m_Audios_filtered; i++){
+            for(size_t i = 1; i <= m_Audios_filtered; i++){
                 m_Command += "[a" + std::to_string(i) + "]";
             }
 

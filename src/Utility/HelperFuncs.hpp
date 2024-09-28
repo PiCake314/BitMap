@@ -2,50 +2,56 @@
 
 #include "../Mapper/Mapper.hpp"
 #include <optional>
+#include <ranges>
 
 
 namespace map::util{
 
-    bool isNumber(std::string s){
-        for(char c : s)
-            if(!isdigit(c))
-                return false;
-
-        return true;
+    inline bool isNumber(std::string_view s){
+        return std::ranges::all_of(s, isdigit);
     }
 
-    bool isValidP(std::string_view P){
+    inline bool isValidP(std::string_view P){
         return (P == "P3" || P == "P5" || P == "P6");
     }
 
-    bool isValidHeight(int height){
+    inline bool isValidHeight(size_t height){
         return (height >= 1);
     }
 
-    bool isValidWidth(int width){
+    inline bool isValidWidth(size_t width){
         return (width >= 1);
     }
 
-    bool isValidMax(int max){
+    inline bool isValidMax(size_t max){
         return (max <= 255);
     }
 
-    bool areValid(const std::string& fn, std::string_view P, int h, int w, int M){
-        return (isValidP(P) && isValidHeight(h) && isValidWidth(w) && isValidMax(M));
+    inline bool areValid(std::string_view fn, std::string_view P, size_t h, size_t w, size_t M){
+        const std::string_view ext = fn.substr(fn.length() - 4);
+        const bool valid_file_name = fn.length() > 4 and (ext == ".ppm" or ext == "mp4");
+
+        return  valid_file_name and isValidP(P) and isValidHeight(h) and isValidWidth(w) and isValidMax(M);
     }
 
-    bool areValidString(std::string p, std::string h, std::string w, std::string m){
-        return (isNumber(h) && isNumber(w) && isNumber(m) && isValidP(p) &&  isValidHeight(std::stoi(h)) && isValidWidth(std::stoi(w)) && isValidMax(std::stoi(m)));
+    inline bool areValidString(std::string_view p, std::string_view h, std::string_view w, std::string_view m){
+        return isNumber(h) and
+               isNumber(w) and
+               isNumber(m) and
+               isValidP(p) and
+               isValidHeight(std::stoul(h.data())) and
+               isValidWidth(std::stoul(w.data())) and
+               isValidMax(size_t(std::atoi(m.data())));
     }
 
-    bool safePoint(map::Point p, map::Size s){
-        return (p.x >= 0 && p.x < s.width && p.y >= 0 && p.y < s.height);
+    inline bool safePoint(const map::Point &p, map::Size s){
+        return (p.x >= 0 and p.x < s.width and p.y >= 0 and p.y < s.height);
     }
 
 
-    map::Point lerp(map::Point p1, map::Point p2, float dt){
-        int x =  p1.x + (p2.x-p1.x)*dt;
-        int y =  p1.y + (p2.y-p1.y)*dt;
+    inline map::Point lerp(const map::Point &p1, map::Point p2, double dt){
+        double x =  p1.x + (p2.x - p1.x)* double(dt);
+        double y =  p1.y + (p2.y - p1.y)* double(dt);
         // TODO: refactor using std::lerp
 
         return map::Point(x, y);
@@ -53,8 +59,8 @@ namespace map::util{
 
 
 
-    // std::vector<std::pair<int, int>> outter_prod(int begin1, int end1, int begin2, int end2){
-    //     std::vector<std::pair<int, int>> ret((end1 - begin1) * (end2 - begin2));
+    // std::vector<std::pair<size_t, size_t>> outter_prod(int begin1, int end1, int begin2, int end2){
+    //     std::vector<std::pair<size_t, size_t>> ret((end1 - begin1) * (end2 - begin2));
 
     //     for(int i = begin1; i < end1; i++){
     //         for(int j = begin2; j < end2; j++){
@@ -75,7 +81,7 @@ namespace map::util{
     // }
 
 
-    constexpr double distFromLineSquared(map::Point p1, map::Point p2, map::Point p){
+    inline constexpr double distFromLineSquared(map::Point p1, map::Point p2, map::Point p){
         const double a = p2.y - p1.y;
         const double b = p1.x - p2.x;
         const double c = p2.x*p1.y - p1.x*p2.y;
@@ -83,8 +89,8 @@ namespace map::util{
         return (std::abs(a*p.x + b*p.y + c) * std::abs(a*p.x + b*p.y + c))/(a*a + b*b);
     }
 
-    
-    std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std::vector<map::shapes::Line> lines){
+
+    inline std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std::vector<map::shapes::Line> lines){
         for(const auto &line : lines){
             if(line.on(p)) return {true, line};
         }

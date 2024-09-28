@@ -2,10 +2,9 @@
 #include <optional>
 #include <chrono>
 
-#include "../src/Mapper/Mapper.hpp"
+// #include "../src/Mapper/Mapper.hpp" // unneeded
 
-#define DEFAULT_SIZE 500
-
+constexpr int DEFAULT_SIZE = 500;
 size_t height = DEFAULT_SIZE, width = DEFAULT_SIZE;
 
 
@@ -32,7 +31,7 @@ bool setup(int argc, char **argv, std::string &filename, size_t &h, size_t &w, i
 			fps = std::stoi(argv[6]);
 			if(fps == 0) fps = 24;
 
-			if(filename == "def") filename = "res.mp4";
+			if(filename == "def") filename = "output.mp4";
 			else filename = filename.substr(3);
 		}
 		else if(filename == "def") filename = "output.ppm";
@@ -67,7 +66,7 @@ int main(int argc, char **argv){
 	}
 
 	srand(time(NULL));
-	/* --------------------------- Meta Data --------------------------- */
+	/* ---------------------------- Set Up ---------------------------- */
 
     std::string filename = "output.ppm";
 	int fps = 0;
@@ -84,7 +83,7 @@ int main(int argc, char **argv){
 		map::Mapper(filename, map::Size{width, height}, 	 loadtype);
 
 
-	/* ----------------------------------------------------------------- */
+	/* ---------------------------------------------------------------- */
 	auto start = std::chrono::high_resolution_clock::now();
 
 	canvas(m);

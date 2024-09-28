@@ -5,7 +5,7 @@ map::shapes::Text::Text(const std::string &t, const Point &p, Data &&d)
 {}
 
 
-void map::shapes::Text::rotate(double angle){ /* do nothing */ }
+void map::shapes::Text::rotate(double){ /* do nothing */ }
 
 
 // map::shapes::ShapePtr map::shapes::Text::rotated(double angle) const{

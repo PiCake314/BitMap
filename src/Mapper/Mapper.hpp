@@ -21,17 +21,15 @@
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
-#include "../Structs/Complex.hpp"
 #include "../Structs/Shapes/Shapes.hpp"
 #include "../Structs/Font.hpp"
 
 #include "../Enums/Loadtype.hpp"
-#include "../Enums/Fold.hpp"
 #include "../Enums/Alignment.hpp"
 #include "../Enums/RectAlignment.hpp"
 
 
-#define OUTPUT_PATH "output/ppms/"
+#define PPM_OUTPUT_PATH "output/ppms/"
 #define VIDEO_OUTPUT_PATH "output/vids/"
 #define VIDEO_TEMP_PATH "output/vids/.temp/"
 
@@ -67,28 +65,28 @@ namespace map{
             Size m_Size;
             
             // for video only
-            const int m_FPS;
+            const size_t m_FPS;
             const double m_Delta;
-            int m_Current_frame;
+            size_t m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;
 
             friend struct shapes::Audio;
-            using Frame = int;
+            using Frame = size_t;
             std::vector<std::pair<shapes::Audio, Frame>> m_Sounds;
 
             // Meta Data
             std::string_view m_PType;
-            int m_Max;
+            size_t m_Max;
             /* volatile */ clr::RGB *m_Map = nullptr; // The canvas (2D array of RGB values)
 
             bool m_Set_state;
 
-            [[maybe_unused]] int m_XCenter;
-            [[maybe_unused]] int m_YCenter;
+            [[maybe_unused]] size_t m_XCenter;
+            [[maybe_unused]] size_t m_YCenter;
 
             // for multithreading
-            const int m_Root_pix_per_lock;
+            const size_t m_Root_pix_per_lock;
             std::deque<std::deque<std::mutex>> m_Locks;
 
             void setInfo();
@@ -100,7 +98,7 @@ namespace map{
         public:
             // Mapper();
             Mapper(std::string_view, Size, Loadtype = Loadtype::reset);
-            Mapper(std::string_view, Size, int fps, Loadtype = Loadtype::reset);
+            Mapper(std::string_view, Size, size_t fps, Loadtype = Loadtype::reset);
 
             Mapper(Mapper &&) = delete;
             Mapper(const Mapper &) = delete;
@@ -113,7 +111,7 @@ namespace map{
 
             // void setFPS(int);
 
-            int getFPS() const;
+            size_t getFPS() const;
 
             void doSet();
 
@@ -160,15 +158,15 @@ namespace map{
 
 
             /**
-             * @param height/width: negative values will result in them being 10% of the height.
+             * @param height: negative values will result in them being 10% of the height.
+             * @param width: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawRect(Point center, float height = -1, float width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
+            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
 
 
             /**
              * @param r: negative values will result in them being 10% of the height.
-             * @param alignment: sets the alignment of the shape.
              */
             template <bool called_from_shape_class = false>
             void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
@@ -184,7 +182,7 @@ namespace map{
             /**
              * @param font: the name of the font to use. (passing "" will use the default font)
             */
-            void drawText(std::string_view, Point, std::string font = "Default", Alignment = Alignment::none);
+            void drawText(const std::string_view, const Point, const std::string_view font, const Alignment = Alignment::none);
 
 
             void draw(shapes::Shape*);
@@ -195,55 +193,46 @@ namespace map{
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(shapes::Shapes &shapes, const int num_threads = 2);
+            void draw(shapes::Shapes &&shapes, const int num_threads = 2);
 
 
             /**
              * @brief Creates a bezian curve from a vector of points
              */
-            void bezierCurve(std::vector<Point>, float = 0.1, clr::RGB = clr::RGB(), bool thick = false);
+            void bezierCurve(std::vector<Point>, double = .1, clr::RGB = clr::RGB(), bool thick = false);
 
 
-            void plot(int(*)(int), clr::RGB = clr::RGB(), bool thick = false);
+            void plot(size_t(*)(size_t), clr::RGB = clr::RGB(), bool thick = false);
 
 
-            void plotXY(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB());
-            
-            
-            void plotIfTrue(bool (*)(int, int), clr::RGB = clr::RGB());
+            void plot(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB());
 
 
-            /**
-             * @brief Folds the canvas on itself (i.e. Copys the top half to the bottom half with t2b)
-             * 
-             * @param Fold: use one of the provided constants (l2r, r2l, t2b, b2t)
-             */
-            [[deprecated]]
-            void fold(Fold);
+            void plot(bool (*)(size_t, size_t), clr::RGB = clr::RGB());
 
 
             /**
              * @brief Rotates the canvas by the given angle. (in radians)
             */
-            void rotate(float);
+            void rotate(double);
 
-            // void animate(map::shapes::ShapePtr (*)(const double), float seconds);
+            // void animate(map::shapes::ShapePtr (*)(const double), double seconds);
 
             /**
              * @brief Animates the canvas by calling the given function for each frame.
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a shape.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::shapes::ShapePtr (*)(const int, const int, const double), float seconds);
+            void animate(map::shapes::ShapePtr (*)(const int, const int, const double), double seconds);
 
-            // void animate(map::shapes::ShapePtr (*)(const int, const int), float seconds);
+            // void animate(map::shapes::ShapePtr (*)(const int, const int), double seconds);
 
             /**
              * @brief Animates the canvas by calling the given function for each frame.
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a vector of shapes.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::shapes::Shapes (*)(const int, const int, const double), float seconds);
+            void animate(map::shapes::Shapes (*)(const int, const int, const double), double seconds);
 
 
             // ----------------------- Video Related Functions -----------------------
@@ -262,9 +251,9 @@ namespace map{
             
             map::clr::RGB &at(const Point&);
 
-            clr::RGB &operator[](int);
+            clr::RGB &operator[](size_t);
 
-            map::clr::RGB &at(int i);
+            map::clr::RGB &at(size_t i);
 
             clr::RGB *begin();
 

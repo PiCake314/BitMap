@@ -24,13 +24,13 @@ map::shapes::Circle::Circle(Point p, int r, Data &&d)
             center = {double(r), height/2.};
             break;
         case Alignment::right:
-            center = {double(width - r), height/2.};
+            center = {double(width - size_t(r)), height/2.};
             break;
         case Alignment::top:
             center = {width/2. , double(r)};
             break;
         case Alignment::bottom:
-            center = {width/2., double(height - r)};
+            center = {width/2., double(height - size_t(r))};
             break;
         case Alignment::none:
             center = p;
@@ -39,32 +39,32 @@ map::shapes::Circle::Circle(Point p, int r, Data &&d)
 }
 
 
-void map::shapes::Circle::rotate(double angle) {}
+void map::shapes::Circle::rotate(double) {}
 
 
 // map::shapes::ShapePtr map::shapes::Circle::rotated(double angle) const { return std::make_unique<Circle>(*this); }
 
 
-std::vector<std::pair<int, int>> map::shapes::Circle::getLocks(Size size, const int root_pix_per_lock) const {
-    std::vector<std::pair<int, int>> locks;
+std::vector<std::pair<size_t, size_t>> map::shapes::Circle::getLocks(Size size, const size_t root_pix_per_lock) const {
+    std::vector<std::pair<size_t, size_t>> locks;
 
-    const int x = center.x;
-    const int y = center.y;
-    const int half_thickness = this->thickness/2;
+    const size_t x = size_t(center.x);
+    const size_t y = size_t(center.y);
+    const size_t half_thickness = size_t(thickness/2);
 
-    const int x1 = std::max(x - radius - half_thickness, 0);
-    const int x2 = std::min(x + radius + half_thickness, int(size.width) -1);
-    const int y1 = std::max(y - radius - half_thickness, 0);
-    const int y2 = std::min(y + radius + half_thickness, int(size.height) -1);
+    const size_t x1 = std::max(x - size_t(radius) - half_thickness, size_t(0));
+    const size_t x2 = std::min(x + size_t(radius) + half_thickness, size.width -1);
+    const size_t y1 = std::max(y - size_t(radius) - half_thickness, size_t(0));
+    const size_t y2 = std::min(y + size_t(radius) + half_thickness, size.height -1);
     
     if(filled){
-        const int x1_lock = x1 / root_pix_per_lock;
-        const int x2_lock = x2 / root_pix_per_lock;
-        const int y1_lock = y1 / root_pix_per_lock;
-        const int y2_lock = y2 / root_pix_per_lock;
+        const size_t x1_lock = x1 / root_pix_per_lock;
+        const size_t x2_lock = x2 / root_pix_per_lock;
+        const size_t y1_lock = y1 / root_pix_per_lock;
+        const size_t y2_lock = y2 / root_pix_per_lock;
 
-        for(int i = y1_lock; i <= y2_lock; ++i){
-            for(int j = x1_lock; j <= x2_lock; ++j){
+        for(size_t i = y1_lock; i <= y2_lock; ++i){
+            for(size_t j = x1_lock; j <= x2_lock; ++j){
                 locks.push_back({i, j});
             }
         }
@@ -74,8 +74,8 @@ std::vector<std::pair<int, int>> map::shapes::Circle::getLocks(Size size, const 
     }
     else{
         // only need to lock the border of the circle
-        for(int i = y1; i <= y2; ++i){
-            for(int j = x1; j <= x2; ++j){
+        for(size_t i = y1; i <= y2; ++i){
+            for(size_t j = x1; j <= x2; ++j){
                 if(onBorder({j, i})){
                     locks.push_back({i / root_pix_per_lock, j / root_pix_per_lock});
                 }
@@ -94,8 +94,8 @@ std::vector<std::pair<int, int>> map::shapes::Circle::getLocks(Size size, const 
 
 
 bool map::shapes::Circle::onBorder(const Point& p) const {
-    const int dx = p.x - center.x;
-    const int dy = p.y - center.y;
+    const int dx = int(p.x - center.x);
+    const int dy = int(p.y - center.y);
     const int dist = dx*dx + dy*dy;
     const int half_thickness = thickness/2;
     const int r = radius + half_thickness;

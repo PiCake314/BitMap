@@ -1,8 +1,8 @@
 #include "Line.hpp"
 
 
-map::shapes::Line::Line(Point c, int len, double angle, Data &&d)
-: Shape(c, d.color, d.thickness, {}), length(len), angle(angle),
+map::shapes::Line::Line(Point c, int len, double angl, Data &&d)
+: Shape(c, d.color, d.thickness, {}), length(len), angle(angl),
 m_start({center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)}),
 m_end({center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)})
 {
@@ -13,7 +13,7 @@ m_end({center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)})
 
 map::shapes::Line::Line(Point s, Point e, Data &&d)
 : Shape({(s.x + e.x)/2, (s.y + e.y)/2}, d.color, d.thickness, {}),
-length(s.dist(e)),
+length(int(s.dist(e))),
 angle(std::atan2(e.y - s.y, e.x - s.x)),
 m_start(s), m_end(e)
 {

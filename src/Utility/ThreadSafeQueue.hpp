@@ -20,7 +20,7 @@ namespace map::util{
 
         ThreadSafeQueue() = default;
 
-        ThreadSafeQueue(std::vector<shapes::ShapePtr>& items){
+        ThreadSafeQueue(std::vector<shapes::ShapePtr> &&items){
             for(auto& item : items){
                 // item->depth = ++num_shapes;
                 item->setDepth(++num_shapes);

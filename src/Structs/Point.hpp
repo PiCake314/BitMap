@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <compare>
+#include <limits>
 
 namespace map{
     struct Point{
@@ -14,7 +15,7 @@ namespace map{
         constexpr explicit Point(double i) : x(i), y(i) {}
         constexpr Point(double x_, double y_) : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
-        
+
         constexpr Point(std::integral auto x_, std::integral auto y_) : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
 
         [[nodiscard]] constexpr Point operator+(const Point& p) const {
@@ -49,7 +50,9 @@ namespace map{
             return *this = *this / f;
         }
 
-        constexpr bool operator==(const Point& p) const = default;
+        constexpr bool operator==(const Point& p) const {
+            return (x - p.x < std::numeric_limits<double>::epsilon()) and (y - p.y < std::numeric_limits<double>::epsilon());
+        }
 
         // constexpr auto operator<=>(const Point&) const = default; // un-needed
 
@@ -66,8 +69,8 @@ namespace map{
         }
 
         constexpr void normalize(){
-            double m = mag();
-            if(m != 0){
+            double m = mag(); // m is never < 0
+            if(m < std::numeric_limits<double>::epsilon()){
                 x /= m;
                 y /= m;
             }
@@ -222,7 +225,7 @@ namespace map{
 
         constexpr void normalize(){
             double m = mag();
-            if(m != 0){
+            if(m < std::numeric_limits<double>::epsilon()){
                 x /= m;
                 y /= m;
                 z /= m;
@@ -419,7 +422,7 @@ namespace map{
 
         constexpr void normalize(){
             double m = mag();
-            if(m != 0){
+            if(m < std::numeric_limits<double>::epsilon()){
                 for(size_t i = 0; i < N; ++i){
                     coords[i] /= m;
                 }

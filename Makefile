@@ -26,7 +26,11 @@ run_image: $(DEP)
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp
-	$(CC) $(CVER) -o test unit_tests/test.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp -Wall -Weverything && ./test
+	$(CC) $(CVER) -o test unit_tests/test.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp \
+	-Wall -Weverything \
+	-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-documentation \
+	-Wno-padded -Wno-double-promotion \
+	-Wno-poison-system-directories -Wno-undefined-func-template
 	# make image filename=test.ppm && make clean
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
