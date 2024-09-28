@@ -278,4 +278,4 @@ Make sure you have them installed before using Mapper.
 - [ ] Add image
 - [ ] Implement multiple arg passing for Alignment using pipe '|'
 - [x] Deprecate unused functions/enums/structs
-- [ ] Implement builder pattern for command creation for FFMPEG
+- [x] Implement builder pattern for command creation for FFMPEG
