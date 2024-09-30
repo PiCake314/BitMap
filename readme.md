@@ -10,7 +10,7 @@ To use the latest _unstable_ version:\
 
 
 # Dependencies:
-This library depends on 2 libraries:
+This library depends on 3 libraries:
 - [ffmpeg](https://ffmpeg.org)
 - [ImageMagick](https://imagemagick.org)
 - [Make](https://www.gnu.org/software/make/)
