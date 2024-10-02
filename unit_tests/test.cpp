@@ -7,10 +7,6 @@
 #include <cassert>
 
 
-constexpr int DEFAULT_SIZE = 500;
-size_t height = DEFAULT_SIZE, width = DEFAULT_SIZE;
-
-
 template <typename T>
 void test(std::vector<T> tests){
     for(const auto &test : tests)

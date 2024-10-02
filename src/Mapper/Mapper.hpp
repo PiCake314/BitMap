@@ -17,35 +17,41 @@
 #include <mutex>
 #include <concepts>
 #include <utility>
+#include <filesystem>
 
 #include "../Structs/Size.hpp"
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Shapes/Shapes.hpp"
 #include "../Structs/Font.hpp"
-
-#include "../Enums/Loadtype.hpp"
 #include "../Enums/Alignment.hpp"
-#include "../Enums/RectAlignment.hpp"
+#include "../Utility/UDLs.hpp"
+#include "../Config/Config.hpp"
 
-
-#define PPM_OUTPUT_PATH "output/ppms/"
-#define VIDEO_OUTPUT_PATH "output/vids/"
-#define VIDEO_TEMP_PATH "output/vids/.temp/"
-
-#define AUDIO_INPUT_PATH "sounds/"
-
-#define MANGLED "__out__"
-#define MANGLED_PPM MANGLED ".ppm"
-#define MANGLED_PNG(frame) MANGLED + std::to_string(frame) + ".png"
-#define MANGLED_MP4 MANGLED ".mp4"
-
-
-#define DEFUALT_FONT "Default"
-
-#define DEGREES /180. * M_PI
 
 namespace map{
+    
+
+    inline constexpr bool INIT_STATE = false;
+
+    inline const std::filesystem::path OUT_DIR = "output/";
+    inline const std::filesystem::path PPMS_DIR = OUT_DIR  / "ppms/";
+
+    inline const std::filesystem::path VIDS_DIR = OUT_DIR  / "vids/";
+    inline const std::filesystem::path TEMP_DIR = VIDS_DIR / ".temp/";
+
+    inline const std::filesystem::path SOUNDS_DIR = "sounds/";
+
+    inline const std::filesystem::path MANGLED = "__out__";
+    inline const std::filesystem::path MANGLED_PPM = "__out__" ".ppm";
+    inline const std::filesystem::path MANGLED_MP4 = "__out__" ".mp4";
+
+    inline const std::filesystem::path pngMangledWithFrame(size_t frame) noexcept {
+        return MANGLED.string() + std::to_string(frame) + ".png";
+    }
+
+    constexpr const char* DEFUALT_FONT = "Default";
+
 
     // Forward declaration
     namespace shapes{
@@ -60,10 +66,10 @@ namespace map{
     class Mapper{
 
         private:
-            const std::string m_Filename;
-            const std::string m_Filename_vid;
+            const std::filesystem::path m_Filename;
+            const std::filesystem::path m_Filename_vid;
             Size m_Size;
-            
+
             // for video only
             const size_t m_FPS;
             const double m_Delta;
@@ -90,15 +96,15 @@ namespace map{
             std::deque<std::deque<std::mutex>> m_Locks;
 
             void setInfo();
-            
+
             void resetFile();
 
-            void loadFile();
+            // void loadFile();
 
         public:
             // Mapper();
-            Mapper(std::string_view, Size, Loadtype = Loadtype::reset);
-            Mapper(std::string_view, Size, size_t fps, Loadtype = Loadtype::reset);
+            Mapper(std::filesystem::path, Size);
+            Mapper(std::filesystem::path, Size, size_t fps);
 
             Mapper(Mapper &&) = delete;
             Mapper(const Mapper &) = delete;
@@ -162,7 +168,7 @@ namespace map{
              * @param width: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, RectAlignment alignment = RectAlignment::none);
+            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, Alignment alignment = Alignment::none);
 
 
             /**
@@ -193,7 +199,7 @@ namespace map{
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(shapes::Shapes &&shapes, const int num_threads = 2);
+            void draw(shapes::Shapes &&shapes, const int num_threads = 1);
 
 
             /**
@@ -202,13 +208,34 @@ namespace map{
             void bezierCurve(std::vector<Point>, double = .1, clr::RGB = clr::RGB(), bool thick = false);
 
 
-            void plot(size_t(*)(size_t), clr::RGB = clr::RGB(), bool thick = false);
+            void plot(size_t(*)(size_t), clr::RGB = clr::RGB(), size_t thickness = 2);
 
 
             void plot(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB());
 
 
             void plot(bool (*)(size_t, size_t), clr::RGB = clr::RGB());
+
+
+            void plot(std::invocable<size_t> auto func, clr::RGB color = clr::RGB(), size_t thickness = 2) 
+            requires std::same_as<decltype(func(size_t{})), size_t>
+            {
+                for (size_t j = 0; j < m_Size.width; ++j){
+                    const size_t value = func(j);
+                    const double half_thickness = thickness/2.;
+
+                    for(int y = std::max<size_t>(value - half_thickness, 0); y < std::min<size_t>(value + half_thickness, m_Size.height); ++y){
+                        for(size_t x = std::max<size_t>(j - half_thickness, 0); x < std::min<size_t>(j + half_thickness, m_Size.width); ++x){
+                            if(safePoint({x, y}) and safePoint({j, value}) and Point::distSqrd({j, value}, {x, y}) <= std::pow(half_thickness, 2)){
+                                m_Map[y*m_Size.width + x] = color;
+                            }
+                        }
+                    }
+
+                }
+
+                if(m_Set_state) setState();
+            }
 
 
             /**
@@ -234,6 +261,40 @@ namespace map{
             */
             void animate(map::shapes::Shapes (*)(const int, const int, const double), double seconds);
 
+            /**
+             * @brief A templated version of the animate function to allow for lambdas with captures.
+            */
+            void animate(std::invocable<const int, const int, const double> auto providor, double seconds)
+            requires (std::same_as<decltype(providor(int{}, int{}, double{})), shapes::ShapePtr>
+                   or std::same_as<decltype(providor(int{}, int{}, double{})), shapes::Shapes>)
+            {
+                assert(m_FPS > 0 && "FPS must be greater than 0!");
+
+                std::filesystem::create_directories(TEMP_DIR);
+
+
+                std::clog << "Beginning Scene:\n";
+                const int frames = int(seconds * m_FPS);
+
+                std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+                const size_t temp_size = temp.size() * sizeof(clr::RGB);
+
+                for(int frame = 0; frame <= frames; frame++){
+                    memcpy(m_Map, &temp[0], temp_size);
+                    auto shape = providor(frame, frames, m_Delta);
+                    draw(std::move(shape));
+                    if(!m_Set_state) setState();
+                    saveFrame();
+                    std::clog << frame << '/' << frames << '\n';
+
+                    // delete shape; // for non unique_ptr
+                }
+                // copy(temp, m_Map); // can be replaced with memcpy
+                memcpy(m_Map, &temp[0], temp_size);
+
+                std::clog << "Scene Ended!\n";
+            }
+
 
             // ----------------------- Video Related Functions -----------------------
 
@@ -241,23 +302,30 @@ namespace map{
             void saveFrame();
             
             public:
-            void render(const std::string& output_file = "out.mp4") const;
+            /**
+             * @param output_file: keep as std::string to include extra functionality such as operator + and +=.
+             */
+            void render() const;
 
             void clearFrames() const;
 
             // ----------------------- Operators -----------------------
 
-            clr::RGB &operator[](const Point&);
+            clr::RGB &operator[](const Point&) noexcept;
             
-            map::clr::RGB &at(const Point&);
+            clr::RGB &operator[](size_t) noexcept;
 
-            clr::RGB &operator[](size_t);
+            map::clr::RGB &at(const Point&);
 
             map::clr::RGB &at(size_t i);
 
-            clr::RGB *begin();
+             clr::RGB *begin() noexcept;
 
-            clr::RGB *end();
+            clr::RGB *end() noexcept;
+
+            const clr::RGB *cbegin() const noexcept;
+
+            const clr::RGB *cend() const noexcept;
 
 
             // ----------------------- Private funcs -----------------------

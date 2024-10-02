@@ -18,19 +18,19 @@ map::shapes::Ellipse::Ellipse(Point p, int radius_1, int radius_2, Data &&d)
         //     center = {width - r, height - r};
         //     break;
         case Alignment::center:
-            center = {width/2., height/2.};
+            center = {Config::width/2., Config::height/2.};
             break;
         case Alignment::left:
-            center = {double(r1), height/2.};
+            center = {double(r1), Config::height/2.};
             break;
         case Alignment::right:
-            center = {double(width - size_t(r1)), height/2.};
+            center = {double(Config::width - size_t(r1)), Config::height/2.};
             break;
         case Alignment::top:
-            center = {width/2. , double(r2)};
+            center = {Config::width/2. , double(r2)};
             break;
         case Alignment::bottom:
-            center = {width/2., double(height - size_t(r2))};
+            center = {Config::width/2., double(Config::height - size_t(r2))};
             break;
         case Alignment::none:
             center = p;

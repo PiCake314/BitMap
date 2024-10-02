@@ -7,7 +7,7 @@
 
 namespace map::util{
 
-    inline bool isNumber(std::string_view s){
+    inline bool isNumber(const std::string_view s){
         return std::ranges::all_of(s, isdigit);
     }
 

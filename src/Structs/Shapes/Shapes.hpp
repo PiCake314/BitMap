@@ -9,12 +9,12 @@
 #include "../RGB.hpp"
 
 #include "../../Enums/Alignment.hpp"
-#include "../../Enums/RectAlignment.hpp"
 #include "../../Mapper/Mapper.hpp"
+#include "../../Config/Config.hpp"
 
 
 // #define ROT_MAT (double[2][2]){{cos(angle), -sin(angle)}, {sin(angle), cos(angle)}} // only works in clang (haven't tested msvc)
-extern size_t height, width;
+// extern size_t height, width;
 
 namespace map{
 
@@ -31,8 +31,6 @@ namespace map{
 
             // Shared
             Point center;
-            // const Point velocity;
-            // const Point acceleration;
             clr::RGB color;
             bool filled;
             int thickness;

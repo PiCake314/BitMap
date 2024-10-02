@@ -1,33 +1,16 @@
 #include "Rect.hpp"
 
-map::shapes::Rect::Rect(Point p, int w, int h, Data &&d)
+map::shapes::Rect::Rect(Point p, size_t w, size_t h, Data &&d)
 : Shape( p, d.color, d.filled, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
-width_(w), height_(h), rectAlignment(d.rectAlignment)
+width_(w), height_(h), alignment(d.alignment)
 {
-    
-    switch(rectAlignment){
-        case RectAlignment::top_left:
-            center = {w/2, h/2};
+
+    switch(alignment){
+        case map::Alignment::center :
+            center = {Config::width/2., Config::height/2.};
             break;
-        case RectAlignment::top_right:
-            center = {width - size_t(w/2), h/2};
-            break;
-        case RectAlignment::bottom_left:
-            center = {w/2, height - size_t(h/2)};
-            break;
-        case RectAlignment::bottom_right:
-            center = {width - size_t(w/2), height - size_t(h/2)};
-            break;
-        case RectAlignment::center:
-            center = {width/2., height/2.};
-            break;
-        case RectAlignment::width:
-            center = {width/2., p.y};
-            break;
-        case RectAlignment::height:
-            center = {p.x, height/2.};
-            break;
-        case RectAlignment::none:
+
+        case map::Alignment::none:
             center = p;
             break;
     }
@@ -46,7 +29,7 @@ width_(w), height_(h), rectAlignment(d.rectAlignment)
 }
 
 void map::shapes::Rect::draw(Mapper *m) const {
-    m->drawRect<true>(center, height_, width_, color, filled, thickness, rectAlignment);
+    m->drawRect<true>(center, height_, width_, color, filled, thickness, alignment);
 }
 
 map::shapes::ShapePtr map::shapes::Rect::clone() const {

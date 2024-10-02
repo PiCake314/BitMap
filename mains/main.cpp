@@ -1,105 +1,103 @@
-#include <string_view>
+#include <string>
+#include <filesystem>
 #include <optional>
 #include <chrono>
+#include <dlfcn.h>
 
-// #include "../src/Mapper/Mapper.hpp" // unneeded
-
-constexpr int DEFAULT_SIZE = 500;
-size_t height = DEFAULT_SIZE, width = DEFAULT_SIZE;
+// #include <Mapper.hpp>
+#include "../src/Mapper/Mapper.hpp"
 
 
-#include "sketch.hpp"
 
 
 /**
  * @returns true if video, false if image
 */
-bool setup(int argc, char **argv, std::string &filename, size_t &h, size_t &w, int &fps, map::Loadtype &arg, bool debug){
-	std::string_view argv1 = argv[1];
-	std::string_view mode = "image";
+bool setup(int argc, char **argv, std::filesystem::path &filename, size_t &fps){
+	filename = argv[2];
+	if(filename.empty()) throw std::runtime_error("Invalid output filename");
 
-	if(argc > 1 && (argv1 == "e" || argv1 == "edit"))
-		arg = map::Loadtype::edit;
+	map::Config::width = std::stoul(argv[3]);
+	map::Config::height = std::stoul(argv[4]);
 
 
-    if(argc > 3){
-		mode = argv[2];
-		filename = argv[3];
+	constexpr size_t DEFAULT_SIZE = 512;
+	if(map::Config::width <= 0) map::Config::width = DEFAULT_SIZE;
+	if(map::Config::height <= 0) map::Config::height = DEFAULT_SIZE;
 
-		if(mode == "video"){
-			assert(argc > 4);
-			fps = std::stoi(argv[6]);
-			if(fps == 0) fps = 24;
+	const auto ext = filename.extension();
+	bool vid = ext == ".mp4";
 
-			if(filename == "def") filename = "output.mp4";
-			else filename = filename.substr(3);
-		}
-		else if(filename == "def") filename = "output.ppm";
-		else filename = filename.substr(3);
-    }
-	
-	if(argc > 5){
-		h = std::stoul(argv[4]);
-		w = std::stoul(argv[5]);
-
-		if(h == 0) h = DEFAULT_SIZE;
-		if(w == 0) w = DEFAULT_SIZE;
+	if(vid){
+		assert(argc >= 6);
+		fps = std::stoul(argv[5]);
+		if(fps <= 0) fps = 24;
 	}
+	else assert(ext == ".ppm");
 
-
-	if(debug){
-		std::cout << "ARGC: " << argc << std::endl;
-		for(int i = 0; i < argc; i++)
-			std::cout << "argv[" << i << "]: " << argv[i] << std::endl;
-		
-		std::cout << "filename: " << filename << std::endl;
-	}
-
-	return mode == "video";
+	return vid;
 }
 
 
 int main(int argc, char **argv){
-	if(argc < 2){
-		std::cerr << "Usage: " << argv[0] << " <reset/load> <image/video> <filename> <height> <width> <fps(opt)>\n";
+
+	if(argc <= 4){
+		std::cerr << "ERROR: Not enough arguments\n";
+		std::cerr << "Usage: " << argv[0] << " <input file> <output file> <height> <width> <fps(opt)>\n";
 		return 1;
 	}
 
 	srand(time(NULL));
 	/* ---------------------------- Set Up ---------------------------- */
 
-    std::string filename = "output.ppm";
-	int fps = 0;
-    map::Loadtype loadtype = map::Loadtype::reset;
+    std::filesystem::path filename;
+	size_t fps{};
 
-	bool vid = setup(argc, argv, filename, height, width, fps, loadtype, false);
+	bool vid = setup(argc, argv, filename, fps);
 
-	// std::optional<map::Mapper> m;
-	// if(vid) m.emplace(filename, map::Size{width, height}, fps, loadtype);
-	// else m.emplace(filename, map::Size{width, height}, loadtype);
 
+	/* ------------------------ Loading Canvas ------------------------ */
+
+	void *handle = dlopen(argv[1], RTLD_LAZY);
+	if(not handle){
+		std::cerr << "Error loading library: " << dlerror() << '\n';
+		return 1;
+	}
+
+	const auto canvas = reinterpret_cast<void (*)(map::Mapper&, size_t, size_t)>(dlsym(handle, "canvas"));
+
+	if(char *err = dlerror(); err){
+		std::cerr << "Error loading symbol: " << err << '\n';
+		dlclose(handle);
+		return 1;
+	}
+
+	/* ---------------------------------------------------------------- */
+
+	// Creating the mapper object
 	auto m = vid ?
-		map::Mapper(filename, map::Size{width, height}, fps, loadtype):
-		map::Mapper(filename, map::Size{width, height}, 	 loadtype);
+		map::Mapper(filename, map::Size{map::Config::width, map::Config::height}, fps):
+		map::Mapper(filename, map::Size{map::Config::width, map::Config::height});
 
 
 	/* ---------------------------------------------------------------- */
 	auto start = std::chrono::high_resolution_clock::now();
 
-	canvas(m);
+	canvas(m, map::Config::width, map::Config::height);
 
-	if(vid){
-		m.setState();
-		m.render(filename);
+	m.setState();
+
+	if(vid){ // extra steps for video
+		m.render();
 		m.clearFrames();
 	}
-	else{
-		m.setState();
-	}
 
-	auto end = std::chrono::high_resolution_clock::now();
 
+	const auto end = std::chrono::high_resolution_clock::now();
 	auto res = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 	std::clog << "Performance time: " << res.count() << "ms\n";
+
+
+	dlclose(handle);
 }

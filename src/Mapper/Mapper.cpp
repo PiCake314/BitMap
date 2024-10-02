@@ -8,26 +8,21 @@
 #include <mutex>
 #include <limits>
 
-#define INIT_STATE false
-
 using namespace map::util;
 
 // image mode
-map::Mapper::Mapper(std::string_view fn, Size size, Loadtype type)
-: m_Filename(fn),
+map::Mapper::Mapper(std::filesystem::path fn, Size size)
+: m_Filename{std::move(fn)},
 m_Size{size.width, size.height},
 m_FPS{0}, m_Delta{0}, m_Current_frame{0},
 m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
 m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 {
-    assert(fn.length() > 4 );
-    assert(fn.substr(fn.length()-4, 4) == ".ppm");
-    
+    resetFile();
 
-    if(type == Loadtype::edit) loadFile();
-    else resetFile();
 
-    m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
+    // maybe it's better to lazy load the default font
+    // m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
 
 
     if(m_Size.height * m_Size.width > size_t(m_Root_pix_per_lock)){
@@ -50,26 +45,21 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 }
 
 // video mode
-map::Mapper::Mapper(std::string_view fn, Size size, size_t fps, Loadtype type)
-: m_Filename(MANGLED_PPM), m_Filename_vid(fn),
+map::Mapper::Mapper(std::filesystem::path fn, Size size, size_t fps)
+: m_Filename(MANGLED_PPM), m_Filename_vid{std::move(fn)},
 m_Size{size.width, size.height},
-m_FPS(fps), m_Delta(1./fps), m_Current_frame{0},
-m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
+m_FPS{fps}, m_Delta{1./fps}, m_Current_frame{0},
+m_PType{"P3"}, m_Max{255}, m_Set_state{INIT_STATE},
 m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 {
-    assert(fn.length() > 4 && "Filename too short");
-    assert(fn.substr(fn.length()-4, 4) == ".mp4" && "Only .mp4 files are supported");
+    resetFile();
 
-    if(type == Loadtype::edit) loadFile();
-    else resetFile();
-
-    m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
+    // lazy load the default font
+    // m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
 }
 
 
-map::Mapper::~Mapper(){
-    if(m_Map) delete[] m_Map;
-}
+map::Mapper::~Mapper(){ if(m_Map) delete[] m_Map; }
 
 
 void map::Mapper::loadFont(std::string_view fontname){
@@ -371,7 +361,7 @@ template void map::Mapper::drawPolygon<false>(const std::vector<Point>&, clr::RG
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, bool filled, bool thick , RectAlignment alignment){
+void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, bool filled, bool thick , Alignment alignment){
 
     if constexpr(not called_from_shape_class){
         color.depth = 1;
@@ -395,42 +385,12 @@ void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, boo
 
 
     switch (alignment){
-        case RectAlignment::center:
+        case Alignment::center:
             center.x = m_Size.width/2;
             center.y = m_Size.height/2;
             break;
 
-        case RectAlignment::top_left:
-            center.x = w/2;
-            center.y = h/2;
-            break;
-
-        case RectAlignment::top_right:
-            center.x = m_Size.width - w/2;
-            center.y = h/2;
-            break;
-
-        case RectAlignment::bottom_left:
-            center.x = w/2;
-            center.y = m_Size.height - h/2;
-            break;
-
-        case RectAlignment::bottom_right:
-            center.x = m_Size.width - w/2;
-            center.y = m_Size.height - h/2;
-            break;
-
-        case RectAlignment::width:
-            w = m_Size.width;
-            center.x = m_Size.width/2;
-            break;
-        
-        case RectAlignment::height:
-            h = m_Size.height;
-            center.y = m_Size.height/2;
-            break;
-        
-        case RectAlignment::none:
+        case Alignment::none:
             break;
     }
 
@@ -487,8 +447,8 @@ void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, boo
     if(m_Set_state) setState();
 }
 
-template void map::Mapper::drawRect<true> (Point, double, double, clr::RGB, bool, bool, RectAlignment);
-template void map::Mapper::drawRect<false>(Point, double, double, clr::RGB, bool, bool, RectAlignment);
+template void map::Mapper::drawRect<true> (Point, double, double, clr::RGB, bool, bool, Alignment);
+template void map::Mapper::drawRect<false>(Point, double, double, clr::RGB, bool, bool, Alignment);
 
 // template <>
 // void map::Mapper::drawRect<false>(Point center, double h, double w, clr::RGB color, bool filled, bool thick, RectAlignment alignment){
@@ -915,15 +875,30 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, double dt, clr::RGB color,
 
 
 
-void map::Mapper::plot(size_t(*func)(size_t), clr::RGB color, bool thick){
-    for (size_t i = 0; i < m_Size.height; i++)
-        for (size_t j = 0; j < m_Size.width; j++){
-            size_t value = (m_Size.height/2 - func(j - m_Size.width/2));
-            if (value <= i + thick and value >= i - thick){
-                auto &pixel = m_Map[i*m_Size.width + j];
-                if(color.depth > pixel.depth) pixel = color;
+void map::Mapper::plot(size_t(*func)(size_t), clr::RGB color, size_t thickness){
+    for (size_t j = 0; j < m_Size.width; ++j){
+        // size_t value = (func(int(j) - int(m_Size.width)/2) + m_Size.height/2);
+
+        const size_t value = func(j);
+
+
+
+        for(size_t y = std::max<size_t>(value - thickness, 0); y < std::min<size_t>(value + thickness, m_Size.height); ++y){
+            for(size_t x = std::max<size_t>(j - thickness, 0); x < std::min<size_t>(j + thickness, m_Size.width); ++x){
+                if(safePoint({x, y}) and Point::distSqrd({j, value}, {x, y}) <= std::pow(thickness/2., 2)){
+                    m_Map[y*m_Size.width + x] = color;
+                }
             }
         }
+
+
+        // bool safe = safePoint({j, value});
+        // if (){
+        //     auto &pixel = m_Map[value*m_Size.width + j];
+        //     // if(color.depth > pixel.depth) 
+        //     pixel = color;
+        // }
+    }
 
     if(m_Set_state) setState();
 }
@@ -935,7 +910,8 @@ void map::Mapper::plot(double(*func)(double, double), double(*res)(double, doubl
         for (size_t j = 0; j < m_Size.width; j++){
             if (abs(func(j - m_Size.width/2, m_Size.height/2 - i) - (res(j - m_Size.width/2, m_Size.height/2 - i))) <= 5){
                 auto &pixel = m_Map[i*m_Size.width + j];
-                if(color.depth > pixel.depth) pixel = color;
+                // if(color.depth > pixel.depth) 
+                pixel = color;
             }
         }
 
@@ -945,11 +921,12 @@ void map::Mapper::plot(double(*func)(double, double), double(*res)(double, doubl
 
 
 void map::Mapper::plot(bool (*func)(size_t x, size_t y), clr::RGB color){
-    for (size_t i = 0; i < m_Size.height; i++)
-        for (size_t j = 0; j < m_Size.width; j++){
+    for (size_t i = 0; i < m_Size.height; ++i)
+        for (size_t j = 0; j < m_Size.width; ++j){
             if (func(j, i)){
                 auto &pixel = m_Map[i*m_Size.width + j];
-                if(color.depth > pixel.depth) pixel = color;
+                // if(color.depth > pixel.depth) 
+                pixel = color;
             }
         }
 
@@ -1044,7 +1021,8 @@ void map::Mapper::rotate(double angle){
 
 void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int, const double), double seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
-    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
+
+    std::filesystem::create_directories(TEMP_DIR);
 
 
     std::clog << "Beginning Scene:\n";
@@ -1074,7 +1052,8 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
 
 void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, const double), double seconds){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
-    assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
+
+    std::filesystem::create_directories(TEMP_DIR);
 
 
     std::clog << "Beginning Scene:\n";
@@ -1088,7 +1067,7 @@ void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, 
         memcpy(m_Map, &temp[0], temp_size);
         // auto shape = provider(frame, frames, m_Delta);
         auto shape = provider(frame, frames, m_Delta);
-        draw(std::move(shape), 1);
+        draw(std::move(shape));
         if(!m_Set_state) setState();
         saveFrame();
         std::clog << frame << '/' << frames << '\n';
@@ -1109,28 +1088,37 @@ void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, 
 void map::Mapper::saveFrame(){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    const std::string command = "convert " PPM_OUTPUT_PATH + m_Filename + " " VIDEO_TEMP_PATH MANGLED_PNG(m_Current_frame);
+    using std::operator""s;
+
+    const std::string command = "magick "s + (PPMS_DIR / m_Filename).c_str() + " " + (TEMP_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
     std::system(command.c_str());
-    m_Current_frame++;
+
+    ++m_Current_frame;
 }
 
 
-void map::Mapper::render(const std::string& output_file) const {
+void map::Mapper::render() const {
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
+    using std::operator""s;
+
+
+    std::filesystem::create_directories(VIDS_DIR);
+    std::filesystem::create_directories(TEMP_DIR);
+
     std::string video_command =
-        "ffmpeg -framerate " + std::to_string(m_FPS) +
-        " -i " VIDEO_TEMP_PATH MANGLED "%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
-    
-    video_command += m_Sounds.size() ? VIDEO_TEMP_PATH MANGLED_MP4 : VIDEO_OUTPUT_PATH + output_file;
+        ("ffmpeg -framerate " + std::to_string(m_FPS) + " -i ") +
+        (TEMP_DIR / (MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
+
+    // are there any audios?
+    video_command += m_Sounds.size() ? TEMP_DIR / MANGLED_MP4 : VIDS_DIR / m_Filename_vid;
 
 	std::system(video_command.c_str());
 
     if(auto size = m_Sounds.size(); size){
 
-        // std::string audio_command = "ffmpeg -i " VIDEO_TEMP_PATH MANGLED_MP4;
         Command audio_command;
-        audio_command.addInput(VIDEO_TEMP_PATH MANGLED_MP4);
+        audio_command.addInput(TEMP_DIR / MANGLED_MP4);
 
         // getting unique sounds
         std::set<shapes::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
@@ -1138,7 +1126,7 @@ void map::Mapper::render(const std::string& output_file) const {
 
         // adding all the sounds to the command
         for(const auto &sound : sounds){
-            audio_command.addInput(AUDIO_INPUT_PATH + sound.filename);
+            audio_command.addInput(SOUNDS_DIR / sound.filename);
         }
 
 
@@ -1146,7 +1134,7 @@ void map::Mapper::render(const std::string& output_file) const {
         audio_command.startFilter();
 
         // applying the filters to every sound
-        for(size_t i = 0; i < size; ++i){
+        for(size_t i{}; i < size; ++i){
             // finding the index of the sound in the set
             size_t index = 1;
             for(const auto &sound : sounds){
@@ -1164,7 +1152,7 @@ void map::Mapper::render(const std::string& output_file) const {
 
             if(m_Sounds[i].first.speed - 1 > std::numeric_limits<double>::epsilon()) // speed != 1
                 audio_command.addSpeed(m_Sounds[i].first.speed);
-            
+
             if(m_Sounds[i].first.loop)
                 audio_command.addLoop();
         }
@@ -1175,7 +1163,7 @@ void map::Mapper::render(const std::string& output_file) const {
 
         audio_command.endFilter();
 
-        audio_command.addOutput(VIDEO_OUTPUT_PATH + output_file);
+        audio_command.addOutput(VIDS_DIR / m_Filename_vid);
 
 
         // std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
@@ -1187,33 +1175,35 @@ void map::Mapper::render(const std::string& output_file) const {
 
 void map::Mapper::clearFrames() const {
     assert(m_FPS > 0 && "FPS must be greater than 0!");
+    using std::operator""s;
 
-    std::system("rm " VIDEO_TEMP_PATH "*.png");
-    std::system(("rm " + (PPM_OUTPUT_PATH + m_Filename)).c_str());
+    std::system(("rm "s + (TEMP_DIR / "*.png").c_str()).c_str());
+    std::system(("rm "s + (PPMS_DIR / m_Filename).c_str()).c_str());
 
-    if(m_Sounds.size()) std::system("rm " VIDEO_TEMP_PATH MANGLED_MP4);
+    if(m_Sounds.size()) std::system(("rm " / TEMP_DIR / MANGLED_MP4).c_str());
 }
 
 
 // ----------------------- Operators ----------------------- //
 
-map::clr::RGB &map::Mapper::operator[](const Point& p){
+map::clr::RGB &map::Mapper::operator[](const Point& p) noexcept {
     return m_Map[size_t(p.y) * m_Size.width + size_t(p.x)];
+}
+
+map::clr::RGB &map::Mapper::operator[](size_t i) noexcept {
+    return m_Map[i];
 }
 
 
 map::clr::RGB &map::Mapper::at(const Point& p){
+    if(not safePoint(p)) throw std::out_of_range("Point out of range");
+
     return m_Map[size_t(p.y) * m_Size.width + size_t(p.x)];
 }
 
-
-map::clr::RGB &map::Mapper::operator[](size_t i){
-    assert(i < m_Size.height * m_Size.width);
-    return m_Map[i];
-}
-
 map::clr::RGB &map::Mapper::at(size_t i){
-    assert(i >= 0 && i < m_Size.height * m_Size.width);
+    if(i < 0 or i >= m_Size.height * m_Size.width) throw std::out_of_range("Index out of range");
+
     return m_Map[i];
 }
 
@@ -1234,12 +1224,19 @@ map::clr::RGB &map::Mapper::at(size_t i){
 // }
 
 
-map::clr::RGB *map::Mapper::begin(){
+map::clr::RGB *map::Mapper::begin() noexcept {
     return m_Map;
 }
 
+map::clr::RGB *map::Mapper::end() noexcept {
+    return m_Map + m_Size.height * m_Size.width;
+}
 
-map::clr::RGB *map::Mapper::end(){
+const map::clr::RGB *map::Mapper::cbegin() const noexcept {
+    return m_Map;
+}
+
+const map::clr::RGB *map::Mapper::cend() const noexcept {
     return m_Map + m_Size.height * m_Size.width;
 }
 
@@ -1247,11 +1244,14 @@ map::clr::RGB *map::Mapper::end(){
 /* --------------------------- Private Functions --------------------------- */
 
 void map::Mapper::setInfo(){
-    std::string fn = PPM_OUTPUT_PATH + m_Filename;
+    // Ensuring the directories exists
+    std::filesystem::create_directories(PPMS_DIR);
+
+    const auto fn = PPMS_DIR / m_Filename;
     std::ofstream fout(fn, std::ios::trunc);
 
     assert(fout.is_open());
-    assert(areValid(m_Filename, m_PType, m_Size.height, m_Size.width, m_Max));
+    assert(areValid(m_Filename.c_str(), m_PType, m_Size.height, m_Size.width, m_Max));
 
 
     fout << m_PType << std::endl;
@@ -1263,9 +1263,9 @@ void map::Mapper::setInfo(){
 
 
 void map::Mapper::setState(){
-
     setInfo();
-    std::string fn = PPM_OUTPUT_PATH + m_Filename;
+
+    const auto fn = PPMS_DIR / m_Filename;
     std::ofstream fout(fn, std::ios::app);
 
     for(size_t i = 0;  i < m_Size.height; ++i){
@@ -1279,64 +1279,62 @@ void map::Mapper::setState(){
 
 
 void map::Mapper::resetFile(){
-    std::clog << "RESET!\n";
     if(m_Map) delete[] m_Map;
 
-    std::clog << "Width: " << m_Size.width << '\n';
-    std::clog << "Height: " << m_Size.height << '\n';
     m_Map = new clr::RGB[m_Size.height * m_Size.width];
+
     fill();
 }
 
 
 
-void map::Mapper::loadFile(){
-    std::clog << "LOAD!\n";
-    std::string P; // P type
-    std::string h; // height
-    std::string w; // width
-    std::string M; // mode
+// void map::Mapper::loadFile(){
+//     std::clog << "LOAD!\n";
+//     std::string P; // P type
+//     std::string h; // height
+//     std::string w; // width
+//     std::string M; // mode
     
-    std::string filename = PPM_OUTPUT_PATH + m_Filename;
-    std::cerr << filename << std::endl;
-    std::ifstream fin(filename);
-    assert(fin.is_open());
+//     std::string filename = PPM_OUTPUT_PATH + m_Filename;
+//     std::cerr << filename << std::endl;
+//     std::ifstream fin(filename);
+//     assert(fin.is_open());
 
-    std::string spaces;
+//     std::string spaces;
 
-    std::getline(fin, P);
-    std::clog << "P: " << P << std::endl;
-    fin >> w;
-    std::clog << "W: " << w << std::endl;
-    fin >> h;
-    std::clog << "H: " << h << std::endl;
-    fin >> M;
-    std::clog << "M: " << M << std::endl;
-
-
-    assert(areValidString(P, h, w, M));
+//     std::getline(fin, P);
+//     std::clog << "P: " << P << std::endl;
+//     fin >> w;
+//     std::clog << "W: " << w << std::endl;
+//     fin >> h;
+//     std::clog << "H: " << h << std::endl;
+//     fin >> M;
+//     std::clog << "M: " << M << std::endl;
 
 
-    m_PType = P;
-    m_Size.height = std::stoul(h);
-    m_Size.width = std::stoul(w);
-    m_Max = std::stoul(M);
+//     assert(areValidString(P, h, w, M));
 
-    int r;
-    int g;
-    int b;
-    std::string garbage;
+
+//     m_PType = P;
+//     m_Size.height = std::stoul(h);
+//     m_Size.width = std::stoul(w);
+//     m_Max = std::stoul(M);
+
+//     int r;
+//     int g;
+//     int b;
+//     std::string garbage;
     
-    if(m_Map) delete[] m_Map;
-    m_Map = new clr::RGB[m_Size.height*m_Size.width];
+//     if(m_Map) delete[] m_Map;
+//     m_Map = new clr::RGB[m_Size.height*m_Size.width];
 
-    for(size_t i = 0; i < m_Size.height; i++){
-        for(size_t j = 0; j < m_Size.width; j++){
-            fin >> r >> g >> b;
-            m_Map[i*m_Size.width + j] = clr::RGB(r, g, b);
-        }
-        std::getline(fin, garbage);
-    }
+//     for(size_t i = 0; i < m_Size.height; i++){
+//         for(size_t j = 0; j < m_Size.width; j++){
+//             fin >> r >> g >> b;
+//             m_Map[i*m_Size.width + j] = clr::RGB(r, g, b);
+//         }
+//         std::getline(fin, garbage);
+//     }
 
-    // fin.close(); // RAII takes care of it
-}
+//     // fin.close(); // RAII takes care of it
+// }

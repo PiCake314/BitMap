@@ -18,19 +18,19 @@ map::shapes::Circle::Circle(Point p, int r, Data &&d)
         //     center = {width - r, height - r};
         //     break;
         case Alignment::center:
-            center = {width/2., height/2.};
+            center = {Config::width/2., Config::height/2.};
             break;
         case Alignment::left:
-            center = {double(r), height/2.};
+            center = {double(r), Config::height/2.};
             break;
         case Alignment::right:
-            center = {double(width - size_t(r)), height/2.};
+            center = {double(Config::width - size_t(r)), Config::height/2.};
             break;
         case Alignment::top:
-            center = {width/2. , double(r)};
+            center = {Config::width/2. , double(r)};
             break;
         case Alignment::bottom:
-            center = {width/2., double(height - size_t(r))};
+            center = {Config::width/2., double(Config::height - size_t(r))};
             break;
         case Alignment::none:
             center = p;

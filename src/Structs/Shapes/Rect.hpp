@@ -12,15 +12,15 @@ namespace  map::shapes{
             clr::RGB color{};
             bool filled{false};
             int thickness{1};
-            map::RectAlignment rectAlignment{RectAlignment::none};
+            map::Alignment alignment{Alignment::none};
         };
 
 
-        int width_;
-        int height_;
-        map::RectAlignment rectAlignment;
+        size_t width_;
+        size_t height_;
+        map::Alignment alignment;
 
-        Rect(Point p, int w, int h, Data &&);
+        Rect(Point p, size_t w, size_t h, Data &&);
 
         protected:
         void draw(Mapper *m) const override;

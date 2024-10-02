@@ -11,64 +11,67 @@ namespace map{
         double x{};
         double y{};
 
-        constexpr Point() {}
-        constexpr explicit Point(double i) : x(i), y(i) {}
-        constexpr Point(double x_, double y_) : x(x_), y(y_) {}
+        constexpr Point() noexcept {};
+        constexpr explicit Point(double i) noexcept : x(i), y(i) {}
+        constexpr Point(double x_, double y_) noexcept : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
-        constexpr Point(std::integral auto x_, std::integral auto y_) : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
+        template <typename X, typename Y>
+        requires ((std::integral<X> or std::floating_point<X>)
+             and (std::integral<Y> or std::floating_point<Y>))
+        constexpr Point(X x_, Y y_) noexcept : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
 
-        [[nodiscard]] constexpr Point operator+(const Point& p) const {
+        [[nodiscard]] constexpr Point operator+(const Point& p) const noexcept {
             return {x + p.x, y + p.y};
         }
 
-        [[nodiscard]] constexpr Point operator-(const Point& p) const {
+        [[nodiscard]] constexpr Point operator-(const Point& p) const noexcept {
             return {x - p.x, y - p.y};
         }
 
-        [[nodiscard]] constexpr Point operator*(double f) const {
+        [[nodiscard]] constexpr Point operator*(double f) const noexcept {
             return {x * f, y * f};
         }
 
-        [[nodiscard]] constexpr Point operator/(double f) const {
+        [[nodiscard]] constexpr Point operator/(double f) const noexcept {
             return {x / f, y / f};
         }
 
-        constexpr Point operator+=(const Point& p){
+        constexpr Point operator+=(const Point& p) noexcept {
             return *this = *this + p;
         }
 
-        constexpr Point operator-=(const Point& p){
+        constexpr Point operator-=(const Point& p) noexcept {
             return *this = *this - p;
         }
 
-        constexpr Point operator*=(double f){
+        constexpr Point operator*=(double f) noexcept {
             return *this = *this * f;
         }
 
-        constexpr Point operator/=(double f){
+        constexpr Point operator/=(double f) noexcept {
             return *this = *this / f;
         }
 
-        constexpr bool operator==(const Point& p) const {
+        constexpr bool operator==(const Point& p) const noexcept {
             return (x - p.x < std::numeric_limits<double>::epsilon()) and (y - p.y < std::numeric_limits<double>::epsilon());
         }
 
         // constexpr auto operator<=>(const Point&) const = default; // un-needed
 
-        [[nodiscard]] constexpr Point abs() const {
+        [[nodiscard]] constexpr Point abs() const noexcept {
             return {std::abs(x), std::abs(y)};
         }
 
-        [[nodiscard]] constexpr double magSqrd() const {
+        [[nodiscard]] constexpr double magSqrd() const noexcept {
             return x * x + y * y;
         }
 
-        [[nodiscard]] constexpr double mag() const {
+        [[nodiscard]] constexpr double mag() const noexcept {
             return std::sqrt(magSqrd());
         }
 
-        constexpr void normalize(){
+        constexpr void normalize() noexcept {
             double m = mag(); // m is never < 0
             if(m < std::numeric_limits<double>::epsilon()){
                 x /= m;
@@ -76,36 +79,36 @@ namespace map{
             }
         }
 
-        [[nodiscard]] constexpr Point normalized() const {
+        [[nodiscard]] constexpr Point normalized() const noexcept {
             Point p = *this;
             p.normalize();
             return p;
         }
 
-        [[nodiscard]] constexpr Point max(const Point& p) const {
+        [[nodiscard]] constexpr Point max(const Point& p) const noexcept {
             return {std::max(x, p.x), std::max(y, p.y)};
         }
 
-        [[nodiscard]] constexpr Point min(const Point& p) const {
+        [[nodiscard]] constexpr Point min(const Point& p) const noexcept {
             return {std::min(x, p.x), std::min(y, p.y)};
         }
 
-        [[nodiscard]] constexpr double distSqrd(const Point& p) const {
+        [[nodiscard]] constexpr double distSqrd(const Point& p) const noexcept {
             return std::pow(x - p.x, 2) + std::pow(y - p.y, 2);
         }
 
-        [[nodiscard]] constexpr double dist(const Point& p) const {
+        [[nodiscard]] constexpr double dist(const Point& p) const noexcept {
             return std::sqrt(distSqrd(p));
         }
 
         // why..
-        // static constexpr double dist(const Point& a, const Point& b){
-        //     return a.dist(b);
-        // }
+        static constexpr double dist(const Point& a, const Point& b) noexcept {
+            return a.dist(b);
+        }
 
-        // static constexpr double distSqrd(const Point& a, const Point& b){
-        //     return a.distSqrd(b);
-        // }
+        static constexpr double distSqrd(const Point& a, const Point& b) noexcept {
+            return a.distSqrd(b);
+        }
 
         constexpr friend Point operator * (const double matrix[2][2], const Point& p){
             return {
