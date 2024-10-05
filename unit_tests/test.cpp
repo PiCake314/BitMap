@@ -7,17 +7,10 @@
 #include <cassert>
 
 
-template <typename T>
-void test(std::vector<T> tests){
-    for(const auto &test : tests)
-        assert(test());
-}
-
-
 int main(){
 
     std::vector<bool(*)()> tests = {{
-        []() -> bool {
+        [] -> bool {
             using namespace map;
             using namespace map::shapes;
 
@@ -28,7 +21,7 @@ int main(){
             return m[Point{0, 0}] == clr::WHITE;
         },
 
-        []() -> bool {
+        [] -> bool {
             using namespace map;
             using namespace map::shapes;
 
@@ -37,7 +30,7 @@ int main(){
             return m.getSize() == Size{500, 500};
         },
 
-        []() -> bool {
+        [] -> bool {
             using namespace map;
             using namespace map::shapes;
 
@@ -48,5 +41,9 @@ int main(){
         }
     }};
 
-    test(tests);
+
+
+
+    for(const auto &test : tests)
+        assert(test());
 }
