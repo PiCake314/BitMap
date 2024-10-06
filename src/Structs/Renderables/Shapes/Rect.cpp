@@ -1,6 +1,6 @@
 #include "Rect.hpp"
 
-map::shapes::Rect::Rect(Point p, size_t w, size_t h, Data &&d)
+map::renderables::shapes::Rect::Rect(Point p, size_t w, size_t h, Data &&d)
 : Shape( p, d.color, d.filled, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
 width_(w), height_(h), alignment(d.alignment)
 {
@@ -28,10 +28,10 @@ width_(w), height_(h), alignment(d.alignment)
     // }
 }
 
-void map::shapes::Rect::draw(Mapper *m) const {
+void map::renderables::shapes::Rect::draw(Mapper *m) const {
     m->drawRect<true>(center, height_, width_, color, filled, thickness, alignment);
 }
 
-map::shapes::ShapePtr map::shapes::Rect::clone() const {
+map::renderables::RenderablePtr map::renderables::shapes::Rect::clone() const {
     return std::make_unique<Rect>(*this);
 }

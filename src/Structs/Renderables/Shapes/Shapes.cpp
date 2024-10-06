@@ -5,55 +5,58 @@
 
 
 
-map::shapes::Shape::Shape(map::Point p, map::clr::RGB c, bool f, int t, std::vector<map::Point> pts)
-: center(p), color(c), filled{f}, thickness(t), points(pts) {
+map::renderables::shapes::Shape::Shape(map::Point p, map::clr::RGB c, bool f, int t, std::vector<map::Point> pts)
+: Renderable{p}, color(c), filled{f}, thickness(t), points(pts)
+{
     color.depth = 1;
 }
 
-map::shapes::Shape::Shape(const map::shapes::Shape& other) = default;
+// map::renderables::shapes::Shape::Shape(const map::renderables::shapes::Shape& other) = default;
 
-map::shapes::Shape::Shape(map::shapes::Shape&& other) noexcept = default;
+// map::renderables::shapes::Shape::Shape(map::renderables::shapes::Shape&& other) noexcept = default;
 
-map::shapes::Shape& map::shapes::Shape::operator=(const map::shapes::Shape& other) = default;
+// map::renderables::shapes::Shape& map::renderables::shapes::Shape::operator=(const map::renderables::shapes::Shape& other) = default;
 
-map::shapes::Shape& map::shapes::Shape::operator=(map::shapes::Shape&& other) noexcept = default;
+// map::renderables::shapes::Shape& map::renderables::shapes::Shape::operator=(map::renderables::shapes::Shape&& other) noexcept = default;
 
 
-void map::shapes::Shape::rotate(double angle){
+void map::renderables::shapes::Shape::rotate(double angle){
     for(auto& point : points){
         point.rotate(angle, center);
     }
 }
 
 
-void map::shapes::Shape::rotate(double angle, const map::Point& cent){
+void map::renderables::shapes::Shape::rotate(double angle, const map::Point& cent){
     for(auto& point : points){
         point.rotate(angle, cent);
     }
 }
 
 
-[[nodiscard]] map::shapes::ShapePtr map::shapes::Shape::rotated(double angle) const {
-    // map::shapes::ShapePtr s = std::make_unique<map::shapes::Shape>(*this); // apparently this is a bug
-    map::shapes::ShapePtr s = this->clone();
-    s->rotate(angle);
+[[nodiscard]] map::renderables::RenderablePtr map::renderables::shapes::Shape::rotated(double angle) const {
+    // map::renderables::shapes::ShapePtr s = std::make_unique<map::renderables::shapes::Shape>(*this); // apparently this is a bug
+    map::renderables::RenderablePtr s = this->clone();
+    static_cast<Shape*>(s.get())->rotate(angle);
+    // s->rotate(angle);
     return s;
 }
 
-void map::shapes::Shape::shift(const map::Point& p){
+void map::renderables::shapes::Shape::shift(const map::Point& p){
     center += p;
     std::ranges::for_each(points, [p](Point &pt){pt += p;});
 }
 
-[[nodiscard]] map::shapes::ShapePtr map::shapes::Shape::shifted(const Point& p) const {
-    // map::shapes::ShapePtr s = std::make_unique<map::shapes::Shape>(*this);
-    map::shapes::ShapePtr s = this->clone();
-    s->shift(p);
+[[nodiscard]] map::renderables::RenderablePtr map::renderables::shapes::Shape::shifted(const Point& p) const {
+    // map::renderables::shapes::ShapePtr s = std::make_unique<map::renderables::shapes::Shape>(*this);
+    map::renderables::RenderablePtr s = this->clone();
+    static_cast<Shape*>(s.get())->shift(p);
+    // s->shift(p);
     return s;
 }
 
 
-[[nodiscard]] std::vector<std::pair<size_t, size_t>> map::shapes::Shape::getLocks(Size size, const size_t root_pix_per_lock) const {
+[[nodiscard]] std::vector<std::pair<size_t, size_t>> map::renderables::shapes::Shape::getLocks(Size size, const size_t root_pix_per_lock) const {
     std::vector<std::pair<size_t, size_t>> lockIndices;
 
     if(points.empty()) return lockIndices;
@@ -109,11 +112,11 @@ void map::shapes::Shape::shift(const map::Point& p){
     return lockIndices;
 }
 
-void map::shapes::Shape::setDepth(int depth){ color.depth = depth; }
+void map::renderables::shapes::Shape::setDepth(int depth) noexcept { color.depth = depth; }
 
-[[nodiscard]] int map::shapes::Shape::getDepth() const { return color.depth; }
+[[nodiscard]] int map::renderables::shapes::Shape::getDepth() const noexcept { return color.depth; }
 
-[[nodiscard]] bool map::shapes::Shape::onBorder(const map::Point& p) const {
+[[nodiscard]] bool map::renderables::shapes::Shape::onBorder(const map::Point& p) const {
     if (points.size() < 2) return points.empty() ? false : points[0] == p;
 
 
@@ -129,7 +132,7 @@ void map::shapes::Shape::setDepth(int depth){ color.depth = depth; }
     return false;
 }
 
-[[nodiscard]] bool map::shapes::Shape::insideShape(const map::Point& p) const {
+[[nodiscard]] bool map::renderables::shapes::Shape::insideShape(const map::Point& p) const {
     if(points.size() < 3){
         if(points.size() == 1) return points[0] == p;
 
@@ -167,6 +170,6 @@ void map::shapes::Shape::setDepth(int depth){ color.depth = depth; }
 
 
 
-map::shapes::Shape::~Shape() = default;
+// map::renderables::shapes::Shape::~Shape() = default;
 
 

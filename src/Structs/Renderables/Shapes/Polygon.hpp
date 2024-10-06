@@ -2,7 +2,7 @@
 
 #include "Shapes.hpp"
 
-namespace map::shapes{
+namespace map::renderables::shapes{
     
     struct Polygon final : Shape{
 
@@ -17,8 +17,9 @@ namespace map::shapes{
 
         Polygon(std::vector<Point> pts, Data &&);
 
+        RenderablePtr clone() const override;
+
         protected:
         void draw(Mapper *m) const override;
-        ShapePtr clone() const override;
     };
 }

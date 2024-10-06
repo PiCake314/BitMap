@@ -19,22 +19,22 @@ namespace map{
             // blue(0)
             // {}
 
-            constexpr explicit RGB(int v) noexcept :
-            red(uint8_t(std::clamp(v, 0, 255))),
-            green(uint8_t(std::clamp(v, 0, 255))),
-            blue(uint8_t(std::clamp(v, 0, 255)))
+            constexpr explicit RGB(size_t v) noexcept :
+            red(uint8_t(std::clamp<size_t>(v, 0, 255))),
+            green(uint8_t(std::clamp<size_t>(v, 0, 255))),
+            blue(uint8_t(std::clamp<size_t>(v, 0, 255)))
             {}
 
-            constexpr RGB(int r, int g, int b) noexcept :
-            red(uint8_t(std::clamp(r, 0, 255))),
-            green(uint8_t(std::clamp(g, 0, 255))),
-            blue(uint8_t(std::clamp(b, 0, 255)))
+            constexpr RGB(size_t r, size_t g, size_t b) noexcept :
+            red(uint8_t(std::clamp<size_t>(r, 0, 255))),
+            green(uint8_t(std::clamp<size_t>(g, 0, 255))),
+            blue(uint8_t(std::clamp<size_t>(b, 0, 255)))
             {}
 
-            constexpr RGB(const map::Point3D& p) noexcept:
-            red(uint8_t(std::clamp(int(p.x), 0, 255))),
-            green(uint8_t(std::clamp(int(p.y), 0, 255))),
-            blue(uint8_t(std::clamp(int(p.z), 0, 255)))
+            explicit constexpr RGB(const map::Point3D& p) noexcept:
+            red(uint8_t(std::clamp<size_t>(size_t(p.x), 0, 255))),
+            green(uint8_t(std::clamp<size_t>(size_t(p.y), 0, 255))),
+            blue(uint8_t(std::clamp<size_t>(size_t(p.z), 0, 255)))
             {}
 
             constexpr void invert() noexcept {
@@ -44,7 +44,8 @@ namespace map{
             }
 
             constexpr RGB inverted() const noexcept {
-                return RGB{255 - red, 255 - green, 255 - blue};
+                RGB rgb = *this;
+                return rgb.invert(), rgb;
             }
 
             constexpr bool operator==(const RGB& rgb) const noexcept = default;
@@ -54,7 +55,11 @@ namespace map{
             }
 
             static RGB RAND() noexcept {
-                return RGB{std::rand() % 255, std::rand() % 255, std::rand() % 255};
+                return RGB{
+                    static_cast<size_t>(std::rand() % 255),
+                    static_cast<size_t>(std::rand() % 255),
+                    static_cast<size_t>(std::rand() % 255)
+                };
             }
         };
 

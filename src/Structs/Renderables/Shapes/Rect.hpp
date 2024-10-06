@@ -2,7 +2,7 @@
 
 #include "Shapes.hpp"
 
-namespace  map::shapes{
+namespace  map::renderables::shapes{
 
     struct Rect final : Shape{
 
@@ -22,8 +22,9 @@ namespace  map::shapes{
 
         Rect(Point p, size_t w, size_t h, Data &&);
 
+        RenderablePtr clone() const override;
+
         protected:
         void draw(Mapper *m) const override;
-        ShapePtr clone() const override;
     };
 }

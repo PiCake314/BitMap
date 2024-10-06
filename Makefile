@@ -1,4 +1,4 @@
-DEP = mains/main.cpp src/Structs/Shapes/*.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
+DEP = mains/main.cpp  src/Structs/Renderables/Shapes/*.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
 
 CC = g++
 

@@ -2,39 +2,42 @@
 
 #include "Shapes.hpp"
 
-namespace map::shapes{
+namespace map::renderables::shapes{
 
-    struct Circle final : Shape{
+    struct Ellipse final : Shape{
 
         // use for named arguments
         struct Data{
             // DO NOT ACCESS THESE DIRECTLY
             clr::RGB color{};
-            bool filled{true};
+            bool filled{false};
             bool inverted{false};
             int thickness{1};
             map::Alignment alignment{map::Alignment::none};
         };
 
 
-        int radius;
+        int r1;
+        int r2;
         bool inverted;
         map::Alignment alignment;
 
-        Circle(Point p, int r, Data && = Data{.color = clr::RGB{}, .filled = true, .inverted = false, .thickness = 1, .alignment = map::Alignment::none});
+        /**
+         * @param r2: negative values will result in them being the same as r1.
+        */
+        Ellipse(Point p, int r1, int r2, Data &&);
 
         void rotate(double angle) override;
 
-        // [[nodiscard]] ShapePtr rotated(double angle) const override;
+        [[nodiscard]] RenderablePtr rotated(double angle) const override;
 
         [[nodiscard]] std::vector<std::pair<size_t, size_t>> getLocks(Size, const size_t) const override;
 
         [[nodiscard]] bool onBorder(const Point&) const override;
 
-        // [[nodiscard]] bool insideShape(const Point&) const override;
+        RenderablePtr clone() const override;
 
         protected:
         void draw(Mapper *m) const override;
-        ShapePtr clone() const override;
     };
 }

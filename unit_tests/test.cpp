@@ -12,7 +12,7 @@ int main(){
     std::vector<bool(*)()> tests = {{
         [] -> bool {
             using namespace map;
-            using namespace map::shapes;
+            using namespace map::renderables::shapes;
 
             Mapper m("test.ppm", {500, 500});
             m.noSet();
@@ -23,7 +23,7 @@ int main(){
 
         [] -> bool {
             using namespace map;
-            using namespace map::shapes;
+            using namespace map::renderables::shapes;
 
             Mapper m("test.ppm", {500, 500});
 
@@ -32,7 +32,7 @@ int main(){
 
         [] -> bool {
             using namespace map;
-            using namespace map::shapes;
+            using namespace map::renderables::shapes;
 
             Mapper m("test.ppm", {500, 500});
 

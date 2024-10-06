@@ -1,7 +1,7 @@
 #include "Line.hpp"
 
 
-map::shapes::Line::Line(Point c, int len, double angl, Data &&d)
+map::renderables::shapes::Line::Line(Point c, int len, double angl, Data &&d)
 : Shape(c, d.color, d.thickness, {}), length(len), angle(angl),
 m_start({center.x - length/2 * cos(angle), center.y - length/2 * sin(angle)}),
 m_end({center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)})
@@ -11,7 +11,7 @@ m_end({center.x + length/2 * cos(angle), center.y + length/2 * sin(angle)})
 }
 
 
-map::shapes::Line::Line(Point s, Point e, Data &&d)
+map::renderables::shapes::Line::Line(Point s, Point e, Data &&d)
 : Shape({(s.x + e.x)/2, (s.y + e.y)/2}, d.color, d.thickness, {}),
 length(int(s.dist(e))),
 angle(std::atan2(e.y - s.y, e.x - s.x)),
@@ -22,17 +22,17 @@ m_start(s), m_end(e)
 }
 
 
-map::Point map::shapes::Line::start() const {
+map::Point map::renderables::shapes::Line::start() const {
     return points.at(0);
 }
 
 
-map::Point map::shapes::Line::end() const {
+map::Point map::renderables::shapes::Line::end() const {
     return points.at(1);
 }
 
 
-bool map::shapes::Line::on(Point p) const {
+bool map::renderables::shapes::Line::on(Point p) const {
     const Point p1 = start();
     const Point p2 = end();
 
@@ -49,10 +49,10 @@ bool map::shapes::Line::on(Point p) const {
 }
 
 
-void map::shapes::Line::draw(Mapper *m) const {
+void map::renderables::shapes::Line::draw(Mapper *m) const {
     m->drawLine<true>(start(), end(), color, thickness);
 }
 
-map::shapes::ShapePtr map::shapes::Line::clone() const {
+map::renderables::RenderablePtr map::renderables::shapes::Line::clone() const {
     return std::make_unique<Line>(*this);
 }

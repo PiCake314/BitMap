@@ -2,7 +2,7 @@
 
 #include "Shapes.hpp"
 
-namespace map::shapes{
+namespace map::renderables::shapes{
 
     struct Triangle final : Shape{
 
@@ -26,8 +26,9 @@ namespace map::shapes{
 
         // [[nodiscard]] ShapePtr shifted(const Point& p) const override;
 
+        RenderablePtr clone() const override;
+
         protected:
         void draw(Mapper *m) const override;
-        ShapePtr clone() const override;
     };
 }

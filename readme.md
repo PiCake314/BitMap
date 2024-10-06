@@ -41,10 +41,10 @@ Make sure you have them installed before using Mapper.
     ```cpp
     m.drawCircle({}, 70, map::clr::RED, true, false, 2, map::Alignment::center);
     ```
-    As you can see, it can be hard to decipher what each parameter means. So, alternatively, you can create a `map::shapes::Circle` object and past it to the generic `map::Mapper::draw` function (this is the prefered way):
+    As you can see, it can be hard to decipher what each parameter means. So, alternatively, you can create a `map::renderables::shapes::Circle` object and past it to the generic `map::Mapper::draw` function (this is the prefered way):
 
     ```cpp
-    auto circle = map::shapes::Circle({}, 70, {.color = map::clr::RED, .alignment = map::Alignment::center});
+    auto circle = map::renderables::shapes::Circle({}, 70, {.color = map::clr::RED, .alignment = map::Alignment::center});
     m.draw(&circle);
     ```
 
@@ -76,7 +76,7 @@ Make sure you have them installed before using Mapper.
         m.drawLine(points[i], points[(i + 2) % 5], map::clr::RGB{245, 191, 79});
     }
     ```
-    Again, not very readable, so let's rewrite this using `map::shapes::Line` instead:
+    Again, not very readable, so let's rewrite this using `map::renderables::shapes::Line` instead:
 
     ```cpp
     std::vector<map::Point> points;
@@ -86,7 +86,7 @@ Make sure you have them installed before using Mapper.
         points[i] += {width / 2, height / 2};
     }
 
-    std::vector<map::shapes::Line> lines;
+    std::vector<map::renderables::shapes::Line> lines;
     for(int i{}; i < 5; ++i){
         lines.push_back({points[i], points[(i + 2) % 5], {.color = {245, 191, 79}}});
     }
@@ -98,15 +98,15 @@ Make sure you have them installed before using Mapper.
 
     ```
     
-    The `map::Mapper::draw` function can take a `std::vector<map::shapes::ShapePtr`>. That, combined with a little bit of refactoring, we get this:
+    The `map::Mapper::draw` function can take a `std::vector<map::renderables::shapes::ShapePtr`>. That, combined with a little bit of refactoring, we get this:
     ```cpp
-    using LineData = map::shapes::Line::Data;
+    using LineData = map::renderables::shapes::Line::Data;
 
-    std::vector<map::shapes::ShapePtr> lines;
+    std::vector<map::renderables::shapes::ShapePtr> lines;
     for(int i{}; i < 5; ++i){
         int i2 = (i + 2) % 5;
         lines.push_back(
-            std::make_unique<map::shapes::Line>(
+            std::make_unique<map::renderables::shapes::Line>(
                 map::Point{cos(2 * M_PI * i / 5), sin(2 * M_PI * i / 5)} * 100 + map::Point{width / 2, height / 2},
                 map::Point{cos(2 * M_PI * i2 / 5), sin(2 * M_PI * i2 / 5)} * 100 + map::Point{width / 2, height / 2},
                 LineData{.color = {245, 191, 79}}
@@ -117,7 +117,7 @@ Make sure you have them installed before using Mapper.
     m.draw(lines);
     ```
 
-    This is better than before. But it's stil a hassle to do all the `std::make_unique` calls ourselves. Instead of all of this, there is a dedicated `map::shapes::Polygon` class that we can use:
+    This is better than before. But it's stil a hassle to do all the `std::make_unique` calls ourselves. Instead of all of this, there is a dedicated `map::renderables::shapes::Polygon` class that we can use:
     ```cpp
     std::vector<map::Point> points;
     for(int i{}, j{}; i < 5; ++i, j += 2){
@@ -126,7 +126,7 @@ Make sure you have them installed before using Mapper.
         points[i] += {width / 2, height / 2};
     }
 
-    map::shapes::Polygon star{points, {.color = {245, 191, 79}}};
+    map::renderables::shapes::Polygon star{points, {.color = {245, 191, 79}}};
 
     m.draw(&star);
     ```
@@ -146,7 +146,7 @@ Make sure you have them installed before using Mapper.
         points.push_back({int(x * 100 + width / 2), int(y * 100 + height / 2)});
     }
 
-    map::shapes::Polygon star{points, {.color = {245, 191, 79}, .filled = true}};
+    map::renderables::shapes::Polygon star{points, {.color = {245, 191, 79}, .filled = true}};
 
     m.draw(&star);
     ```
@@ -268,14 +268,16 @@ Make sure you have them installed before using Mapper.
 \
 \
 
-# TODO:
+# TODO: ordered by priority
+- [ ] Add image
+- [ ] Implement builder pattern for creating shapes
+- [ ] Implement multiple arg passing for Alignment using pipe '|'
+- [ ] Implement `_thick` and similar UDLs for strongly typed shape parameters
 - [x] Fix readme IoI
 - [x] Fix shape includes in mapper header file
 - [x] Implement multi-threading
 - [x] Implement triangle
 - [x] Implement complex polygon
 - [x] Add text
-- [ ] Add image
-- [ ] Implement multiple arg passing for Alignment using pipe '|'
 - [x] Deprecate unused functions/enums/structs
-- [ ] Implement builder pattern for command creation for FFMPEG
+- [x] Implement builder pattern for command creation for FFMPEG

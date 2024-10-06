@@ -3,14 +3,14 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include "../Structs/Shapes/Shapes.hpp"
+#include "../Structs/Renderables/Shapes/Shapes.hpp"
 
 namespace map::util{
 
     // template <typename T>
     class ThreadSafeQueue{
     private:
-        std::queue<shapes::ShapePtr> queue;
+        std::queue<renderables::RenderablePtr> queue;
         mutable std::mutex mutex;
         std::condition_variable cv;
         inline static int num_shapes = 0;
@@ -20,7 +20,7 @@ namespace map::util{
 
         ThreadSafeQueue() = default;
 
-        ThreadSafeQueue(std::vector<shapes::ShapePtr> &&items){
+        ThreadSafeQueue(std::vector<renderables::RenderablePtr> &&items){
             for(auto& item : items){
                 // item->depth = ++num_shapes;
                 item->setDepth(++num_shapes);
@@ -38,13 +38,13 @@ namespace map::util{
 
         ~ThreadSafeQueue() = default;
 
-        void enqueue(shapes::ShapePtr item) {
+        void enqueue(renderables::RenderablePtr item) {
             std::lock_guard<std::mutex> lock{mutex};
             queue.push(std::move(item));
             cv.notify_one();
         }
 
-        shapes::ShapePtr dequeue() {
+        renderables::RenderablePtr dequeue() {
             std::unique_lock<std::mutex> lock{mutex};
             cv.wait(lock, [this] { return !queue.empty(); });
             auto frontItem = std::move(queue.front());

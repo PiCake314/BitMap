@@ -1,8 +1,8 @@
-#include "Ellipse.hpp"
+#include "Circle.hpp"
 
 
-map::shapes::Ellipse::Ellipse(Point p, int radius_1, int radius_2, Data &&d)
-: Shape(p, d.color, d.filled, d.thickness), r1(radius_1), r2(radius_2), inverted(d.inverted), alignment(d.alignment)
+map::renderables::shapes::Circle::Circle(Point p, int r, Data &&d)
+: Shape(p, d.color, d.filled, d.thickness), radius(r), inverted(d.inverted), alignment(d.alignment)
 {
     switch(alignment){
         // case Alignment::top_left:
@@ -21,16 +21,16 @@ map::shapes::Ellipse::Ellipse(Point p, int radius_1, int radius_2, Data &&d)
             center = {Config::width/2., Config::height/2.};
             break;
         case Alignment::left:
-            center = {double(r1), Config::height/2.};
+            center = {double(r), Config::height/2.};
             break;
         case Alignment::right:
-            center = {double(Config::width - size_t(r1)), Config::height/2.};
+            center = {double(Config::width - size_t(r)), Config::height/2.};
             break;
         case Alignment::top:
-            center = {Config::width/2. , double(r2)};
+            center = {Config::width/2. , double(r)};
             break;
         case Alignment::bottom:
-            center = {Config::width/2., double(Config::height - size_t(r2))};
+            center = {Config::width/2., double(Config::height - size_t(r))};
             break;
         case Alignment::none:
             center = p;
@@ -39,27 +39,23 @@ map::shapes::Ellipse::Ellipse(Point p, int radius_1, int radius_2, Data &&d)
 }
 
 
-void map::shapes::Ellipse::rotate([[maybe_unused]] double angle) {
-    throw std::runtime_error("Ellipse::rotate() is not implemented");
-}
+void map::renderables::shapes::Circle::rotate(double) {}
 
-// map::shapes::ShapePtr map::shapes::Ellipse::rotated(double angle) const {
-//     throw std::runtime_error("Ellipse::rotated() is not implemented");
 
-//     return std::make_unique<Ellipse>(*this);
-// }
+map::renderables::RenderablePtr map::renderables::shapes::Circle::rotated(double angle) const { return std::make_unique<Circle>(*this); }
 
-std::vector<std::pair<size_t, size_t>> map::shapes::Ellipse::getLocks(Size size, const size_t root_pix_per_lock) const {
+
+std::vector<std::pair<size_t, size_t>> map::renderables::shapes::Circle::getLocks(Size size, const size_t root_pix_per_lock) const {
     std::vector<std::pair<size_t, size_t>> locks;
 
     const size_t x = size_t(center.x);
     const size_t y = size_t(center.y);
     const size_t half_thickness = size_t(thickness/2);
 
-    const size_t x1 = std::max(x - size_t(r1) - half_thickness, size_t(0));
-    const size_t x2 = std::min(x + size_t(r1) + half_thickness, size.width -1);
-    const size_t y1 = std::max(y - size_t(r2) - half_thickness, size_t(0));
-    const size_t y2 = std::min(y + size_t(r2) + half_thickness, size.height -1);
+    const size_t x1 = std::max(x - size_t(radius) - half_thickness, size_t(0));
+    const size_t x2 = std::min(x + size_t(radius) + half_thickness, size.width -1);
+    const size_t y1 = std::max(y - size_t(radius) - half_thickness, size_t(0));
+    const size_t y2 = std::min(y + size_t(radius) + half_thickness, size.height -1);
     
     if(filled){
         const size_t x1_lock = x1 / root_pix_per_lock;
@@ -77,7 +73,7 @@ std::vector<std::pair<size_t, size_t>> map::shapes::Ellipse::getLocks(Size size,
         // locks.erase(std::unique(locks.begin(), locks.end()), locks.end()); // hopefully not needed :))
     }
     else{
-                                                // only need to lock the border of the circle
+        // only need to lock the border of the circle
         for(size_t i = y1; i <= y2; ++i){
             for(size_t j = x1; j <= x2; ++j){
                 if(onBorder({j, i})){
@@ -85,30 +81,38 @@ std::vector<std::pair<size_t, size_t>> map::shapes::Ellipse::getLocks(Size size,
                 }
             }
         }
-
+        
 
         std::ranges::sort(locks);
         locks.erase(std::unique(locks.begin(), locks.end()), locks.end());
     }
 
+
+
     return locks;
 }
 
-bool map::shapes::Ellipse::onBorder(const Point& p) const {
+
+bool map::renderables::shapes::Circle::onBorder(const Point& p) const {
     const int dx = int(p.x - center.x);
     const int dy = int(p.y - center.y);
-    const int radius1 = r1 + thickness / 2;
-    const int radius2 = r2 + thickness / 2;
+    const int dist = dx*dx + dy*dy;
+    const int half_thickness = thickness/2;
+    const int r = radius + half_thickness;
+    const int R = radius - half_thickness;
 
-    return (dx * dx * radius2 * radius2 + dy * dy * radius1 * radius1) == (radius1 * radius1 * radius2 * radius2);
+    return dist <= r*r && dist >= R*R;
 }
 
 
+// bool map::Shapes::Circle
 
-void map::shapes::Ellipse::draw(Mapper *m) const {
-    m->drawEllipse<true>(center, r1, r2, color, filled, inverted, thickness, alignment);
+
+
+void map::renderables::shapes::Circle::draw(Mapper *m) const {
+    m->drawCircle<true>(center, radius, color, filled, inverted, thickness, alignment);
 }
 
-map::shapes::ShapePtr map::shapes::Ellipse::clone() const {
-    return std::make_unique<Ellipse>(*this);
+map::renderables::RenderablePtr map::renderables::shapes::Circle::clone() const {
+    return std::make_unique<Circle>(*this);
 }

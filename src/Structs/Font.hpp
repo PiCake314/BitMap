@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "RGB.hpp"
-#include "Size.hpp"
+#include "../Utility/Size.hpp"
 
 #define FONT_PATH "fonts/"
 
@@ -196,7 +196,7 @@ namespace map::fnt{
                     int r, g, b;
                     file >> r >> g >> b;
 
-                    buffer[i*m_Image_size.width + j] = {r, g, b};
+                    buffer[i*m_Image_size.width + j] = {size_t(r), size_t(g), size_t(b)};
                 }
             }
 

@@ -1,5 +1,4 @@
 #include "Mapper.hpp"
-#include "../Structs/Shapes/Shapes.hpp"
 #include "../Utility/ThreadSafeQueue.hpp"
 #include "../Utility/HelperFuncs.hpp"
 #include "../Utility/Command.hpp"
@@ -167,26 +166,23 @@ void map::Mapper::drawAt(Point p, clr::RGB color){
 template <bool called_from_shape_class>
 void map::Mapper::drawLine(const Point &p1, const Point &p2, clr::RGB color, int thickness){
 
-    if constexpr(not called_from_shape_class){
-        color.depth = 1;
-    }
+    if constexpr(not called_from_shape_class) color.depth = 1;
 
 
     if(thickness < 2) thickness = 2;
 
     const int half_thickness = thickness/2;
 
-    size_t i_start = size_t(std::clamp(std::min(p1.y, p2.y) - half_thickness, 0., m_Size.height -1.));
-    size_t i_end = size_t(std::clamp(std::max(p1.y, p2.y) + half_thickness, 0., m_Size.height -1.));
+    size_t i_start = std::clamp<size_t>(std::min(p1.y, p2.y) - half_thickness, 0, m_Size.height);
+    size_t i_end = std::clamp<size_t>(std::max(p1.y, p2.y) + half_thickness, 0, m_Size.height);
 
-    size_t j_start = size_t(std::clamp(std::min(p1.x, p2.x) - half_thickness, 0., m_Size.width -1.));
-    size_t j_end = size_t(std::clamp(std::max(p1.x, p2.x) + half_thickness, 0., m_Size.width -1.));
+    size_t j_start = std::clamp<size_t>(std::min(p1.x, p2.x) - half_thickness, 0, m_Size.width);
+    size_t j_end = std::clamp<size_t>(std::max(p1.x, p2.x) + half_thickness, 0, m_Size.width);
 
-
-    if(std::abs(p2.x - p1.x) < std::numeric_limits<double>::epsilon()){
-        // #pragma omp parallel for simd collapse(2)a
-        for(size_t i = i_start; i <= i_end; i++){
-            for(size_t j = j_start; j <= j_end; j++){
+    if(std::abs(p2.x - p1.x) > std::numeric_limits<double>::epsilon()){ // not equal 0
+        // #pragma omp parallel for simd collapse(2)
+        for(size_t i = i_start; i < i_end; i++){
+            for(size_t j = j_start; j < j_end; j++){
                 if(distFromLineSquared(p1, p2, {double(j), double(i)}) <= std::pow(thickness/2., 2)){
                     auto &pixel = m_Map[i*m_Size.width + j];
                     if(color.depth > pixel.depth) pixel = color;
@@ -197,8 +193,8 @@ void map::Mapper::drawLine(const Point &p1, const Point &p2, clr::RGB color, int
     else{
         // i_start -= thickness/2; j_start -= thickness/2;
         // i_end += thickness/2; j_end += thickness/2;
-        for(size_t i = i_start; i <= i_end; i++){
-            for(size_t j = j_start; j <= j_end; j++){
+        for(size_t i = i_start; i < i_end; i++){
+            for(size_t j = j_start; j <=j_end; j++){
                 auto &pixel = m_Map[i*m_Size.width + j];
                 if(color.depth > pixel.depth) pixel = color;
             }
@@ -304,12 +300,12 @@ void map::Mapper::drawPolygon(const std::vector<Point>& points, clr::RGB color, 
         drawLine(points.back(), points.front(), color, thick);
     }
     else{
-        std::vector<map::shapes::Line> lines;
+        std::vector<map::renderables::shapes::Line> lines;
         const size_t num_lines = points.size() - 1;
         for(size_t i = 0; i < num_lines; i++)
-            lines.push_back(map::shapes::Line(points[i], points[i+1], {.color = color, .thickness = thick}));
+            lines.push_back(map::renderables::shapes::Line(points[i], points[i+1], {.color = color, .thickness = thick}));
 
-        lines.push_back(map::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
+        lines.push_back(map::renderables::shapes::Line(points.back(), points.front(), {.color = color, .thickness = thick}));
         const size_t size = lines.size(); // count how many times you cross a line
 
 
@@ -776,13 +772,13 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string_view
 }
 
 
-void map::Mapper::draw(map::shapes::Shape* s){
+void map::Mapper::draw(map::renderables::Renderable* s){
     s->draw(this);
 }
 
 
 template <bool locked>
-void map::Mapper::draw(const map::shapes::ShapePtr s){
+void map::Mapper::draw(const map::renderables::RenderablePtr s){
 
     if constexpr(locked){
         std::vector<std::unique_lock<std::mutex>> locks;
@@ -807,8 +803,8 @@ void map::Mapper::draw(const map::shapes::ShapePtr s){
 
 // template<template<typename> typename FR, typename T>
 // requires std::ranges::forward_range<FR<T>> &&
-// std::same_as<std::ranges::range_value_t<FR<T>>, map::shapes::Shape*>
-void map::Mapper::draw(std::vector<shapes::ShapePtr> &&shapes_vec, const int num_threads){
+// std::same_as<std::ranges::range_value_t<FR<T>>, map::renderables::shapes::Shape*>
+void map::Mapper::draw(std::vector<renderables::RenderablePtr> &&shapes_vec, const int num_threads){
     // naive implementation
     if(num_threads == 1){
         for(auto &shape : shapes_vec){
@@ -818,7 +814,7 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &&shapes_vec, const int num
         return;
     }
 
-    map::util::ThreadSafeQueue/*<shapes::Shape*>*/ queue{std::move(shapes_vec)};
+    map::util::ThreadSafeQueue queue{std::move(shapes_vec)};
     constexpr bool multithreaded = true;
 
     std::vector<std::thread> threads;
@@ -827,7 +823,7 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &&shapes_vec, const int num
     for(int i = 0; i < num_threads; ++i){
         threads.emplace_back([&queue, this]{
             while(!queue.isEmpty()){
-                shapes::ShapePtr shape = queue.dequeue();
+                renderables::RenderablePtr shape = queue.dequeue();
                 draw<multithreaded>(std::move(shape));
             }
         });
@@ -835,12 +831,12 @@ void map::Mapper::draw(std::vector<shapes::ShapePtr> &&shapes_vec, const int num
 
     for(auto &thread : threads) thread.join();
 
-    this->m_Set_state = s;
-    if(this->m_Set_state) this->setState();
+    m_Set_state = s;
+    if(m_Set_state) setState();
 }
 
 
-void map::Mapper::bezierCurve(std::vector<Point> pts, double dt, clr::RGB color, bool thick){
+void map::Mapper::bezierCurve(std::vector<Point> pts, double dt, clr::RGB color, bool thick) {
     assert(pts.size() >= 2);
 
     const size_t l = pts.size();
@@ -862,24 +858,22 @@ void map::Mapper::bezierCurve(std::vector<Point> pts, double dt, clr::RGB color,
             }
 
         }
+
         curr = lerp(lerpVec[lerpVec.size()-2][0], lerpVec[lerpVec.size()-2][1], d);
 
         drawLine(prev, curr, color, thick);
         prev = curr;
     }
-    m_Set_state = s;
 
-
-    if(m_Set_state) setState();
+    if(m_Set_state = s; m_Set_state) setState();
 }
 
 
 
-void map::Mapper::plot(size_t(*func)(size_t), clr::RGB color, size_t thickness){
+void map::Mapper::plot(ssize_t(*func)(size_t), clr::RGB color, size_t thickness){
     for (size_t j = 0; j < m_Size.width; ++j){
         // size_t value = (func(int(j) - int(m_Size.width)/2) + m_Size.height/2);
-
-        const size_t value = func(j);
+        const auto value = func(j);
 
 
 
@@ -958,86 +952,27 @@ void map::Mapper::rotate(double angle){
 }
 
 
-
-// void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const double), float seconds){
-//     assert(m_FPS > 0 && "FPS must be greater than 0!");
-//     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
-
-
-//     std::clog << "Beginning Scene:\n";
-//     const int frames = seconds * m_FPS;
-
-//     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-//     const size_t temp_size = temp.size() * sizeof(clr::RGB);
-
-//     for(int frame = 0; frame <= frames; frame++){
-//         // copy(temp, m_Map); // can be replaced with memcpy
-//         memcpy(m_Map, &temp[0], temp_size);
-//         // auto shape = provider(frame, frames, delta);
-//         auto shape = provider(delta);
-//         draw(shape.get());
-//         if(!m_Set_state) setState();
-//         saveFrame();
-//         std::clog << frame << '/' << frames << '\n';
-
-//         // delete shape; // for non unique_ptr
-//     }
-//     // copy(temp, m_Map); // can be replaced with memcpy
-//     memcpy(m_Map, &temp[0], temp_size);
-
-//     std::clog << "Scene Ended!\n";
-// }
-
-
-// void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int), float seconds){
-//     assert(m_FPS > 0 && "FPS must be greater than 0!");
-//     assert(m_Filename_vid != "" && "Filename must be set before calling animate()!");
-
-
-//     std::clog << "Beginning Scene:\n";
-//     const int frames = seconds * m_FPS;
-
-//     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
-//     const size_t temp_size = temp.size() * sizeof(clr::RGB);
-
-//     for(int frame = 0; frame <= frames; frame++){
-//         // copy(temp, m_Map); // can be replaced with memcpy
-//         memcpy(m_Map, &temp[0], temp_size);
-//         // auto shape = provider(frame, frames, delta);
-//         auto shape = provider(frame, frames);
-//         draw(shape.get());
-//         if(!m_Set_state) setState();
-//         saveFrame();
-//         std::clog << frame << '/' << frames << '\n';
-
-//         // delete shape; // for non unique_ptr
-//     }
-//     // copy(temp, m_Map); // can be replaced with memcpy
-//     memcpy(m_Map, &temp[0], temp_size);
-
-//     std::clog << "Scene Ended!\n";
-// }
-
-
-void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int, const double), double seconds){
+void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(TEMP_DIR);
+    std::filesystem::create_directories(TEMP_VIDS_DIR);
 
 
     std::clog << "Beginning Scene:\n";
-    const int frames = int(seconds * m_FPS);
+    const size_t frames = size_t(std::chrono::duration_cast<std::chrono::seconds>(duration).count() * m_FPS);
 
     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
     const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
-    for(int frame = 0; frame <= frames; ++frame){
+    for(size_t frame = 0; frame <= frames; ++frame){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
 
         auto shape = provider(frame, frames, m_Delta);
         draw(std::move(shape));
+
         if(!m_Set_state) setState();
+
         saveFrame();
         std::clog << frame << '/' << frames << '\n';
 
@@ -1050,19 +985,19 @@ void map::Mapper::animate(map::shapes::ShapePtr (*provider)(const int, const int
 }
 
 
-void map::Mapper::animate(map::shapes::Shapes (*provider)(const int, const int, const double), double seconds){
+void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(TEMP_DIR);
+    std::filesystem::create_directories(TEMP_VIDS_DIR);
 
 
     std::clog << "Beginning Scene:\n";
-    const int frames = int(seconds * m_FPS);
+    const size_t frames = size_t(std::chrono::duration_cast<std::chrono::seconds>(duration).count() * m_FPS);
 
     std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
     const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
-    for(int frame = 0; frame <= frames; frame++){
+    for(size_t frame = 0; frame <= frames; frame++){
         // copy(temp, m_Map); // can be replaced with memcpy
         memcpy(m_Map, &temp[0], temp_size);
         // auto shape = provider(frame, frames, m_Delta);
@@ -1090,7 +1025,7 @@ void map::Mapper::saveFrame(){
 
     using std::operator""s;
 
-    const std::string command = "magick "s + (PPMS_DIR / m_Filename).c_str() + " " + (TEMP_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
+    const std::string command = "magick "s + (PPMS_DIR / m_Filename).c_str() + " " + (TEMP_VIDS_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
     std::system(command.c_str());
 
     ++m_Current_frame;
@@ -1102,31 +1037,30 @@ void map::Mapper::render() const {
 
     using std::operator""s;
 
+    std::filesystem::create_directories(TEMP_VIDS_DIR);
 
-    std::filesystem::create_directories(VIDS_DIR);
-    std::filesystem::create_directories(TEMP_DIR);
 
     std::string video_command =
         ("ffmpeg -framerate " + std::to_string(m_FPS) + " -i ") +
-        (TEMP_DIR / (MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
+        (TEMP_VIDS_DIR / (MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
 
     // are there any audios?
-    video_command += m_Sounds.size() ? TEMP_DIR / MANGLED_MP4 : VIDS_DIR / m_Filename_vid;
+    video_command += m_Sounds.size() ? TEMP_VIDS_DIR / MANGLED_MP4 : VIDS_DIR / m_Filename_vid;
 
 	std::system(video_command.c_str());
 
     if(auto size = m_Sounds.size(); size){
 
         Command audio_command;
-        audio_command.addInput(TEMP_DIR / MANGLED_MP4);
+        audio_command.addInput(TEMP_VIDS_DIR / MANGLED_MP4);
 
         // getting unique sounds
-        std::set<shapes::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
+        std::set<renderables::shapes::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
         for(const auto& [sound, frame] : m_Sounds) sounds.insert(sound);
 
         // adding all the sounds to the command
         for(const auto &sound : sounds){
-            audio_command.addInput(SOUNDS_DIR / sound.filename);
+            audio_command.addInput(sound.filename);
         }
 
 
@@ -1177,10 +1111,10 @@ void map::Mapper::clearFrames() const {
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     using std::operator""s;
 
-    std::system(("rm "s + (TEMP_DIR / "*.png").c_str()).c_str());
+    std::system(("rm "s + (TEMP_VIDS_DIR / "*.png").c_str()).c_str());
     std::system(("rm "s + (PPMS_DIR / m_Filename).c_str()).c_str());
 
-    if(m_Sounds.size()) std::system(("rm " / TEMP_DIR / MANGLED_MP4).c_str());
+    if(m_Sounds.size()) std::system(("rm " / TEMP_VIDS_DIR / MANGLED_MP4).c_str());
 }
 
 

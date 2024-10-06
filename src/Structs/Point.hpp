@@ -8,17 +8,15 @@
 
 namespace map{
     struct Point{
-        double x{};
-        double y{};
+        double x;
+        double y;
 
-        constexpr Point() noexcept {};
-        constexpr explicit Point(double i) noexcept : x(i), y(i) {}
-        constexpr Point(double x_, double y_) noexcept : x(x_), y(y_) {}
+        constexpr Point() noexcept : x{}, y{} {};
+        // constexpr Point(double x_, double y_) noexcept : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
         template <typename X, typename Y>
-        requires ((std::integral<X> or std::floating_point<X>)
-             and (std::integral<Y> or std::floating_point<Y>))
+        requires ((std::integral<X> or std::floating_point<X>) and (std::integral<Y> or std::floating_point<Y>))
         constexpr Point(X x_, Y y_) noexcept : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
 
         [[nodiscard]] constexpr Point operator+(const Point& p) const noexcept {
@@ -527,7 +525,7 @@ namespace map{
             return os << ")";
         }
 
-        constexpr double& operator[](size_t i){
+        constexpr double &operator[](size_t i){
             return coords[i];
         }
 

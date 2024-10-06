@@ -1,15 +1,16 @@
 #pragma once
 
 #include "../Mapper/Mapper.hpp"
+#include <cmath>
 #include <optional>
 #include <ranges>
 
 
 namespace map::util{
 
-    inline bool isNumber(const std::string_view s){
-        return std::ranges::all_of(s, isdigit);
-    }
+    // inline bool isNumber(const std::string_view s){
+    //     return std::ranges::all_of(s, isdigit);
+    // }
 
     inline bool isValidP(std::string_view P){
         return (P == "P3" || P == "P5" || P == "P6");
@@ -34,27 +35,31 @@ namespace map::util{
         return  valid_file_name and isValidP(P) and isValidHeight(h) and isValidWidth(w) and isValidMax(M);
     }
 
-    inline bool areValidString(std::string_view p, std::string_view h, std::string_view w, std::string_view m){
-        return isNumber(h) and
-               isNumber(w) and
-               isNumber(m) and
-               isValidP(p) and
-               isValidHeight(std::stoul(h.data())) and
-               isValidWidth(std::stoul(w.data())) and
-               isValidMax(size_t(std::atoi(m.data())));
-    }
-
-    inline bool safePoint(const map::Point &p, map::Size s){
-        return (p.x >= 0 and p.x < s.width and p.y >= 0 and p.y < s.height);
-    }
+    // inline bool areValidString(std::string_view p, std::string_view h, std::string_view w, std::string_view m){
+    //     return isNumber(h) and
+    //            isNumber(w) and
+    //            isNumber(m) and
+    //            isValidP(p) and
+    //            isValidHeight(std::stoul(h.data())) and
+    //            isValidWidth(std::stoul(w.data())) and
+    //            isValidMax(size_t(std::atoi(m.data())));
+    // }
 
 
-    inline map::Point lerp(const map::Point &p1, map::Point p2, double dt){
-        double x =  p1.x + (p2.x - p1.x)* double(dt);
-        double y =  p1.y + (p2.y - p1.y)* double(dt);
+    // inline bool safePoint(const map::Point &p, map::Size s){
+    //     return (p.x >= 0 and p.x < s.width and p.y >= 0 and p.y < s.height);
+    // }
+
+
+    inline map::Point lerp(const map::Point &p1, const map::Point &p2, double dt){
+        // const double x =  p1.x + (p2.x - p1.x) * dt;
+        // const double y =  p1.y + (p2.y - p1.y) * dt;
         // TODO: refactor using std::lerp
 
-        return map::Point(x, y);
+        const double x =  std::lerp(p1.x, p2.x, dt);
+        const double y =  std::lerp(p1.y, p2.y, dt);
+
+        return map::Point{x, y};
     }
 
 
@@ -90,12 +95,12 @@ namespace map::util{
     }
 
 
-    inline std::pair<bool, std::optional<map::shapes::Line>> on_any_line(map::Point p, std::vector<map::shapes::Line> lines){
-        for(const auto &line : lines){
-            if(line.on(p)) return {true, line};
-        }
+    // inline std::pair<bool, std::optional<map::renderables::shapes::Line>> on_any_line(map::Point p, std::vector<map::renderables::shapes::Line> lines){
+    //     for(const auto &line : lines){
+    //         if(line.on(p)) return {true, line};
+    //     }
 
-        return {false, std::nullopt};
-    }
+    //     return {false, std::nullopt};
+    // }
 
 } // namespace map::util

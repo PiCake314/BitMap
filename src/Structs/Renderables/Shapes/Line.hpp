@@ -2,7 +2,7 @@
 
 #include "Shapes.hpp"
 
-namespace map::shapes{
+namespace map::renderables::shapes{
 
     struct Line final : Shape{
 
@@ -22,15 +22,26 @@ namespace map::shapes{
 
         Line(Point s, Point e, Data && = Data{.color = clr::RGB{}, .thickness = 1});
 
+        Line(const Line& other) = default;
+
+        Line(Line&& other) noexcept = default;
+
+        Line& operator=(const Line& other) = default;
+
+        Line& operator=(Line&& other) noexcept = default;
+
+
+
         Point start() const;
 
         Point end() const;
 
         [[nodiscard]] bool on(Point p) const;
 
-        protected:
         void draw(Mapper *m) const override;
-        ShapePtr clone() const override;
+
+        protected:
+        RenderablePtr clone() const override;
 
         private:
             Point m_start, m_end;

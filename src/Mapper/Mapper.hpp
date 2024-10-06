@@ -8,8 +8,6 @@
 #include <fstream>
 #include <cmath>
 #include <cassert>
-#include <variant>
-#include <optional>
 #include <string_view>
 #include <string>
 #include <cstring>
@@ -18,50 +16,35 @@
 #include <concepts>
 #include <utility>
 #include <filesystem>
+#include <chrono>
 
-#include "../Structs/Size.hpp"
+#include <unistd.h>
+
+#include "../Structs/Renderables/Shapes/Shapes.hpp"
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
-#include "../Structs/Shapes/Shapes.hpp"
+#include "../Structs/Renderables/Renderables.hpp"
 #include "../Structs/Font.hpp"
 #include "../Enums/Alignment.hpp"
+#include "../Utility/Size.hpp"
 #include "../Utility/UDLs.hpp"
 #include "../Config/Config.hpp"
+#include "../Config/DIRs.hpp"
 
 
 namespace map{
-    
-
-    inline constexpr bool INIT_STATE = false;
-
-    inline const std::filesystem::path OUT_DIR = "output/";
-    inline const std::filesystem::path PPMS_DIR = OUT_DIR  / "ppms/";
-
-    inline const std::filesystem::path VIDS_DIR = OUT_DIR  / "vids/";
-    inline const std::filesystem::path TEMP_DIR = VIDS_DIR / ".temp/";
-
-    inline const std::filesystem::path SOUNDS_DIR = "sounds/";
-
-    inline const std::filesystem::path MANGLED = "__out__";
-    inline const std::filesystem::path MANGLED_PPM = "__out__" ".ppm";
-    inline const std::filesystem::path MANGLED_MP4 = "__out__" ".mp4";
-
-    inline const std::filesystem::path pngMangledWithFrame(size_t frame) noexcept {
-        return MANGLED.string() + std::to_string(frame) + ".png";
-    }
 
     constexpr const char* DEFUALT_FONT = "Default";
 
-
     // Forward declaration
-    namespace shapes{
-        struct Shape;
-        using ShapePtr = std::unique_ptr<Shape>;
-        using Shapes   = std::vector<ShapePtr>;
+    namespace renderables{
+        struct Renderable;
+        using RenderablePtr = std::unique_ptr<Renderable>;
+        using Renderables   = std::vector<RenderablePtr>;
 
-        struct Audio;
+        namespace shapes{ struct Audio; }
     }
-    
+
 
     class Mapper{
 
@@ -77,9 +60,9 @@ namespace map{
 
             std::vector<fnt::Font> m_Fonts;
 
-            friend struct shapes::Audio;
+            friend struct renderables::shapes::Audio;
             using Frame = size_t;
-            std::vector<std::pair<shapes::Audio, Frame>> m_Sounds;
+            std::vector<std::pair<renderables::shapes::Audio, Frame>> m_Sounds;
 
             // Meta Data
             std::string_view m_PType;
@@ -151,16 +134,16 @@ namespace map{
             void drawAt(Point, clr::RGB);
 
             template <bool called_from_shape_class = false>
-            void drawLine(const Point &p1, const Point &p2, clr::RGB = clr::RGB(), int thickness = 0);
+            void drawLine(const Point &p1, const Point &p2, clr::RGB = clr::RGB{}, int thickness = 0);
 
             template <bool called_from_shape_class = false>
-            void drawTri(const Point &p1, const Point &p2, const Point &p3, clr::RGB = clr::RGB(), int thickness = 0);
+            void drawTri(const Point &p1, const Point &p2, const Point &p3, clr::RGB = clr::RGB{}, int thickness = 0);
 
             [[deprecated]]
-            void drawFourPoints(Point[], clr::RGB = clr::RGB(), bool thick = false);
+            void drawFourPoints(Point[], clr::RGB = clr::RGB{}, bool thick = false);
 
             template <bool called_from_shape_class = false>
-            void drawPolygon(const std::vector<Point>&, clr::RGB = clr::RGB(), bool filled = false, int thick = 1);
+            void drawPolygon(const std::vector<Point>&, clr::RGB = clr::RGB{}, bool filled = false, int thick = 1);
 
 
             /**
@@ -168,21 +151,21 @@ namespace map{
              * @param width: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB(), bool filled = true, bool thick = false, Alignment alignment = Alignment::none);
+            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB{}, bool filled = true, bool thick = false, Alignment alignment = Alignment::none);
 
 
             /**
              * @param r: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
+            void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB{}, bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
 
 
            /**
             * @param r1/r2: negative values will result in them being 10% of the height.
             */
             template <bool called_from_shape_class = false>
-            void drawEllipse(const Point &center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB(), bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
+            void drawEllipse(const Point &center, int r1 = -1, int r2 = -1, clr::RGB = clr::RGB{}, bool filled = true, bool inverted = false, int thickness = 1, Alignment alignment = Alignment::none);
 
 
             /**
@@ -191,42 +174,45 @@ namespace map{
             void drawText(const std::string_view, const Point, const std::string_view font, const Alignment = Alignment::none);
 
 
-            void draw(shapes::Shape*);
+            void draw(renderables::Renderable*);
 
             template <bool locked = false>
-            void draw(const shapes::ShapePtr);
+            void draw(const renderables::RenderablePtr);
 
             // template<template<typename> typename FR, typename T>
             // requires std::ranges::forward_range<FR<T>> &&
             // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
-            void draw(shapes::Shapes &&shapes, const int num_threads = 1);
+            void draw(renderables::Renderables &&shapes, const int num_threads = 1);
 
 
             /**
              * @brief Creates a bezian curve from a vector of points
              */
-            void bezierCurve(std::vector<Point>, double = .1, clr::RGB = clr::RGB(), bool thick = false);
+            void bezierCurve(std::vector<Point>, double = .1, clr::RGB = clr::RGB{}, bool thick = false);
 
 
-            void plot(size_t(*)(size_t), clr::RGB = clr::RGB(), size_t thickness = 2);
+            void plot(ssize_t(*)(size_t), clr::RGB = clr::RGB{}, size_t thickness = 2);
 
 
-            void plot(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB());
+            void plot(double(*func)(double, double), double(*result)(double, double), clr::RGB = clr::RGB{});
 
 
-            void plot(bool (*)(size_t, size_t), clr::RGB = clr::RGB());
+            void plot(bool (*)(size_t, size_t), clr::RGB = clr::RGB{});
 
 
-            void plot(std::invocable<size_t> auto func, clr::RGB color = clr::RGB(), size_t thickness = 2) 
-            requires std::same_as<decltype(func(size_t{})), size_t>
+            void plot(std::invocable<size_t> auto func, clr::RGB color = clr::RGB{}, size_t thickness = 2) 
+            requires std::same_as<decltype(func(size_t{})), ssize_t>
             {
                 for (size_t j = 0; j < m_Size.width; ++j){
-                    const size_t value = func(j);
+                    const auto value = func(j);
                     const double half_thickness = thickness/2.;
 
-                    for(int y = std::max<size_t>(value - half_thickness, 0); y < std::min<size_t>(value + half_thickness, m_Size.height); ++y){
+                    for(size_t y = std::max<size_t>(value - half_thickness, 0); y < std::min<size_t>(value + half_thickness, m_Size.height); ++y){
                         for(size_t x = std::max<size_t>(j - half_thickness, 0); x < std::min<size_t>(j + half_thickness, m_Size.width); ++x){
-                            if(safePoint({x, y}) and safePoint({j, value}) and Point::distSqrd({j, value}, {x, y}) <= std::pow(half_thickness, 2)){
+                            const Point original = {j, value};
+                            const Point current = {x, y};
+
+                            if(safePoint(current) and Point::distSqrd(original, current) <= std::pow(half_thickness, 2)){
                                 m_Map[y*m_Size.width + x] = color;
                             }
                         }
@@ -243,46 +229,48 @@ namespace map{
             */
             void rotate(double);
 
-            // void animate(map::shapes::ShapePtr (*)(const double), double seconds);
+            // void animate(map::renderables::RenderablePtr (*)(const double), double seconds);
 
             /**
              * @brief Animates the canvas by calling the given function for each frame.
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a shape.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::shapes::ShapePtr (*)(const int, const int, const double), double seconds);
+            void animate(map::renderables::RenderablePtr (*)(const size_t, const size_t, const double), std::chrono::duration<double>);
 
-            // void animate(map::shapes::ShapePtr (*)(const int, const int), double seconds);
+            // void animate(map::renderables::RenderablePtr (*)(const int, const int), double seconds);
 
             /**
              * @brief Animates the canvas by calling the given function for each frame.
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a vector of shapes.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::shapes::Shapes (*)(const int, const int, const double), double seconds);
+            void animate(map::renderables::Renderables (*)(const size_t, const size_t, const double), std::chrono::duration<double>);
 
             /**
              * @brief A templated version of the animate function to allow for lambdas with captures.
             */
-            void animate(std::invocable<const int, const int, const double> auto providor, double seconds)
-            requires (std::same_as<decltype(providor(int{}, int{}, double{})), shapes::ShapePtr>
-                   or std::same_as<decltype(providor(int{}, int{}, double{})), shapes::Shapes>)
+            void animate(std::invocable<const size_t, const size_t, const double> auto providor, std::chrono::duration<double> duration)
+            requires (std::same_as<decltype(providor(size_t{}, size_t{}, double{})), renderables::RenderablePtr>
+                   or std::same_as<decltype(providor(size_t{}, size_t{}, double{})), renderables::Renderables>)
             {
                 assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-                std::filesystem::create_directories(TEMP_DIR);
+                std::filesystem::create_directories(TEMP_VIDS_DIR);
 
 
                 std::clog << "Beginning Scene:\n";
-                const int frames = int(seconds * m_FPS);
+                const size_t frames = size_t(std::chrono::duration_cast<std::chrono::seconds>(duration).count() * m_FPS);
 
                 std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
                 const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
-                for(int frame = 0; frame <= frames; frame++){
+                for(size_t frame = 0; frame <= frames; frame++){
                     memcpy(m_Map, &temp[0], temp_size);
                     auto shape = providor(frame, frames, m_Delta);
+
                     draw(std::move(shape));
+
                     if(!m_Set_state) setState();
                     saveFrame();
                     std::clog << frame << '/' << frames << '\n';
@@ -332,6 +320,14 @@ namespace map{
         private:
             bool safePoint(const map::Point& p){
                 return p.x >= 0 && p.x < m_Size.width && p.y >= 0 && p.y < m_Size.height;
+            }
+
+
+
+            inline constexpr static bool INIT_STATE = false;
+
+            inline static std::filesystem::path pngMangledWithFrame(size_t frame) noexcept {
+                return MANGLED.string() + std::to_string(frame) + ".png";
             }
 
     };
