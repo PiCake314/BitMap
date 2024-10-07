@@ -1,14 +1,16 @@
 #include "Image.hpp"
-#include "../../../Config/DIRs.hpp"
+#include "../../Config/DIRs.hpp"
 
 
-#include <cstdlib>
 #include <string>
 #include <fstream>
 
+#include <cassert>
+#include <cstdlib>
+
 
 map::renderables::shapes::Image::Image(std::filesystem::path fname, double scl)
-: Shape{Point{}, clr::RGB{}, false, 0}, filename{std::move(fname)}, scale{scl}
+: Renderable{Point{}}, filename{std::move(fname)}, scale{scl}
 {
     assert(std::filesystem::exists(filename));
     const auto &ext = filename.extension();

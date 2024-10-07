@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Shapes.hpp"
+#include "Renderables.hpp"
 
 namespace map::renderables::shapes{
 
-    struct Audio final : Shape{
+    struct Audio final : Renderable {
 
         std::string filename;
         double volume;

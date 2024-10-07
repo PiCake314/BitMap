@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Shapes.hpp"
+#include "Renderables.hpp"
 
 namespace map::renderables::shapes{
 
-    struct Text final : Shape{
+    struct Text final : Renderable{
 
         // use for named arguments
         struct Data{
@@ -19,8 +19,6 @@ namespace map::renderables::shapes{
         map::Alignment alignment;
 
         Text(const std::string&, const Point&, Data &&);
-
-        void rotate(double angle) override;
 
         // [[nodiscard]] ShapePtr rotated(double angle) const override;
 

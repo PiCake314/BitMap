@@ -1,8 +1,9 @@
 #include "Audio.hpp"
+#include "../../Mapper/Mapper.hpp"
 
 
 map::renderables::shapes::Audio::Audio(std::string fname, double vol, double spd, bool loops)
-: Shape{Point{}, clr::RGB{}, false, 0}, filename{std::move(fname)}, volume{vol}, speed{spd}, loop{loops}
+: Renderable{Point{}}, filename{std::move(fname)}, volume{vol}, speed{spd}, loop{loops}
 {}
 
 void map::renderables::shapes::Audio::draw(Mapper *m) const {

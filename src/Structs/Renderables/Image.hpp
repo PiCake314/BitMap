@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Shapes.hpp"
-#include "../../RGB.hpp"
+#include "Renderables.hpp"
+#include "../RGB.hpp"
 
 #include <filesystem>
 
 namespace map::renderables::shapes{
 
-    struct Image final : Shape{
+    struct Image final : Renderable{
 
         std::filesystem::path filename;
         clr::RGB *image = nullptr;

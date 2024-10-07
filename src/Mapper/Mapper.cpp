@@ -780,30 +780,23 @@ void map::Mapper::draw(map::renderables::Renderable* s){
 template <bool locked>
 void map::Mapper::draw(const map::renderables::RenderablePtr s){
 
-    if constexpr(locked){
-        std::vector<std::unique_lock<std::mutex>> locks;
-        for(auto [i, j] : s->getLocks(m_Size, m_Root_pix_per_lock)){
-            locks.emplace_back(m_Locks[i][j]);
-        }
 
-        s->draw(this);
-    }
-    else s->draw(this);
+    s->draw(this);
 
+    // ! Fix multithreading at some point..
+    // if constexpr(locked){
+    //     std::vector<std::unique_lock<std::mutex>> locks;
+    //     for(auto [i, j] : s->getLocks(m_Size, m_Root_pix_per_lock)){
+    //         locks.emplace_back(m_Locks[i][j]);
+    //     }
 
-    // else if constexpr(std::is_same_v<T, Image>){
-    //     drawImage(shape.img, shape.top, shape.left, shape.alignment);
+    //     s->draw(this);
     // }
-    // else if constexpr(std::is_same_v<T, BezierCurve>){
-    //     drawBezierCurve(shape.pts, shape.dt, shape.color, shape.thick);
-    // }
+    // else s->draw(this);
 }
 
 
 
-// template<template<typename> typename FR, typename T>
-// requires std::ranges::forward_range<FR<T>> &&
-// std::same_as<std::ranges::range_value_t<FR<T>>, map::renderables::shapes::Shape*>
 void map::Mapper::draw(std::vector<renderables::RenderablePtr> &&shapes_vec, const int num_threads){
     // naive implementation
     if(num_threads == 1){
@@ -814,24 +807,25 @@ void map::Mapper::draw(std::vector<renderables::RenderablePtr> &&shapes_vec, con
         return;
     }
 
-    map::util::ThreadSafeQueue queue{std::move(shapes_vec)};
-    constexpr bool multithreaded = true;
+    // map::util::ThreadSafeQueue queue{std::move(shapes_vec)};
+    // constexpr bool multithreaded = true;
 
-    std::vector<std::thread> threads;
-    bool s = m_Set_state;
-    m_Set_state = false;
-    for(int i = 0; i < num_threads; ++i){
-        threads.emplace_back([&queue, this]{
-            while(!queue.isEmpty()){
-                renderables::RenderablePtr shape = queue.dequeue();
-                draw<multithreaded>(std::move(shape));
-            }
-        });
-    }
+    // std::vector<std::thread> threads;
+    // bool s = m_Set_state;
+    // m_Set_state = false;
+    // for(int i = 0; i < num_threads; ++i){
+    //     threads.emplace_back([&queue, this]{
+    //         while(!queue.isEmpty()){
+    //             renderables::RenderablePtr shape = queue.dequeue();
+    //             draw<multithreaded>(std::move(shape));
+    //         }
+    //     });
+    // }
 
-    for(auto &thread : threads) thread.join();
+    // for(auto &thread : threads) thread.join();
 
-    m_Set_state = s;
+    // m_Set_state = s;
+
     if(m_Set_state) setState();
 }
 

@@ -20,10 +20,10 @@
 
 #include <unistd.h>
 
+#include "../Structs/Renderables/Renderables.hpp"
 #include "../Structs/Renderables/Shapes/Shapes.hpp"
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
-#include "../Structs/Renderables/Renderables.hpp"
 #include "../Structs/Font.hpp"
 #include "../Enums/Alignment.hpp"
 #include "../Utility/Size.hpp"

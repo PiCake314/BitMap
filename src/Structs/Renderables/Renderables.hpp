@@ -5,11 +5,12 @@
 #include <memory>
 #include <numeric>
 
-#include "../../Mapper/Mapper.hpp"
+// #include "../../Mapper/Mapper.hpp"
 
 #include "../Point.hpp"
 #include "../RGB.hpp"
 #include "../../Utility/Size.hpp"
+#include "../../Enums/Alignment.hpp"
 
 namespace map{
 
@@ -38,11 +39,11 @@ namespace map{
 
             Renderable& operator=(Renderable&& other) noexcept = default;
 
-            [[nodiscard]] virtual std::vector<std::pair<size_t, size_t>> getLocks(Size size, const size_t root_pix_per_lock) const = 0;
+            // [[nodiscard]] virtual std::vector<std::pair<size_t, size_t>> getLocks(Size size, const size_t root_pix_per_lock) const = 0;
 
-            virtual void setDepth(int depth) noexcept = 0;
+            // virtual void setDepth(int depth) noexcept {};
 
-            [[nodiscard]] virtual int getDepth() const noexcept = 0;
+            // [[nodiscard]] virtual int getDepth() const noexcept { return 100; };
 
             virtual RenderablePtr clone() const = 0;
 
@@ -55,3 +56,9 @@ namespace map{
         };
     }
 }
+
+
+
+#include "Text.hpp"
+#include "Audio.hpp"
+#include "Image.hpp"

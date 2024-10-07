@@ -1,11 +1,9 @@
 #include "Text.hpp"
+#include "../../Mapper/Mapper.hpp"
 
 map::renderables::shapes::Text::Text(const std::string &t, const Point &p, Data &&d)
-: Shape(p, clr::RGB{}, false, 1), text{t}, font{d.font}, alignment{d.alignment}
+: Renderable{p}, text{t}, font{d.font}, alignment{d.alignment}
 {}
-
-
-void map::renderables::shapes::Text::rotate(double){ /* do nothing */ }
 
 
 // map::renderables::shapes::ShapePtr map::renderables::shapes::Text::rotated(double angle) const{
