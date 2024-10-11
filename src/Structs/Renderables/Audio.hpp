@@ -1,23 +1,37 @@
 #pragma once
 
+// #include "../../Mapper/Mapper.hpp"
 #include "Renderables.hpp"
 
-namespace map::renderables::shapes{
+namespace map{
+    class Mapper;
 
-    struct Audio final : Renderable {
+    namespace renderables{
 
-        std::string filename;
-        double volume;
-        const double speed;
-        const bool loop;
+        struct Audio final : Renderable {
 
-        Audio(std::string, double volume = 1, double speed = 1, bool loop = false);
+            // use for named arguments
+            struct Data{
+                // DO NOT ACCESS THESE DIRECTLY
+                double volume = 1;
+                const double speed = 1;
+                const bool loop = false;
+            };
 
-        RenderablePtr clone() const override;
 
-        protected:
-        void draw(Mapper *m) const override;
+            std::string filename;
+            double volume;
+            const double speed;
+            const bool loop;
 
-    };
+            Audio(std::string, Data&&);
+
+            RenderablePtr clone() const override;
+
+            protected:
+            void draw(Mapper *m) const override;
+
+        };
+    }
 
 }

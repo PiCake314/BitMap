@@ -3,17 +3,18 @@ DEP = mains/main.cpp  src/Structs/Renderables/Shapes/*.cpp src/Mapper/Mapper.cpp
 CC = g++
 
 CVER = -std=c++20
-FLAGS = -pthread
+FLAGS = -pthread -c
 NoWarn = -Wno-c++98-compat -Wno-switch 
 OPT = -O0
 
+EXEC_NAME = mapper_exec
 
 compile: $(DEP)
-	find src -name "*.cpp" | xargs $(CC) $(CVER) $(OPT) mains/main.cpp $(FLAGS) -o mapper_exe -Wall $(NoWarn)
+	find src -name "*.cpp" | xargs $(CC) $(CVER) $(OPT) mains/main.cpp $(FLAGS) -Wall $(NoWarn)
 
 
 move: $(DEP)
-	make compile && cp mapper_exe $(to)
+	make compile && mv *.o $(to)
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp

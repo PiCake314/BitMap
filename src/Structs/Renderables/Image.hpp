@@ -1,29 +1,37 @@
 #pragma once
 
+#include <filesystem>
+
 #include "Renderables.hpp"
 #include "../RGB.hpp"
 
-#include <filesystem>
 
-namespace map::renderables::shapes{
+namespace map::renderables{
 
-    struct Image final : Renderable{
+    struct Image : Renderable{
+
+        // use for named arguments
+        struct Data{
+            // DO NOT ACCESS THESE DIRECTLY
+            double scale{1};
+            map::Alignment alignment{map::Alignment::none};
+        };
+
 
         std::filesystem::path filename;
-        clr::RGB *image = nullptr;
-        double scale;
         Size size;
+        double scale;
+        map::Alignment alignment;
 
-        Image(std::filesystem::path, double scale = 1);
+
+        Image(std::filesystem::path, const Point&, Data&&);
 
         RenderablePtr clone() const override;
 
+        ~Image() override;
+
         protected:
         void draw(Mapper *m) const override;
-
-
-        private:
-            void loadPPM();
 
     };
 

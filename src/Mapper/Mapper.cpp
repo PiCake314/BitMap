@@ -19,7 +19,6 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 {
     resetFile();
 
-
     // maybe it's better to lazy load the default font
     // m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
 
@@ -45,7 +44,7 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
 
 // video mode
 map::Mapper::Mapper(std::filesystem::path fn, Size size, size_t fps)
-: m_Filename(MANGLED_PPM), m_Filename_vid{std::move(fn)},
+: m_Filename(dirs::MANGLED_PPM), m_Filename_vid{std::move(fn)},
 m_Size{size.width, size.height},
 m_FPS{fps}, m_Delta{1./fps}, m_Current_frame{0},
 m_PType{"P3"}, m_Max{255}, m_Set_state{INIT_STATE},
@@ -61,15 +60,33 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 map::Mapper::~Mapper(){ if(m_Map) delete[] m_Map; }
 
 
-void map::Mapper::loadFont(std::string_view fontname){
+void map::Mapper::loadFont(const std::string_view fontname) {
 
-    if(std::find_if(m_Fonts.begin(), m_Fonts.end(),
+    if(std::find_if(
+        m_Fonts.begin(),
+        m_Fonts.end(),
         [&fontname](const fnt::Font &f){ return f.getFontname() == fontname; }
     ) == m_Fonts.end()) // making sure the font doesn't already exist
-        m_Fonts.push_back(fnt::Font{fontname});
-
-    // m_Fonts.push_back(fnt::Font{fontname});
+        m_Fonts.emplace_back(fontname);
 }
+
+
+std::ptrdiff_t map::Mapper::loadImage(const std::filesystem::path &imagename, double scale) {
+    const auto iter =
+        std::find_if(
+            m_Images.begin(),
+            m_Images.end(),
+            [&imagename, scale](const img::ImageBuffer &image){
+                return image.getFilename() == imagename and image.getScale() == scale;
+            }
+        );
+
+    if(iter == m_Images.end()) m_Images.emplace_back(imagename, scale);
+
+    // return iter - m_Images.begin();
+    return std::distance(m_Images.begin(), iter);
+}
+
 
 
 // void map::Mapper::setFPS(int fps){
@@ -143,7 +160,7 @@ void map::Mapper::randomizeGrey(){
 
 
 // deprecated
-map::clr::RGB map::Mapper::getColorAt(Point p){
+map::clr::RGB map::Mapper::getColorAt(const Point &p){
     if(p.x >= 0 && p.x < m_Size.height && p.y >= 0 && p.y < m_Size.width)
         return m_Map[int(p.x * m_Size.width + p.y)];
 
@@ -154,7 +171,7 @@ map::clr::RGB map::Mapper::getColorAt(Point p){
 
 
 // deprecated
-void map::Mapper::drawAt(Point p, clr::RGB color){
+void map::Mapper::drawAt(const Point &p, clr::RGB color){
     if(p.x >= 0 && p.x < m_Size.height && p.y >= 0 && p.y < m_Size.width)
         m_Map[int(p.x*m_Size.width + p.y)] = color;
 
@@ -563,9 +580,7 @@ template void map::Mapper::drawCircle<false>(Point, int, clr::RGB, bool, bool, i
 template <bool called_from_shape_class>
 void map::Mapper::drawEllipse(const Point &center, int r1, int r2, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
 
-    if constexpr(not called_from_shape_class){
-        color.depth = 1;
-    }
+    if constexpr(not called_from_shape_class) color.depth = 1;
 
 
     double thick = double(thickness) / 100.;
@@ -688,29 +703,18 @@ template void map::Mapper::drawEllipse<false>(const Point&, int, int, clr::RGB, 
 void map::Mapper::drawText(std::string_view text, Point center, std::string_view fontname, Alignment alignment){
     if(fontname == "") fontname = m_Fonts.back().getFontname(); // default to the latest font added
 
-    int index = -1;
-    for(size_t i = 0; i < m_Fonts.size(); ++i){
-        if(m_Fonts[i].getFontname() == fontname){
-            index = int(i);
-            break;
-        }
-    }
-    assert(index != -1 && "Font not found");
+    const auto iter = std::find_if(
+        m_Fonts.begin(),
+        m_Fonts.end(),
+        [fontname](const fnt::Font &f){ return f.getFontname() == fontname; }
+    );
+    assert(iter != m_Fonts.end() && "Font not found");
 
-    const fnt::Font &font = m_Fonts[size_t(index)];
-
-
- 
+    const fnt::Font &font = *iter;
 
     // calculating the center of the text
-    const size_t textHeight = font['a'].height + size_t(font['a'].yoffset);
-    const size_t textWidth = std::accumulate(text.begin(), text.end(), size_t(0), [&font](int acc, char c){ return acc + font[c].xoffset + font[c].xadvance; });
-
-    // Replaced with std::accumulate to enforce const correctness
-    // for(char c : text){
-    //     textWidth += font[c].xoffset;
-    //     textWidth += font[c].xadvance;
-    // }
+    const size_t textHeight = font['a'].size.height + size_t(font['a'].offset.y);
+    const size_t textWidth = std::accumulate(text.begin(), text.end(), 0, [&font](size_t acc, char c){ return acc + font[c].offset.x + font[c].xadvance; });
 
 
     switch(alignment){
@@ -743,8 +747,8 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string_view
             break;
     }
 
-    const size_t i_base = size_t(std::max(center.y - textHeight/2, 0.));
-    size_t j_start = size_t(std::max(center.x - textWidth/2, 0.));
+    const ssize_t i_base = center.y - textHeight/2;
+    ssize_t j_start = center.x - textWidth/2;
 
     const clr::RGB &transparent_color = font.getTransparentColor();
 
@@ -752,24 +756,88 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string_view
     for(char c : text){
         const fnt::Letter &l = font[c];
 
-        size_t i_start = i_base + size_t(l.yoffset);
-        j_start += size_t(l.xoffset);
+        const ssize_t i_start = i_base + l.offset.y;
+        j_start += l.offset.x;
 
-        for(size_t i = i_start; i < i_start + l.height; ++i){
-            for(size_t j = j_start; j < j_start + l.width; ++j){
-                const clr::RGB &pixel = l.buffer[(i - i_start)*l.width + (j - j_start)];
+        for(ssize_t i = std::max(i_start, ssize_t(0)); i < i_start + l.size.height; ++i){
+            for(ssize_t j = std::max(j_start, ssize_t(0)); j < j_start + l.size.width; ++j){
+                if(safePoint({j, i})){
+                    const clr::RGB &pixel = l.buffer[(i - i_start)*l.size.width + (j - j_start)];
 
-                if(pixel != transparent_color and safePoint({j, i})){
-                    m_Map[i*m_Size.width + j] = pixel;
+                    if(pixel != transparent_color ){
+                        m_Map[i*m_Size.width + j] = pixel;
+                    }
                 }
             }
         }
 
-        j_start += size_t(l.xadvance) + font.getSpacing().width;
+        j_start += l.xadvance + font.getSpacing().width;
     }
 
     if(m_Set_state) setState();
 }
+
+
+
+void map::Mapper::drawImage(const std::filesystem::path &path, Point point, const double scale, const Alignment alignment){
+
+    auto index = loadImage(path, scale);
+    const auto &image = m_Images[index];
+    const Size size = image.getSize();
+
+
+    if(alignment != Alignment::none) point = align((unsigned char)(alignment), size);
+
+    const ssize_t i_start = point.y - size.height/2;
+    const ssize_t j_start = point.x - size.width/2;
+
+    const ssize_t i_end = std::min<ssize_t>(point.y + size.height/2, m_Size.height);
+    const ssize_t j_end = std::min<ssize_t>(point.x + size.width/2, m_Size.width);
+
+
+
+    for(ssize_t i = std::max<ssize_t>(i_start, 0); i < i_end; ++i){
+        for(ssize_t j = std::max<ssize_t>(j_start, 0); j < j_end; ++j){
+            const clr::RGB &pixel = image[(i - i_start)*size.width + (j - j_start)];
+
+            if(pixel != image.getTransparentColor() and safePoint({j, i})){
+                m_Map[i * m_Size.width + j] = pixel;
+            }
+        }
+    }
+
+
+    if(m_Set_state) setState();
+
+    // return drawImageImpl(renderables::Image{path, point, renderables::Image::Data{scale, alignment}});
+}
+
+
+void map::Mapper::drawImageImpl(renderables::Image &&image){
+    // if(image.alignment != Alignment::none) image.center = align((unsigned char)(image.alignment), image.size);
+
+    // const ssize_t i_start = image.center.y - image.size.height/2;
+    // const ssize_t j_start = image.center.x - image.size.width/2;
+
+    // const ssize_t i_end = std::min<ssize_t>(image.center.y + image.size.height/2, m_Size.height);
+    // const ssize_t j_end = std::min<ssize_t>(image.center.x + image.size.width/2, m_Size.width);
+
+
+
+    // for(ssize_t i = std::max<ssize_t>(i_start, 0); i < i_end; ++i){
+    //     for(ssize_t j = std::max<ssize_t>(j_start, 0); j < j_end; ++j){
+    //         const clr::RGB &pixel = image.image[(i - i_start)*image.size.width + (j - j_start)];
+
+    //         if(pixel != image.transparent_color and safePoint({j, i})){
+    //             m_Map[i * m_Size.width + j] = pixel;
+    //         }
+    //     }
+    // }
+
+
+    // if(m_Set_state) setState();
+}
+
 
 
 void map::Mapper::draw(map::renderables::Renderable* s){
@@ -949,7 +1017,7 @@ void map::Mapper::rotate(double angle){
 void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
 
 
     std::clog << "Beginning Scene:\n";
@@ -982,7 +1050,7 @@ void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size
 void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
 
 
     std::clog << "Beginning Scene:\n";
@@ -1019,7 +1087,7 @@ void map::Mapper::saveFrame(){
 
     using std::operator""s;
 
-    const std::string command = "magick "s + (PPMS_DIR / m_Filename).c_str() + " " + (TEMP_VIDS_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
+    const std::string command = "magick "s + (dirs::PPMS_DIR / m_Filename).c_str() + " " + (dirs::TEMP_VIDS_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
     std::system(command.c_str());
 
     ++m_Current_frame;
@@ -1031,25 +1099,25 @@ void map::Mapper::render() const {
 
     using std::operator""s;
 
-    std::filesystem::create_directories(TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
 
 
     std::string video_command =
         ("ffmpeg -framerate " + std::to_string(m_FPS) + " -i ") +
-        (TEMP_VIDS_DIR / (MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
+        (map::dirs::TEMP_VIDS_DIR / (map::dirs::MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
 
     // are there any audios?
-    video_command += m_Sounds.size() ? TEMP_VIDS_DIR / MANGLED_MP4 : VIDS_DIR / m_Filename_vid;
+    video_command += m_Sounds.size() ? map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4 : map::dirs::VIDS_DIR / m_Filename_vid;
 
 	std::system(video_command.c_str());
 
     if(auto size = m_Sounds.size(); size){
 
         Command audio_command;
-        audio_command.addInput(TEMP_VIDS_DIR / MANGLED_MP4);
+        audio_command.addInput(map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4);
 
         // getting unique sounds
-        std::set<renderables::shapes::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
+        std::set<renderables::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
         for(const auto& [sound, frame] : m_Sounds) sounds.insert(sound);
 
         // adding all the sounds to the command
@@ -1091,7 +1159,7 @@ void map::Mapper::render() const {
 
         audio_command.endFilter();
 
-        audio_command.addOutput(VIDS_DIR / m_Filename_vid);
+        audio_command.addOutput(map::dirs::VIDS_DIR / m_Filename_vid);
 
 
         // std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
@@ -1105,10 +1173,10 @@ void map::Mapper::clearFrames() const {
     assert(m_FPS > 0 && "FPS must be greater than 0!");
     using std::operator""s;
 
-    std::system(("rm "s + (TEMP_VIDS_DIR / "*.png").c_str()).c_str());
-    std::system(("rm "s + (PPMS_DIR / m_Filename).c_str()).c_str());
+    std::system(("rm "s + (map::dirs::TEMP_VIDS_DIR / "*.png").c_str()).c_str());
+    std::system(("rm "s + (map::dirs::PPMS_DIR / m_Filename).c_str()).c_str());
 
-    if(m_Sounds.size()) std::system(("rm " / TEMP_VIDS_DIR / MANGLED_MP4).c_str());
+    if(m_Sounds.size()) std::system(("rm " / map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4).c_str());
 }
 
 
@@ -1173,9 +1241,9 @@ const map::clr::RGB *map::Mapper::cend() const noexcept {
 
 void map::Mapper::setInfo(){
     // Ensuring the directories exists
-    std::filesystem::create_directories(PPMS_DIR);
+    std::filesystem::create_directories(map::dirs::PPMS_DIR);
 
-    const auto fn = PPMS_DIR / m_Filename;
+    const auto fn = map::dirs::PPMS_DIR / m_Filename;
     std::ofstream fout(fn, std::ios::trunc);
 
     assert(fout.is_open());
@@ -1193,7 +1261,7 @@ void map::Mapper::setInfo(){
 void map::Mapper::setState(){
     setInfo();
 
-    const auto fn = PPMS_DIR / m_Filename;
+    const auto fn = map::dirs::PPMS_DIR / m_Filename;
     std::ofstream fout(fn, std::ios::app);
 
     for(size_t i = 0;  i < m_Size.height; ++i){
@@ -1214,6 +1282,34 @@ void map::Mapper::resetFile(){
     fill();
 }
 
+
+map::Point map::Mapper::align(const unsigned char alignment, const Size &size) const noexcept {
+    // map::Alignemnt is a bitmask
+    Point p;
+
+    if(alignment & Alignment::top){
+        p.y = size.height/2;
+    }
+    else if(alignment & Alignment::bottom){
+        p.y = m_Size.height - size.height/2;
+    }
+
+    if(alignment & Alignment::left){
+        p.x = size.width/2;
+    }
+    else if(alignment & Alignment::right){
+        p.x = m_Size.width - size.width/2;
+    }
+
+
+    if(alignment & Alignment::center){
+        p.x = m_Size.width/2 - size.width/2;
+        p.y = m_Size.height/2 - size.height/2;
+
+    }
+
+    return p;
+}
 
 
 // void map::Mapper::loadFile(){

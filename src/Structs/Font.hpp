@@ -26,17 +26,20 @@ namespace map::fnt{
     // const int ALPHABET_SIZE = Alphabet::Tilde - Alphabet::SPACE + 1;
 
 
-    struct Letter{
+    struct Letter final {
         Alphabet ID{};
-        int xoffset{}, yoffset{}, xadvance{};
-        size_t width{}, height{};
+
+        // size_t xoffset{}, yoffset{},
+        struct { ssize_t x{}, y{}; } offset;
+
+        ssize_t xadvance{};
+        // size_t width{}, height{};
+        struct { ssize_t width{}, height{}; } size;
 
         map::clr::RGB *buffer = nullptr;
 
 
-        explicit operator char() const{
-            return static_cast<char>(ID);
-        }
+        explicit operator char() const noexcept { return static_cast<char>(ID); }
 
         // ~Letter(){
         //     // if(buffer)
@@ -45,8 +48,8 @@ namespace map::fnt{
     };
 
 
-    class Font{
-        const std::string m_Fontname;
+    class Font final {
+        std::string m_Fontname;
         std::vector<fnt::Letter> m_Letters;
         size_t m_Fontsize{};
         bool m_Bold = false;
@@ -55,7 +58,7 @@ namespace map::fnt{
         clr::RGB m_Transparent_color = clr::BLACK;
 
         public:
-        Font(std::string_view fontname)
+        Font(const std::string_view fontname)
         : m_Fontname{fontname}, m_FNT_Filename{m_Fontname + ".fnt"}, m_PPM_Filename{m_Fontname + ".ppm"}
         {
             assert(m_FNT_Filename.substr(m_FNT_Filename.length() - 4) == ".fnt");
@@ -66,53 +69,40 @@ namespace map::fnt{
             loadlettersinfoFrom(std::move(image_buffer));
         }
 
-        [[nodiscard]] std::string_view getFontname() const noexcept {
-            return m_Fontname;
-        }
+        [[nodiscard]] std::string_view getFontname() const noexcept { return m_Fontname; }
 
-        [[nodiscard]] size_t getFontSize() const noexcept {
-            return m_Fontsize;
-        }
+        [[nodiscard]] size_t getFontSize() const noexcept { return m_Fontsize; }
 
-        [[nodiscard]] bool isBold() const noexcept {
-            return m_Bold;
-        }
+        [[nodiscard]] bool isBold() const noexcept { return m_Bold; }
 
-        [[nodiscard]] bool isItalic() const noexcept {
-            return m_Italic;
-        }
+        [[nodiscard]] bool isItalic() const noexcept { return m_Italic; }
 
-        [[nodiscard]] Size getSpacing() const noexcept {
-            return m_Spacing;
-        }
+        [[nodiscard]] Size getSpacing() const noexcept { return m_Spacing; }
 
-        [[nodiscard]] const clr::RGB &getTransparentColor() const noexcept {
-            return m_Transparent_color;
-        }
+        [[nodiscard]] const clr::RGB &getTransparentColor() const noexcept { return m_Transparent_color; }
 
-        [[nodiscard]] size_t size() const noexcept {
-            return m_Letters.size();
-        }
+        [[nodiscard]] size_t size() const noexcept { return m_Letters.size(); }
 
         [[nodiscard]] const Letter &operator [](Alphabet ID) const noexcept {
             return m_Letters[static_cast<size_t>(ID) - static_cast<size_t>(Alphabet::SPACE)];
         }
+
         [[nodiscard]] Letter &operator [](Alphabet ID) noexcept {
             return m_Letters[static_cast<size_t>(ID) - static_cast<size_t>(Alphabet::SPACE)];
         }
 
-
         [[nodiscard]] const Letter &operator [](char c) const noexcept {
             return m_Letters[static_cast<size_t>(c) - static_cast<size_t>(Alphabet::SPACE)];
         }
+
         [[nodiscard]] Letter &operator [](char c) noexcept {
             return m_Letters[static_cast<size_t>(c) - static_cast<size_t>(Alphabet::SPACE)];
         }
 
-
         [[nodiscard]] const Letter &operator [](size_t index) const noexcept {
             return m_Letters[index];
         }
+
         [[nodiscard]] Letter &operator [](size_t index) noexcept {
             return m_Letters[index];
         }
@@ -127,11 +117,16 @@ namespace map::fnt{
         map::Size m_Image_size;
         // map::clr::RGB *m_Image_buffer = nullptr;
 
+        size_t findAndAssert(std::string_view line, std::string_view key){
+            size_t ind = line.find(key);
+            assert(ind != std::string::npos);
+            return ind;
+        }
 
         void loadinfo(){
             std::ifstream file{FONT_PATH + m_FNT_Filename};
-            // if(!file.is_open()) // this is not needed haha
-            assert(file.is_open());
+
+            assert(file.is_open() && "Font file not found");
 
             std::string line;
             std::string w;
@@ -142,14 +137,14 @@ namespace map::fnt{
 
             size_t size_ind = line.find("size=");
             assert(size_ind != std::string::npos);
-            std::string size_str = line.substr(size_ind + 5);
+            std::string size_str = line.substr(size_ind + 5); // 5 is the length of "size="
             m_Fontsize = std::stoul(size_str.substr(0, size_str.find(" ")));
 
 
             size_t bold_ind = line.find("bold=");
             assert(bold_ind != std::string::npos);
             std::string bold_str = line.substr(bold_ind + 5);
-            m_Bold = bold_str.at(0) == '1';
+            m_Bold = bold_str[0] == '1';
 
 
             size_t italic_ind = line.find("italic=");
@@ -179,7 +174,7 @@ namespace map::fnt{
         }
 
 
-        std::unique_ptr<clr::RGB> loadimage(){
+        std::unique_ptr<clr::RGB[]> loadimage(){
             std::ifstream file{FONT_PATH + m_PPM_Filename};
             assert(file.is_open());
 
@@ -188,7 +183,7 @@ namespace map::fnt{
             std::getline(file, line);
             std::getline(file, line);
 
-            std::unique_ptr<clr::RGB> image_buffer{new clr::RGB[m_Image_size.width * m_Image_size.height]};
+            std::unique_ptr<clr::RGB[]> image_buffer{new clr::RGB[m_Image_size.width * m_Image_size.height]};
             auto buffer = image_buffer.get();
 
             for(size_t i = 0; i < m_Image_size.height; i++){
@@ -196,7 +191,7 @@ namespace map::fnt{
                     int r, g, b;
                     file >> r >> g >> b;
 
-                    buffer[i*m_Image_size.width + j] = {size_t(r), size_t(g), size_t(b)};
+                    buffer[i*m_Image_size.width + j] = {uint8_t(r), uint8_t(g), uint8_t(b)};
                 }
             }
 
@@ -205,7 +200,7 @@ namespace map::fnt{
         }
 
 
-        void loadlettersinfoFrom(const std::unique_ptr<map::clr::RGB> image_buffer){
+        void loadlettersinfoFrom(const std::unique_ptr<map::clr::RGB[]> image_buffer){
             std::ifstream file{FONT_PATH + m_FNT_Filename};
             assert(file.is_open());
 
@@ -223,8 +218,9 @@ namespace map::fnt{
                 file >> line;
 
                 if(line == "char"){
-                    size_t id, x, y, width, height;
-                    int xoffset, yoffset, xadvance;
+                    ssize_t x, y,
+                            xoffset, yoffset, xadvance,
+                            width, height, id;
 
                     file >> line;
                     id = std::stoul(line.substr(3));
@@ -237,22 +233,19 @@ namespace map::fnt{
                     file >> line;
                     height = std::stoul(line.substr(7));
                     file >> line;
-                    xoffset = std::stoi(line.substr(8));
+                    xoffset = std::stol(line.substr(8));
                     file >> line;
-                    yoffset = std::stoi(line.substr(8));
+                    yoffset = std::stol(line.substr(8));
                     file >> line;
-                    xadvance = std::stoi(line.substr(9));
+                    xadvance = std::stoul(line.substr(9));
 
                     std::getline(file, line);
 
                     m_Letters.push_back({});
                     m_Letters[index].ID = static_cast<Alphabet>(id);
-                    m_Letters[index].width = width;
-                    m_Letters[index].height = height;
-                    m_Letters[index].xoffset = xoffset;
-                    m_Letters[index].yoffset = yoffset;
+                    m_Letters[index].size = {width, height};
+                    m_Letters[index].offset = {xoffset, yoffset};
                     m_Letters[index].xadvance = xadvance;
-
                     m_Letters[index].buffer = new map::clr::RGB[width * height];
 
                     for(size_t i = 0; i < height; ++i){

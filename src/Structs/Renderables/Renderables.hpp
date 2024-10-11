@@ -59,6 +59,6 @@ namespace map{
 
 
 
-#include "Text.hpp"
 #include "Audio.hpp"
+#include "Text.hpp"
 #include "Image.hpp"

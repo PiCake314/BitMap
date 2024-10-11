@@ -38,6 +38,10 @@ bool setup(int argc, char **argv, std::filesystem::path &filename, size_t &fps){
 	return vid;
 }
 
+#ifndef DYLIB
+extern "C" void canvas(map::Mapper&, size_t, size_t);
+#endif
+
 
 int main(int argc, char **argv){
 
@@ -58,6 +62,8 @@ int main(int argc, char **argv){
 
 	/* ------------------------ Loading Canvas ------------------------ */
 
+
+	#ifdef DYLIB
 	void *handle = dlopen(argv[1], RTLD_LAZY);
 	if(not handle){
 		std::cerr << "Error loading library: " << dlerror() << '\n';
@@ -71,6 +77,7 @@ int main(int argc, char **argv){
 		dlclose(handle);
 		return 1;
 	}
+	#endif
 
 	/* ---------------------------------------------------------------- */
 
@@ -99,5 +106,7 @@ int main(int argc, char **argv){
 	std::clog << "Performance time: " << res.count() << "ms\n";
 
 
+	#ifdef DYLIB
 	dlclose(handle);
+	#endif
 }

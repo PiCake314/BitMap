@@ -19,23 +19,24 @@ namespace map{
             // blue(0)
             // {}
 
-            constexpr explicit RGB(size_t v) noexcept :
-            red(uint8_t(std::clamp<size_t>(v, 0, 255))),
-            green(uint8_t(std::clamp<size_t>(v, 0, 255))),
-            blue(uint8_t(std::clamp<size_t>(v, 0, 255)))
+            constexpr explicit RGB(uint8_t v) noexcept :
+            red(std::clamp<uint8_t>(v, 0, 255)),
+            green(std::clamp<uint8_t>(v, 0, 255)),
+            blue(std::clamp<uint8_t>(v, 0, 255))
             {}
 
-            constexpr RGB(size_t r, size_t g, size_t b) noexcept :
-            red(uint8_t(std::clamp<size_t>(r, 0, 255))),
-            green(uint8_t(std::clamp<size_t>(g, 0, 255))),
-            blue(uint8_t(std::clamp<size_t>(b, 0, 255)))
+            constexpr RGB(uint8_t r, uint8_t g, uint8_t b) noexcept :
+            red(std::clamp<uint8_t>(r, 0, 255)),
+            green(std::clamp<uint8_t>(g, 0, 255)),
+            blue(std::clamp<uint8_t>(b, 0, 255))
             {}
 
             explicit constexpr RGB(const map::Point3D& p) noexcept:
-            red(uint8_t(std::clamp<size_t>(size_t(p.x), 0, 255))),
-            green(uint8_t(std::clamp<size_t>(size_t(p.y), 0, 255))),
-            blue(uint8_t(std::clamp<size_t>(size_t(p.z), 0, 255)))
+            red(std::clamp<uint8_t>(uint8_t(p.x), 0, 255)),
+            green(std::clamp<uint8_t>(uint8_t(p.y), 0, 255)),
+            blue(std::clamp<uint8_t>(uint8_t(p.z), 0, 255))
             {}
+
 
             constexpr void invert() noexcept {
                 red = 255 - red;
@@ -56,9 +57,9 @@ namespace map{
 
             static RGB RAND() noexcept {
                 return RGB{
-                    static_cast<size_t>(std::rand() % 255),
-                    static_cast<size_t>(std::rand() % 255),
-                    static_cast<size_t>(std::rand() % 255)
+                    static_cast<uint8_t>(std::rand() % 255),
+                    static_cast<uint8_t>(std::rand() % 255),
+                    static_cast<uint8_t>(std::rand() % 255)
                 };
             }
         };

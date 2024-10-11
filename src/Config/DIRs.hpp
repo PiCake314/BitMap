@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace map{
+namespace map::dirs{
 
     constexpr auto TEMP = ".temp";
 

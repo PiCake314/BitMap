@@ -25,6 +25,7 @@
 #include "../Structs/RGB.hpp"
 #include "../Structs/Point.hpp"
 #include "../Structs/Font.hpp"
+#include "../Structs/ImageBuffer.hpp"
 #include "../Enums/Alignment.hpp"
 #include "../Utility/Size.hpp"
 #include "../Utility/UDLs.hpp"
@@ -34,7 +35,7 @@
 
 namespace map{
 
-    constexpr const char* DEFUALT_FONT = "Default";
+    constexpr const char* DEFAULT_FONT = "Default";
 
     // Forward declaration
     namespace renderables{
@@ -42,7 +43,7 @@ namespace map{
         using RenderablePtr = std::unique_ptr<Renderable>;
         using Renderables   = std::vector<RenderablePtr>;
 
-        namespace shapes{ struct Audio; }
+        struct Audio;
     }
 
 
@@ -59,10 +60,11 @@ namespace map{
             size_t m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;
+            std::vector<img::ImageBuffer> m_Images;
 
-            friend struct renderables::shapes::Audio;
+            friend struct renderables::Audio;
             using Frame = size_t;
-            std::vector<std::pair<renderables::shapes::Audio, Frame>> m_Sounds;
+            std::vector<std::pair<renderables::Audio, Frame>> m_Sounds;
 
             // Meta Data
             std::string_view m_PType;
@@ -84,6 +86,10 @@ namespace map{
 
             // void loadFile();
 
+
+            Point align(const unsigned char alignment, const Size&) const noexcept;
+
+
         public:
             // Mapper();
             Mapper(std::filesystem::path, Size);
@@ -96,7 +102,9 @@ namespace map{
 
             ~Mapper();
 
-            void loadFont(std::string_view = DEFUALT_FONT);
+            void loadFont(const std::string_view = DEFAULT_FONT);
+
+            std::ptrdiff_t loadImage(const std::filesystem::path&, double scale = 1);
 
             // void setFPS(int);
 
@@ -128,10 +136,10 @@ namespace map{
             void randomizeGrey();
 
             [[deprecated]]
-            clr::RGB getColorAt(Point);
+            clr::RGB getColorAt(const Point&);
 
             [[deprecated]]
-            void drawAt(Point, clr::RGB);
+            void drawAt(const Point&, clr::RGB);
 
             template <bool called_from_shape_class = false>
             void drawLine(const Point &p1, const Point &p2, clr::RGB = clr::RGB{}, int thickness = 0);
@@ -171,7 +179,16 @@ namespace map{
             /**
              * @param font: the name of the font to use. (passing "" will use the default font)
             */
-            void drawText(const std::string_view, const Point, const std::string_view font, const Alignment = Alignment::none);
+            void drawText(const std::string_view, Point Point, const std::string_view font = "", const Alignment = Alignment::none);
+
+
+            void drawLatex(const std::string_view, Point Point, const Alignment = Alignment::none);
+
+
+            void drawImage(const std::filesystem::path&, Point Point, const double scale = 1, const Alignment = Alignment::none);
+            private:
+            void drawImageImpl(renderables::Image&&);
+            public:
 
 
             void draw(renderables::Renderable*);
@@ -256,7 +273,7 @@ namespace map{
             {
                 assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-                std::filesystem::create_directories(TEMP_VIDS_DIR);
+                std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
 
 
                 std::clog << "Beginning Scene:\n";
@@ -327,7 +344,7 @@ namespace map{
             inline constexpr static bool INIT_STATE = false;
 
             inline static std::filesystem::path pngMangledWithFrame(size_t frame) noexcept {
-                return MANGLED.string() + std::to_string(frame) + ".png";
+                return map::dirs::MANGLED.string() + std::to_string(frame) + ".png";
             }
 
     };
