@@ -14,7 +14,7 @@ compile: $(DEP)
 
 
 move: $(DEP)
-	make compile && mv *.o $(to)
+	make compile && mv *.o object_files
 
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp

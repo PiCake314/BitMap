@@ -83,8 +83,7 @@ namespace map{
 
             bool m_Set_state;
 
-            [[maybe_unused]] size_t m_XCenter;
-            [[maybe_unused]] size_t m_YCenter;
+            struct { ssize_t x{}, y{};} m_Center;
 
             // for multithreading
             const size_t m_Root_pix_per_lock;
@@ -128,6 +127,10 @@ namespace map{
             void setState();
 
             // void setFile(std::string);
+
+            auto getCenter() const { return m_Center; }
+
+            void setCenter(decltype(m_Center) center) { m_Center = center; }
 
             Size getSize() const;
 

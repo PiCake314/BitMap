@@ -14,8 +14,7 @@ map::Mapper::Mapper(std::filesystem::path fn, Size size)
 : m_Filename{std::move(fn)},
 m_Size{size.width, size.height},
 m_FPS{0}, m_Delta{0}, m_Current_frame{0},
-m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE),
-m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock(100)
+m_PType("P3"), m_Max(255), m_Set_state(INIT_STATE), m_Root_pix_per_lock(100)
 {
     resetFile();
 
@@ -47,8 +46,7 @@ map::Mapper::Mapper(std::filesystem::path fn, Size size, size_t fps)
 : m_Filename(dirs::MANGLED_PPM), m_Filename_vid{std::move(fn)},
 m_Size{size.width, size.height},
 m_FPS{fps}, m_Delta{1./fps}, m_Current_frame{0},
-m_PType{"P3"}, m_Max{255}, m_Set_state{INIT_STATE},
-m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
+m_PType{"P3"}, m_Max{255}, m_Set_state{INIT_STATE}, m_Root_pix_per_lock{0}
 {
     resetFile();
 
@@ -57,7 +55,9 @@ m_XCenter{0}, m_YCenter{0}, m_Root_pix_per_lock{0}
 }
 
 
-map::Mapper::~Mapper(){ if(m_Map) delete[] m_Map; }
+map::Mapper::~Mapper(){
+    if(m_Map) delete[] m_Map; // use std::unique_ptr<clr::RGB[]> or std::vector<clr::RGB> instead at some point
+}
 
 
 void map::Mapper::loadFont(const std::string_view fontname) {
@@ -787,7 +787,7 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string_view
 
 void map::Mapper::drawImage(const std::filesystem::path &path, Point point, const double scale, const Alignment alignment){
 
-    auto index = loadImage(path, scale);
+    const ssize_t index = loadImage(path, scale);
     const auto &image = m_Images[index];
     const Size size = image.getSize();
 

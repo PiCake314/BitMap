@@ -3,6 +3,7 @@
 #include <cassert>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <utility>
 
 #include "RGB.hpp"
@@ -18,7 +19,7 @@ namespace map::img{
         std::filesystem::path filename;
         double scale;
 
-        clr::RGB *image = nullptr;
+        std::unique_ptr<clr::RGB[]> image;
         Size size;
         clr::RGB transparent_color;
 
@@ -27,9 +28,11 @@ namespace map::img{
         ImageBuffer(std::filesystem::path fname, const double scale)
         : filename{std::move(fname)}, scale{scale}, transparent_color{0xFF, 0xF8, 0xD4}
         {
+            if(not std::filesystem::exists(filename)) throw std::runtime_error("Image doesn't exist");
+
             std::filesystem::create_directories(map::dirs::TEMP_PPMS_DIR);
-            assert(std::filesystem::exists(filename));
             const auto &ext = filename.extension();
+            const auto ppm_filename = map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm");
 
             if(ext != ".ppm"){
                 // TODO: remove assert and check the result of std::system instead
@@ -42,13 +45,16 @@ namespace map::img{
                     + " -background \"#FFF8D4\" -alpha remove -alpha off -quality 90 -resize "
                     + std::to_string(static_cast<int>(scale * 100))
                     + "% -compress none ")
-                    + (map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm")).string()
+                    + ppm_filename.string()
                 ).c_str());
 
                 assert(res == 0 && "Image conversion failed");
             }
 
-            loadPPM();
+            loadPPM(ppm_filename);
+
+            // cleaning up
+            std::filesystem::remove(ppm_filename);
         }
 
 
@@ -59,11 +65,11 @@ namespace map::img{
         ImageBuffer(ImageBuffer&&) noexcept = default;
         ImageBuffer &operator=(ImageBuffer&&) noexcept = default;
 
-        std::string_view getFilename() const noexcept { return filename.c_str(); }
+        const std::filesystem::path &getFilename() const noexcept { return filename; }
 
         double getScale() const noexcept { return scale; }
 
-        Size getSize() const noexcept { return size; }
+        const Size &getSize() const noexcept { return size; }
 
         const clr::RGB &getTransparentColor() const noexcept { return transparent_color; }
 
@@ -78,13 +84,11 @@ namespace map::img{
         const clr::RGB &operator[](const Point &p) const noexcept { return image[size_t(p.y)*size.width + size_t(p.x)]; }
 
 
-        ~ImageBuffer() {
-            if(image) delete[] image;
-        }
+        ~ImageBuffer() = default;
 
         private:
-            void loadPPM() {
-                std::ifstream fin(map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm"));
+            void loadPPM(const std::filesystem::path &ppm_filename) {
+                std::ifstream fin(ppm_filename);
                 assert(fin.is_open() && "Image doesn't exist");
 
 
@@ -99,9 +103,8 @@ namespace map::img{
                 size = {std::stoul(width), std::stoul(height)};
 
 
-                if(image) delete[] image;
-
-                image = new clr::RGB[size.height * size.width];
+                // image.reset(new clr::RGB[size.height * size.width]);
+                image = std::make_unique<clr::RGB[]>(size.height * size.width);
 
                 for(size_t i = 0; i < size.height; ++i){
                     for(size_t j = 0; j < size.width; ++j){
@@ -110,8 +113,6 @@ namespace map::img{
                         image[i*size.width + j] = clr::RGB{uint8_t(r), uint8_t(g), uint8_t(b)};
                     }
                 }
-
-                puts("Load successful!");
             }
 
     };

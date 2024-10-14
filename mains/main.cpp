@@ -50,7 +50,8 @@ bool parseArgs(int argc, char **argv, std::filesystem::path &filename, size_t &f
 }
 
 #if not DYLIB
-extern "C" void canvas(map::Mapper&, size_t, size_t);
+// extern "C"
+void canvas(map::Mapper&, size_t, size_t);
 #endif
 
 
