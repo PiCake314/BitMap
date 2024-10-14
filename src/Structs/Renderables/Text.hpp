@@ -14,7 +14,7 @@ namespace map{
             // use for named arguments
             struct Data{
                 // DO NOT ACCESS THESE DIRECTLY
-                std::string font{""};
+                std::string font{};
                 map::Alignment alignment{map::Alignment::none};
             };
 
@@ -23,9 +23,9 @@ namespace map{
             std::string font;
             map::Alignment alignment;
 
-            Text(const std::string&, const Point&, Data&&);
+            Text(const std::string_view, const Point&, Data&&);
 
-            RenderablePtr clone() const override;
+            [[nodiscard]] RenderablePtr clone() const override;
 
             protected:
             void draw(Mapper *m) const override;

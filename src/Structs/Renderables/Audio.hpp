@@ -26,7 +26,7 @@ namespace map{
 
             Audio(std::string, Data&&);
 
-            RenderablePtr clone() const override;
+            [[nodiscard]] RenderablePtr clone() const override;
 
             protected:
             void draw(Mapper *m) const override;

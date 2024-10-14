@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <algorithm>
-#include "Point.hpp"
 
 namespace map{
     namespace clr{
@@ -31,11 +30,12 @@ namespace map{
             blue(std::clamp<uint8_t>(b, 0, 255))
             {}
 
-            explicit constexpr RGB(const map::Point3D& p) noexcept:
-            red(std::clamp<uint8_t>(uint8_t(p.x), 0, 255)),
-            green(std::clamp<uint8_t>(uint8_t(p.y), 0, 255)),
-            blue(std::clamp<uint8_t>(uint8_t(p.z), 0, 255))
-            {}
+            // that was stupid anyway
+            // explicit constexpr RGB(const map::Point3D& p) noexcept:
+            // red(std::clamp<uint8_t>(uint8_t(p.x), 0, 255)),
+            // green(std::clamp<uint8_t>(uint8_t(p.y), 0, 255)),
+            // blue(std::clamp<uint8_t>(uint8_t(p.z), 0, 255))
+            // {}
 
 
             constexpr void invert() noexcept {

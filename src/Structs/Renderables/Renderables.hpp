@@ -45,7 +45,7 @@ namespace map{
 
             // [[nodiscard]] virtual int getDepth() const noexcept { return 100; };
 
-            virtual RenderablePtr clone() const = 0;
+            [[nodiscard]] virtual RenderablePtr clone() const = 0;
 
             virtual ~Renderable() = default;
 
@@ -58,7 +58,3 @@ namespace map{
 }
 
 
-
-#include "Audio.hpp"
-#include "Text.hpp"
-#include "Image.hpp"

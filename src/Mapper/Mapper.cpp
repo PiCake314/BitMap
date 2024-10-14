@@ -71,17 +71,21 @@ void map::Mapper::loadFont(const std::string_view fontname) {
 }
 
 
-std::ptrdiff_t map::Mapper::loadImage(const std::filesystem::path &imagename, double scale) {
+std::ptrdiff_t map::Mapper::loadImage(const std::filesystem::path &image_path, double scale) {
     const auto iter =
         std::find_if(
             m_Images.begin(),
             m_Images.end(),
-            [&imagename, scale](const img::ImageBuffer &image){
-                return image.getFilename() == imagename and image.getScale() == scale;
+            [&image_path, scale](const img::ImageBuffer &image){
+                return image.getFilename() == image_path and image.getScale() == scale;
             }
         );
 
-    if(iter == m_Images.end()) m_Images.emplace_back(imagename, scale);
+    if(iter == m_Images.end()){
+        m_Images.emplace_back(image_path, scale);
+
+        return m_Images.size() - 1;
+    }
 
     // return iter - m_Images.begin();
     return std::distance(m_Images.begin(), iter);
@@ -701,6 +705,8 @@ template void map::Mapper::drawEllipse<false>(const Point&, int, int, clr::RGB, 
 
 
 void map::Mapper::drawText(std::string_view text, Point center, std::string_view fontname, Alignment alignment){
+    if(m_Fonts.size() == 0) throw std::runtime_error("No fonts loaded");
+
     if(fontname == "") fontname = m_Fonts.back().getFontname(); // default to the latest font added
 
     const auto iter = std::find_if(
@@ -786,7 +792,8 @@ void map::Mapper::drawImage(const std::filesystem::path &path, Point point, cons
     const Size size = image.getSize();
 
 
-    if(alignment != Alignment::none) point = align((unsigned char)(alignment), size);
+    if(alignment != Alignment::none) point = align(alignment, m_Size, size);
+
 
     const ssize_t i_start = point.y - size.height/2;
     const ssize_t j_start = point.x - size.width/2;
@@ -800,7 +807,7 @@ void map::Mapper::drawImage(const std::filesystem::path &path, Point point, cons
         for(ssize_t j = std::max<ssize_t>(j_start, 0); j < j_end; ++j){
             const clr::RGB &pixel = image[(i - i_start)*size.width + (j - j_start)];
 
-            if(pixel != image.getTransparentColor() and safePoint({j, i})){
+            if(safePoint({j, i}) and pixel != image.getTransparentColor()){
                 m_Map[i * m_Size.width + j] = pixel;
             }
         }
@@ -808,40 +815,19 @@ void map::Mapper::drawImage(const std::filesystem::path &path, Point point, cons
 
 
     if(m_Set_state) setState();
-
-    // return drawImageImpl(renderables::Image{path, point, renderables::Image::Data{scale, alignment}});
 }
 
 
-void map::Mapper::drawImageImpl(renderables::Image &&image){
-    // if(image.alignment != Alignment::none) image.center = align((unsigned char)(image.alignment), image.size);
-
-    // const ssize_t i_start = image.center.y - image.size.height/2;
-    // const ssize_t j_start = image.center.x - image.size.width/2;
-
-    // const ssize_t i_end = std::min<ssize_t>(image.center.y + image.size.height/2, m_Size.height);
-    // const ssize_t j_end = std::min<ssize_t>(image.center.x + image.size.width/2, m_Size.width);
-
-
-
-    // for(ssize_t i = std::max<ssize_t>(i_start, 0); i < i_end; ++i){
-    //     for(ssize_t j = std::max<ssize_t>(j_start, 0); j < j_end; ++j){
-    //         const clr::RGB &pixel = image.image[(i - i_start)*image.size.width + (j - j_start)];
-
-    //         if(pixel != image.transparent_color and safePoint({j, i})){
-    //             m_Map[i * m_Size.width + j] = pixel;
-    //         }
-    //     }
-    // }
-
-
-    // if(m_Set_state) setState();
+void map::Mapper::drawLatex(const std::string_view latex, Point point, const double scale, const Alignment alignment) {
+    map::renderables::Latex l{latex, point, {.scale = scale, .alignment = alignment}};
+    draw(l);
 }
 
 
 
-void map::Mapper::draw(map::renderables::Renderable* s){
-    s->draw(this);
+
+void map::Mapper::draw(map::renderables::Renderable &s){
+    s.draw(this);
 }
 
 
@@ -1014,7 +1000,7 @@ void map::Mapper::rotate(double angle){
 }
 
 
-void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
+void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size_t, const size_t, const double), const std::chrono::duration<double> &duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
     std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
@@ -1047,7 +1033,7 @@ void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size
 }
 
 
-void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t, const size_t, const double), std::chrono::duration<double> duration){
+void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t, const size_t, const double), const std::chrono::duration<double> &duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
     std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
@@ -1078,16 +1064,25 @@ void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t
 }
 
 
+void map::Mapper::wait(const std::chrono::duration<double> &duration) noexcept {
+    const size_t frames = size_t(std::chrono::duration_cast<std::chrono::seconds>(duration).count() * m_FPS);
+
+    for(size_t i = 0; i < frames; ++i){
+        std::clog << "wait: " << i << '/' << frames << '\n';
+
+        saveFrame();
+    }
+}
 
 
 // ----------------------- Video Related Functions ----------------------- //
 
-void map::Mapper::saveFrame(){
-    assert(m_FPS > 0 && "FPS must be greater than 0!");
+void map::Mapper::saveFrame() noexcept {
+    if(m_FPS <= 0) std::exit(1);
 
     using std::operator""s;
 
-    const std::string command = "magick "s + (dirs::PPMS_DIR / m_Filename).c_str() + " " + (dirs::TEMP_VIDS_DIR.string() + pngMangledWithFrame(m_Current_frame).string()).c_str();
+    const std::string command = "magick "s + (dirs::PPMS_DIR / m_Filename).string() + " " + (dirs::TEMP_VIDS_DIR / pngMangledWithFrame(m_Current_frame)).string();
     std::system(command.c_str());
 
     ++m_Current_frame;
@@ -1282,34 +1277,6 @@ void map::Mapper::resetFile(){
     fill();
 }
 
-
-map::Point map::Mapper::align(const unsigned char alignment, const Size &size) const noexcept {
-    // map::Alignemnt is a bitmask
-    Point p;
-
-    if(alignment & Alignment::top){
-        p.y = size.height/2;
-    }
-    else if(alignment & Alignment::bottom){
-        p.y = m_Size.height - size.height/2;
-    }
-
-    if(alignment & Alignment::left){
-        p.x = size.width/2;
-    }
-    else if(alignment & Alignment::right){
-        p.x = m_Size.width - size.width/2;
-    }
-
-
-    if(alignment & Alignment::center){
-        p.x = m_Size.width/2 - size.width/2;
-        p.y = m_Size.height/2 - size.height/2;
-
-    }
-
-    return p;
-}
 
 
 // void map::Mapper::loadFile(){

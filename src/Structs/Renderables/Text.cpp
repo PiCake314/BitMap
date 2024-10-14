@@ -1,7 +1,7 @@
 #include "Text.hpp"
 #include "../../Mapper/Mapper.hpp"
 
-map::renderables::Text::Text(const std::string &t, const Point &p, Data &&d)
+map::renderables::Text::Text(const std::string_view t, const Point &p, Data &&d)
 : Renderable{p}, text{t}, font{d.font}, alignment{d.alignment}
 {}
 

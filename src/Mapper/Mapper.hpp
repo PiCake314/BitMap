@@ -33,6 +33,13 @@
 #include "../Config/DIRs.hpp"
 
 
+#include "../Structs/Renderables/Audio.hpp"
+#include "../Structs/Renderables/Text.hpp"
+#include "../Structs/Renderables/Image.hpp"
+#include "../Structs/Renderables/Latex.hpp"
+
+
+
 namespace map{
 
     constexpr const char* DEFAULT_FONT = "Default";
@@ -44,6 +51,7 @@ namespace map{
         using Renderables   = std::vector<RenderablePtr>;
 
         struct Audio;
+        // struct Image;
     }
 
 
@@ -60,6 +68,8 @@ namespace map{
             size_t m_Current_frame;
 
             std::vector<fnt::Font> m_Fonts;
+
+            // friend struct renderables::Image;
             std::vector<img::ImageBuffer> m_Images;
 
             friend struct renderables::Audio;
@@ -85,9 +95,6 @@ namespace map{
             void resetFile();
 
             // void loadFile();
-
-
-            Point align(const unsigned char alignment, const Size&) const noexcept;
 
 
         public:
@@ -182,23 +189,19 @@ namespace map{
             void drawText(const std::string_view, Point Point, const std::string_view font = "", const Alignment = Alignment::none);
 
 
-            void drawLatex(const std::string_view, Point Point, const Alignment = Alignment::none);
+            void drawImage(const std::filesystem::path&, Point oint, const double scale = 1, const Alignment = Alignment::none);
 
 
-            void drawImage(const std::filesystem::path&, Point Point, const double scale = 1, const Alignment = Alignment::none);
-            private:
-            void drawImageImpl(renderables::Image&&);
-            public:
+            void drawLatex(const std::string_view, Point point, const double scale = 1, const Alignment = Alignment::none);
 
 
-            void draw(renderables::Renderable*);
+            void draw(renderables::Renderable&);
+
 
             template <bool locked = false>
             void draw(const renderables::RenderablePtr);
 
-            // template<template<typename> typename FR, typename T>
-            // requires std::ranges::forward_range<FR<T>> &&
-            // std::same_as<std::ranges::range_value_t<FR<T>>, shapes::Shape*>
+
             void draw(renderables::Renderables &&shapes, const int num_threads = 1);
 
 
@@ -253,7 +256,7 @@ namespace map{
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a shape.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::renderables::RenderablePtr (*)(const size_t, const size_t, const double), std::chrono::duration<double>);
+            void animate(map::renderables::RenderablePtr (*)(const size_t, const size_t, const double), const std::chrono::duration<double>&);
 
             // void animate(map::renderables::RenderablePtr (*)(const int, const int), double seconds);
 
@@ -262,12 +265,12 @@ namespace map{
              * @param provider: a function that takes the current frame, the total number of frames and the time step and returns a vector of shapes.
              * @param seconds: the total time of the animation.
             */
-            void animate(map::renderables::Renderables (*)(const size_t, const size_t, const double), std::chrono::duration<double>);
+            void animate(map::renderables::Renderables (*)(const size_t, const size_t, const double), const std::chrono::duration<double>&);
 
             /**
              * @brief A templated version of the animate function to allow for lambdas with captures.
             */
-            void animate(std::invocable<const size_t, const size_t, const double> auto providor, std::chrono::duration<double> duration)
+            void animate(std::invocable<const size_t, const size_t, const double> auto providor, const std::chrono::duration<double>& duration)
             requires (std::same_as<decltype(providor(size_t{}, size_t{}, double{})), renderables::RenderablePtr>
                    or std::same_as<decltype(providor(size_t{}, size_t{}, double{})), renderables::Renderables>)
             {
@@ -279,11 +282,12 @@ namespace map{
                 std::clog << "Beginning Scene:\n";
                 const size_t frames = size_t(std::chrono::duration_cast<std::chrono::seconds>(duration).count() * m_FPS);
 
-                std::vector<clr::RGB> temp(m_Map, m_Map + m_Size.width * m_Size.height);
+                std::vector<clr::RGB> temp{m_Map, m_Map + m_Size.width * m_Size.height};
                 const size_t temp_size = temp.size() * sizeof(clr::RGB);
 
                 for(size_t frame = 0; frame <= frames; frame++){
                     memcpy(m_Map, &temp[0], temp_size);
+
                     auto shape = providor(frame, frames, m_Delta);
 
                     draw(std::move(shape));
@@ -301,10 +305,13 @@ namespace map{
             }
 
 
+            void wait(const std::chrono::duration<double>&) noexcept;
+
+
             // ----------------------- Video Related Functions -----------------------
 
             // private:
-            void saveFrame();
+            void saveFrame() noexcept;
             
             public:
             /**

@@ -1,84 +1,81 @@
-// #include "Latex.hpp"
-// #include "../../Config/DIRs.hpp"
+#include "Latex.hpp"
+#include "../RGB.hpp"
+#include "../../Config/DIRs.hpp"
 
 
-// #include <string>
-// #include <fstream>
-
-// #include <cassert>
-// #include <cstdlib>
-
-
-// map::renderables::Latex::Latex(std::string_view tex, const Point &center, Data &&d)
-// : Image{map::dirs::TEMP_PDFS_DIR / ("tex" + std::to_string(tex_id++)), center, {scale{d.scale}, alignment{d.alignment}}}
-// {
-//     std::filesystem::create_directories(map::dirs::PPMS_TEMP_DIR);
-//     assert(std::filesystem::exists(filename));
-//     const auto &ext = filename.extension();
-
-//     if(ext != ".ppm"){
-//         // TODO: remove assert and check the result of std::system instead
-//         assert(ext == ".png" or ext == ".jpg" or ext == ".jpeg" or ext == ".pdf");
-
-//         // we'll do 1000 dpi for now just to ensure quality..
-//         int res = std::system((
-//             ("magick -density 1000 "
-//             + filename.string() // FF5733 (another alternative for transparent color)
-//             + " -background \"#F8C300\" -alpha remove -alpha off -quality 90 -resize "
-//             + std::to_string(static_cast<int>(scale * 100))
-//             + "% -compress none ")
-//             + (PPMS_TEMP_DIR / filename.filename().replace_extension(".ppm")).string()
-//         ).c_str());
-
-//         assert(res == 0 && "Latex conversion failed");
-//     }
-
-//     loadPPM();
-
-// }
-
-
-// void map::renderables::Latex::loadPPM() {
-//     std::ifstream fin(PPMS_TEMP_DIR / filename.filename().replace_extension(".ppm"));
-//     assert(fin.is_open() && "Latex doesn't exist");
-
-
-//     std::string width;
-//     std::string height;
-//     std::string waste;
-
-//     // assuming image is valid, we're not gonna check if the width and/or height are valid.
-//     // discard P type and Max value. Assume it's 255
-//     fin >> waste >> width >> height >> waste;
-
-//     size = {std::stoul(width), std::stoul(height)};
-
-
-//     if(image) delete[] image;
-
-//     image = new clr::RGB[size.height * size.width];
-
-//     for(size_t i = 0; i < size.height; ++i){
-//         for(size_t j = 0; j < size.width; ++j){
-//             int r,g,b; fin >> r >> g >> b;
-
-//             image[i*size.width + j] = clr::RGB{uint8_t(r), uint8_t(g), uint8_t(b)};
-//         }
-//     }
-// }
-
-
-// map::renderables::RenderablePtr map::renderables::Latex::clone() const {
-//     return std::make_unique<Latex>(*this);
-// }
+#include <filesystem>
+#include <fstream>
+#include <cstdio>
+#include <utility>
 
 
 
-// void map::renderables::Latex::draw(Mapper *m) const {
-//     throw 1;
-// }
+map::renderables::Latex::Latex(std::string_view latex, const Point &point, Data &&d)
+: Image{map::dirs::TEMP_TEX_DIR / std::to_string(tex_id++), point, std::move(d)}, latex{latex}
+{
+    std::filesystem::create_directories(map::dirs::TEMP_TEX_DIR); // just ensures that the directory exists
+
+    std::string_view preamble =
+R"(
+\documentclass[preview]{standalone}
+\usepackage{amsmath}
+
+\begin{document}
+)";
+
+    std::string_view postamble =
+R"(
+\end{document}
+)";
 
 
-// map::renderables::Latex::~Latex(){
-//     if(image) delete[] image;
-// }
+    std::ofstream file{filename.replace_extension(".tex")};
+    file << preamble << latex << postamble;
+    file.close();
+
+
+    const std::string pdflatex_cmd =
+        "pdflatex -halt-on-error -interaction=nonstopmode -output-directory="
+        + map::dirs::TEMP_TEX_DIR.string() + " "
+        + filename.filename().replace_extension(".tex").string();
+
+
+    const std::string magick_cmg =
+        "magick -density 1000 " + filename.replace_extension(".pdf").string()
+        + " -background white -alpha remove -alpha off -quality 90 -resize " + std::to_string(scale * 100) + "% "
+        + filename.replace_extension(".png").string();
+
+
+    std::system(pdflatex_cmd.c_str());
+    std::system(magick_cmg.c_str());
+
+    // pclose(popen(pdflatex_cmd.c_str(), "r"));
+    // pclose(popen(magick_cmg.c_str(), "r"));
+
+    
+
+    // removing artifacts
+    std::filesystem::remove(filename.replace_extension(".aux"));
+    std::filesystem::remove(filename.replace_extension(".log"));
+    std::filesystem::remove(filename.replace_extension(".pdf"));
+
+    filename.replace_extension(".png");
+
+}
+
+
+map::renderables::RenderablePtr map::renderables::Latex::clone() const {
+    return std::make_unique<Latex>(*this);
+}
+
+
+
+map::renderables::Latex::~Latex() {
+    std::filesystem::remove(filename);
+    std::filesystem::remove(filename.replace_extension(".tex"));
+}
+
+
+
+
+

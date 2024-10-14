@@ -25,9 +25,9 @@ namespace map::img{
         public:
 
         ImageBuffer(std::filesystem::path fname, const double scale)
-        : filename{std::move(fname)}, scale{scale}, transparent_color{0xF8, 0xC3, 0x00}
+        : filename{std::move(fname)}, scale{scale}, transparent_color{0xFF, 0xF8, 0xD4}
         {
-            std::filesystem::create_directories(map::dirs::PPMS_TEMP_DIR);
+            std::filesystem::create_directories(map::dirs::TEMP_PPMS_DIR);
             assert(std::filesystem::exists(filename));
             const auto &ext = filename.extension();
 
@@ -38,11 +38,11 @@ namespace map::img{
                 // we'll do 1000 dpi for now just to ensure quality..
                 int res = std::system((
                     ("magick -density 1000 "
-                    + filename.string() // FF5733 (another alternative for transparent color)
-                    + " -background \"#F8C300\" -alpha remove -alpha off -quality 90 -resize "
+                    + filename.string() // FF5733, #B0AFA7, #664655 (another alternative for transparent color)
+                    + " -background \"#FFF8D4\" -alpha remove -alpha off -quality 90 -resize "
                     + std::to_string(static_cast<int>(scale * 100))
                     + "% -compress none ")
-                    + (map::dirs::PPMS_TEMP_DIR / filename.filename().replace_extension(".ppm")).string()
+                    + (map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm")).string()
                 ).c_str());
 
                 assert(res == 0 && "Image conversion failed");
@@ -84,7 +84,7 @@ namespace map::img{
 
         private:
             void loadPPM() {
-                std::ifstream fin(map::dirs::PPMS_TEMP_DIR / filename.filename().replace_extension(".ppm"));
+                std::ifstream fin(map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm"));
                 assert(fin.is_open() && "Image doesn't exist");
 
 
@@ -110,6 +110,8 @@ namespace map::img{
                         image[i*size.width + j] = clr::RGB{uint8_t(r), uint8_t(g), uint8_t(b)};
                     }
                 }
+
+                puts("Load successful!");
             }
 
     };

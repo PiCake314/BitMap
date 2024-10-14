@@ -7,18 +7,23 @@
 // #include <Mapper.hpp>
 #include "../src/Mapper/Mapper.hpp"
 
-
+#define DYLIB 0
 
 
 /**
  * @returns true if video, false if image
 */
-bool setup(int argc, char **argv, std::filesystem::path &filename, size_t &fps){
-	filename = argv[2];
-	if(filename.empty()) throw std::runtime_error("Invalid output filename");
+bool parseArgs(int argc, char **argv, std::filesystem::path &filename, size_t &fps) {
 
-	map::Config::width = std::stoul(argv[3]);
-	map::Config::height = std::stoul(argv[4]);
+	constexpr int OFFSET = DYLIB ? 1 : 0;
+
+	filename = argv[1 + OFFSET];
+
+	// assert(not filename.empty());
+	if(filename.empty()) throw std::invalid_argument("Filename is empty");
+
+	map::Config::width = std::stoul(argv[2 + OFFSET]);
+	map::Config::height = std::stoul(argv[3 + OFFSET]);
 
 
 	constexpr size_t DEFAULT_SIZE = 512;
@@ -29,27 +34,41 @@ bool setup(int argc, char **argv, std::filesystem::path &filename, size_t &fps){
 	bool vid = ext == ".mp4";
 
 	if(vid){
-		assert(argc >= 6);
-		fps = std::stoul(argv[5]);
+		// assert(argc >= 5);
+		if(argc < 5) throw std::invalid_argument("Not enough arguments for video");
+
+		fps = std::stoul(argv[4 + OFFSET]);
 		if(fps <= 0) fps = 24;
 	}
-	else assert(ext == ".ppm");
+	else if(ext != ".ppm") throw std::invalid_argument("Invalid file extension");
+
+
+
+
 
 	return vid;
 }
 
-#ifndef DYLIB
+#if not DYLIB
 extern "C" void canvas(map::Mapper&, size_t, size_t);
 #endif
 
 
 int main(int argc, char **argv){
 
-	if(argc <= 4){
+	#if DYLIB
+	if(argc < 5){
 		std::cerr << "ERROR: Not enough arguments\n";
-		std::cerr << "Usage: " << argv[0] << " <input file> <output file> <height> <width> <fps(opt)>\n";
+		std::cerr << "Usage: " << argv[0] << " <input file> <output file> <width> <height> <fps(opt)>\n";
 		return 1;
 	}
+	#else
+	if(argc < 4){
+		std::cerr << "ERROR: Not enough arguments\n";
+		std::cerr << "Usage: " << argv[0] << " <output file> <width> <height> <fps(opt)>\n";
+		return 1;
+	}
+	#endif
 
 	srand(time(NULL));
 	/* ---------------------------- Set Up ---------------------------- */
@@ -57,13 +76,13 @@ int main(int argc, char **argv){
     std::filesystem::path filename;
 	size_t fps{};
 
-	bool vid = setup(argc, argv, filename, fps);
+	bool vid = parseArgs(argc, argv, filename, fps);
 
 
 	/* ------------------------ Loading Canvas ------------------------ */
 
 
-	#ifdef DYLIB
+	#if DYLIB
 	void *handle = dlopen(argv[1], RTLD_LAZY);
 	if(not handle){
 		std::cerr << "Error loading library: " << dlerror() << '\n';
@@ -106,7 +125,7 @@ int main(int argc, char **argv){
 	std::clog << "Performance time: " << res.count() << "ms\n";
 
 
-	#ifdef DYLIB
+	#if DYLIB
 	dlclose(handle);
 	#endif
 }

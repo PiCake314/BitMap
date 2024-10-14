@@ -1,5 +1,6 @@
 #include "Image.hpp"
 #include "../../Config/DIRs.hpp"
+#include "../../Mapper/Mapper.hpp"
 
 
 #include <string>
@@ -11,7 +12,7 @@
 
 map::renderables::Image::Image(std::filesystem::path fname, const Point &center, Data &&d)
 : Renderable{center}, filename{std::move(fname)}, scale{d.scale}, alignment{d.alignment} {
-    
+
 }
 
 
@@ -22,7 +23,7 @@ map::renderables::RenderablePtr map::renderables::Image::clone() const {
 
 
 void map::renderables::Image::draw(Mapper *m) const {
-    throw 1;
+    m->drawImage(filename, center, scale, alignment);
 }
 
 

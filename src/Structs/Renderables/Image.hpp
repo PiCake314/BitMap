@@ -26,7 +26,7 @@ namespace map::renderables{
 
         Image(std::filesystem::path, const Point&, Data&&);
 
-        RenderablePtr clone() const override;
+        [[nodiscard]] RenderablePtr clone() const override;
 
         ~Image() override;
 
