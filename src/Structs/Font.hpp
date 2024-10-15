@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "RGB.hpp"
+#include "../Config/DIRs.hpp"
 #include "../Utility/Size.hpp"
 
-#define FONT_PATH "fonts/"
 
 namespace map::fnt{
     enum class Alphabet{
@@ -124,7 +124,7 @@ namespace map::fnt{
         }
 
         void loadinfo(){
-            std::ifstream file{FONT_PATH + m_FNT_Filename};
+            std::ifstream file{dirs::FONTS_DIR / m_FNT_Filename};
 
             assert(file.is_open() && "Font file not found");
 
@@ -175,7 +175,7 @@ namespace map::fnt{
 
 
         std::unique_ptr<clr::RGB[]> loadimage(){
-            std::ifstream file{FONT_PATH + m_PPM_Filename};
+            std::ifstream file{dirs::FONTS_DIR / m_PPM_Filename};
             assert(file.is_open());
 
             std::string line;
@@ -201,7 +201,7 @@ namespace map::fnt{
 
 
         void loadlettersinfoFrom(const std::unique_ptr<map::clr::RGB[]> image_buffer){
-            std::ifstream file{FONT_PATH + m_FNT_Filename};
+            std::ifstream file{dirs::FONTS_DIR / m_FNT_Filename};
             assert(file.is_open());
 
             m_Letters.reserve(m_Num_letters);

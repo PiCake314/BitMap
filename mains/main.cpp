@@ -77,7 +77,7 @@ int main(int argc, char **argv){
     std::filesystem::path filename;
 	size_t fps{};
 
-	bool vid = parseArgs(argc, argv, filename, fps);
+	const bool vid = parseArgs(argc, argv, filename, fps);
 
 
 	/* ------------------------ Loading Canvas ------------------------ */

@@ -30,9 +30,9 @@ namespace map::img{
         {
             if(not std::filesystem::exists(filename)) throw std::runtime_error("Image doesn't exist");
 
-            std::filesystem::create_directories(map::dirs::TEMP_PPMS_DIR);
+            std::filesystem::create_directories(map::dirs::TEMP);
             const auto &ext = filename.extension();
-            const auto ppm_filename = map::dirs::TEMP_PPMS_DIR / filename.filename().replace_extension(".ppm");
+            const auto ppm_filename = map::dirs::TEMP / filename.filename().replace_extension(".ppm");
 
             if(ext != ".ppm"){
                 // TODO: remove assert and check the result of std::system instead

@@ -279,7 +279,7 @@ namespace map{
             {
                 assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-                std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
+                std::filesystem::create_directories(map::dirs::TEMP);
 
 
                 std::clog << "Beginning Scene:\n";
@@ -314,7 +314,7 @@ namespace map{
             // ----------------------- Video Related Functions -----------------------
 
             // private:
-            void saveFrame() noexcept;
+            void saveFrame();
             
             public:
             /**

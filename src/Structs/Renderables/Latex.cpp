@@ -11,9 +11,9 @@
 
 
 map::renderables::Latex::Latex(std::string_view latex, const Point &point, Data &&d)
-: Image{map::dirs::TEMP_TEX_DIR / std::to_string(tex_id++), point, std::move(d)}, latex{latex}
+: Image{map::dirs::TEMP / std::to_string(tex_id++), point, std::move(d)}, latex{latex}
 {
-    std::filesystem::create_directories(map::dirs::TEMP_TEX_DIR); // just ensures that the directory exists
+    std::filesystem::create_directories(map::dirs::TEMP); // just ensures that the directory exists
 
     std::string_view preamble =
 R"(
@@ -36,7 +36,7 @@ R"(
 
     const std::string pdflatex_cmd =
         "pdflatex -halt-on-error -interaction=nonstopmode -output-directory="
-        + map::dirs::TEMP_TEX_DIR.string() + " "
+        + map::dirs::TEMP.string() + " "
         + filename.filename().replace_extension(".tex").string();
 
 

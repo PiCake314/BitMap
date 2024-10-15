@@ -1003,7 +1003,7 @@ void map::Mapper::rotate(double angle){
 void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size_t, const size_t, const double), const std::chrono::duration<double> &duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP);
 
 
     std::clog << "Beginning Scene:\n";
@@ -1036,7 +1036,7 @@ void map::Mapper::animate(map::renderables::RenderablePtr (*provider)(const size
 void map::Mapper::animate(map::renderables::Renderables (*provider)(const size_t, const size_t, const double), const std::chrono::duration<double> &duration){
     assert(m_FPS > 0 && "FPS must be greater than 0!");
 
-    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP);
 
 
     std::clog << "Beginning Scene:\n";
@@ -1077,12 +1077,12 @@ void map::Mapper::wait(const std::chrono::duration<double> &duration) noexcept {
 
 // ----------------------- Video Related Functions ----------------------- //
 
-void map::Mapper::saveFrame() noexcept {
-    if(m_FPS <= 0) std::exit(1);
+void map::Mapper::saveFrame() {
+    if(m_FPS <= 0) throw std::runtime_error("FPS must be greater than 0!");
 
     using std::operator""s;
 
-    const std::string command = "magick "s + (dirs::PPMS_DIR / m_Filename).string() + " " + (dirs::TEMP_VIDS_DIR / pngMangledWithFrame(m_Current_frame)).string();
+    const std::string command = "magick "s + m_Filename.string() + " " + (dirs::TEMP / pngMangledWithFrame(m_Current_frame)).string();
     std::system(command.c_str());
 
     ++m_Current_frame;
@@ -1094,22 +1094,22 @@ void map::Mapper::render() const {
 
     using std::operator""s;
 
-    std::filesystem::create_directories(map::dirs::TEMP_VIDS_DIR);
+    std::filesystem::create_directories(map::dirs::TEMP);
 
 
     std::string video_command =
         ("ffmpeg -framerate " + std::to_string(m_FPS) + " -i ") +
-        (map::dirs::TEMP_VIDS_DIR / (map::dirs::MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
+        (map::dirs::TEMP / (map::dirs::MANGLED.c_str() + "%d.png"s)).c_str() + " -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p ";
 
     // are there any audios?
-    video_command += m_Sounds.size() ? map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4 : map::dirs::VIDS_DIR / m_Filename_vid;
+    video_command += m_Sounds.size() ? map::dirs::TEMP / map::dirs::MANGLED_MP4 : m_Filename_vid;
 
 	std::system(video_command.c_str());
 
     if(auto size = m_Sounds.size(); size){
 
         Command audio_command;
-        audio_command.addInput(map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4);
+        audio_command.addInput(map::dirs::TEMP / map::dirs::MANGLED_MP4);
 
         // getting unique sounds
         std::set<renderables::Audio, decltype([](const auto &a, const auto &b){ return a.filename < b.filename; })> sounds;
@@ -1154,7 +1154,7 @@ void map::Mapper::render() const {
 
         audio_command.endFilter();
 
-        audio_command.addOutput(map::dirs::VIDS_DIR / m_Filename_vid);
+        audio_command.addOutput(m_Filename_vid);
 
 
         // std::clog << "\n\n" << audio_command.getCommand() << "\n\n";
@@ -1165,13 +1165,15 @@ void map::Mapper::render() const {
 
 
 void map::Mapper::clearFrames() const {
-    assert(m_FPS > 0 && "FPS must be greater than 0!");
+    // assert(m_FPS > 0 && "FPS must be greater than 0!");
+    if(m_FPS <= 0) throw std::runtime_error("FPS must be greater than 0!");
+
     using std::operator""s;
 
-    std::system(("rm "s + (map::dirs::TEMP_VIDS_DIR / "*.png").c_str()).c_str());
-    std::system(("rm "s + (map::dirs::PPMS_DIR / m_Filename).c_str()).c_str());
+    std::system(("rm "s + (map::dirs::TEMP / "*.png").string()).c_str());
+    std::system(("rm "s + m_Filename.string()).c_str());
 
-    if(m_Sounds.size()) std::system(("rm " / map::dirs::TEMP_VIDS_DIR / map::dirs::MANGLED_MP4).c_str());
+    if(m_Sounds.size()) std::system(("rm " / map::dirs::TEMP / map::dirs::MANGLED_MP4).c_str());
 }
 
 
@@ -1236,10 +1238,9 @@ const map::clr::RGB *map::Mapper::cend() const noexcept {
 
 void map::Mapper::setInfo(){
     // Ensuring the directories exists
-    std::filesystem::create_directories(map::dirs::PPMS_DIR);
+    // std::filesystem::create_directories(map::dirs::PPMS_DIR);
 
-    const auto fn = map::dirs::PPMS_DIR / m_Filename;
-    std::ofstream fout(fn, std::ios::trunc);
+    std::ofstream fout(m_Filename, std::ios::trunc);
 
     assert(fout.is_open());
     assert(areValid(m_Filename.c_str(), m_PType, m_Size.height, m_Size.width, m_Max));
@@ -1256,8 +1257,7 @@ void map::Mapper::setInfo(){
 void map::Mapper::setState(){
     setInfo();
 
-    const auto fn = map::dirs::PPMS_DIR / m_Filename;
-    std::ofstream fout(fn, std::ios::app);
+    std::ofstream fout(m_Filename, std::ios::app);
 
     for(size_t i = 0;  i < m_Size.height; ++i){
         for(size_t j = 0; j < m_Size.width; ++j)
