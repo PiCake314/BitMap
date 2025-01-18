@@ -1,7 +1,7 @@
 #include "Circle.hpp"
 
 
-map::renderables::shapes::Circle::Circle(Point p, int r, Data &&d)
+map::renderables::shapes::Circle::Circle(ssize_t r, const Point &p, Data &&d)
 : Shape(p, d.color, d.filled, d.thickness), radius(r), inverted(d.inverted), alignment(d.alignment)
 {
     switch(alignment){
@@ -110,7 +110,7 @@ bool map::renderables::shapes::Circle::onBorder(const Point& p) const {
 
 
 void map::renderables::shapes::Circle::draw(Mapper *m) const {
-    m->drawCircle<true>(center, radius, color, filled, inverted, thickness, alignment);
+    m->drawCircle<true>(radius, center, color, filled, inverted, thickness, alignment);
 }
 
 map::renderables::RenderablePtr map::renderables::shapes::Circle::clone() const {

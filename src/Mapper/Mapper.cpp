@@ -76,7 +76,7 @@ std::ptrdiff_t map::Mapper::loadImage(const std::filesystem::path &image_path, d
         std::find_if(
             m_Images.begin(),
             m_Images.end(),
-            [&image_path, scale](const img::ImageBuffer &image){
+            [&image_path, scale](const ImageBuffer &image){
                 return image.getFilename() == image_path and image.getScale() == scale;
             }
         );
@@ -378,21 +378,21 @@ template void map::Mapper::drawPolygon<false>(const std::vector<Point>&, clr::RG
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, bool filled, bool thick , Alignment alignment){
+void map::Mapper::drawRect(double height, double width, Point center, clr::RGB color, bool filled, bool thick , Alignment alignment){
 
     if constexpr(not called_from_shape_class){
         color.depth = 1;
     }
 
 
-    if(h < 0) h = m_Size.height/10;
-    if(w < 0) w   = m_Size.height/10;
+    if(height < 0) height = m_Size.height/10;
+    if(width < 0) width   = m_Size.height/10;
 
-    if(h < 1)
-        h *= m_Size.height;
+    if(height < 1)
+        height *= m_Size.height;
     
-    if(w < 1)
-        w *= m_Size.width;
+    if(width < 1)
+        width *= m_Size.width;
 
     if(center.x < 1)
         center.x *= m_Size.height;
@@ -413,11 +413,11 @@ void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, boo
 
 
     if(filled){
-        size_t i_start = size_t(std::max(center.y - h/2 - 1, 0.));
-        size_t i_end = size_t(std::min(center.y + h/2, double(m_Size.height)));
+        size_t i_start = size_t(std::max(center.y - height/2 - 1, 0.));
+        size_t i_end = size_t(std::min(center.y + height/2, double(m_Size.height)));
 
-        size_t j_start = size_t(std::max(center.x - w/2 - 1, 0.));
-        size_t j_end = size_t(std::min(center.x + w/2, double(m_Size.width)));
+        size_t j_start = size_t(std::max(center.x - width/2 - 1, 0.));
+        size_t j_end = size_t(std::min(center.x + width/2, double(m_Size.width)));
         for(size_t i = i_start; i <= i_end; i++){
             for(size_t j = j_start; j <= j_end; ++j){
                 if(i < m_Size.height and j < m_Size.width){ // i/j could never be less than zero since they're size_t + we're taking the max above
@@ -428,10 +428,10 @@ void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, boo
         }
     }
     else{
-        const double cxmw = std::max(center.x - w/2 - 1, 0.);
-        const double cymh = std::max(center.y - h/2 - 1, 0.);
-        const double cyph = std::min(center.y + h/2 - 1, m_Size.height -1.);
-        const double cxpw = std::min(center.x + w/2 - 1, m_Size.width -1.);
+        const double cxmw = std::max(center.x - width/2 - 1, 0.);
+        const double cymh = std::max(center.y - height/2 - 1, 0.);
+        const double cyph = std::min(center.y + height/2 - 1, m_Size.height -1.);
+        const double cxpw = std::min(center.x + width/2 - 1, m_Size.width -1.);
 
         drawLine(
             Point(cxmw, cymh),
@@ -464,8 +464,8 @@ void map::Mapper::drawRect(Point center, double h, double w, clr::RGB color, boo
     if(m_Set_state) setState();
 }
 
-template void map::Mapper::drawRect<true> (Point, double, double, clr::RGB, bool, bool, Alignment);
-template void map::Mapper::drawRect<false>(Point, double, double, clr::RGB, bool, bool, Alignment);
+template void map::Mapper::drawRect<true> (double, double, Point, clr::RGB, bool, bool, Alignment);
+template void map::Mapper::drawRect<false>(double, double, Point, clr::RGB, bool, bool, Alignment);
 
 // template <>
 // void map::Mapper::drawRect<false>(Point center, double h, double w, clr::RGB color, bool filled, bool thick, RectAlignment alignment){
@@ -475,7 +475,7 @@ template void map::Mapper::drawRect<false>(Point, double, double, clr::RGB, bool
 
 
 template <bool called_from_shape_class>
-void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
+void map::Mapper::drawCircle(int r, Point center, clr::RGB color, bool filled, bool inverted, int thickness, Alignment alignment){
 
     if constexpr(not called_from_shape_class){
         color.depth = 1;
@@ -569,8 +569,8 @@ void map::Mapper::drawCircle(Point center, int r, clr::RGB color, bool filled, b
     if(m_Set_state) setState();
 }
 
-template void map::Mapper::drawCircle<true> (Point, int, clr::RGB, bool, bool, int, Alignment);
-template void map::Mapper::drawCircle<false>(Point, int, clr::RGB, bool, bool, int, Alignment);
+template void map::Mapper::drawCircle<true> (int, Point, clr::RGB, bool, bool, int, Alignment);
+template void map::Mapper::drawCircle<false>(int, Point, clr::RGB, bool, bool, int, Alignment);
 
 
 // !!! so apparently these templates need to be instantiated manually (why?) and the function bellow was doing that for me. The 2 lines above are need to explicitly instantiate the templates but I'm not sure why the compiler cannot do that on its own..

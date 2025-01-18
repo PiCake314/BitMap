@@ -27,6 +27,7 @@ namespace map{
 
             // Shared
             Point center;
+            Size size;
 
 
             Renderable(Point point) noexcept : center{point} {}

@@ -70,7 +70,7 @@ namespace map{
             std::vector<fnt::Font> m_Fonts;
 
             // friend struct renderables::Image;
-            std::vector<img::ImageBuffer> m_Images;
+            std::vector<ImageBuffer> m_Images;
 
             friend struct renderables::Audio;
             using Frame = size_t;
@@ -94,6 +94,14 @@ namespace map{
             void resetFile();
 
             // void loadFile();
+
+            ssize_t adjustX(ssize_t x) const noexcept {
+                return x - m_Center.x;
+            }
+
+            ssize_t adjustY(ssize_t y) const noexcept {
+                return y + m_Center.y;
+            }
 
 
         public:
@@ -169,14 +177,14 @@ namespace map{
              * @param width: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawRect(Point center, double height = -1, double width = -1, clr::RGB  = clr::RGB{}, bool filled = true, bool thick = false, Alignment alignment = Alignment::none);
+            void drawRect(double height, double width, Point center, clr::RGB  = clr::RGB{}, bool filled = true, bool thick = false, Alignment alignment = Alignment::none);
 
 
             /**
              * @param r: negative values will result in them being 10% of the height.
              */
             template <bool called_from_shape_class = false>
-            void drawCircle(Point center, int r = -1, clr::RGB = clr::RGB{}, bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
+            void drawCircle(int r, Point center, clr::RGB = clr::RGB{}, bool filled = true, bool inverted = false, int thickness = 2, Alignment alignment = Alignment::none);
 
 
            /**
@@ -189,13 +197,13 @@ namespace map{
             /**
              * @param font: the name of the font to use. (passing "" will use the default font)
             */
-            void drawText(const std::string_view, Point Point, const std::string_view font = "", const Alignment = Alignment::none);
+            void drawText(const std::string_view, Point, const std::string_view font = "", const Alignment = Alignment::none);
 
 
-            void drawImage(const std::filesystem::path&, Point oint, const double scale = 1, const Alignment = Alignment::none);
+            void drawImage(const std::filesystem::path&, Point, const double scale = 1, const Alignment = Alignment::none);
 
 
-            void drawLatex(const std::string_view, Point point, const double scale = 1, const Alignment = Alignment::none);
+            void drawLatex(const std::string_view, Point, const double scale = 1, const Alignment = Alignment::none);
 
 
             void draw(renderables::Renderable&);

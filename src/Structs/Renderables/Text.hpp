@@ -16,6 +16,8 @@ namespace map{
                 // DO NOT ACCESS THESE DIRECTLY
                 std::string font{};
                 map::Alignment alignment{map::Alignment::none};
+
+                // Data() = default 
             };
 
 
@@ -23,7 +25,7 @@ namespace map{
             std::string font;
             map::Alignment alignment;
 
-            Text(const std::string_view, const Point&, Data&&);
+            Text(const std::string_view, const Point&, Data&& = Data{.font = "", .alignment = Alignment::none});
 
             [[nodiscard]] RenderablePtr clone() const override;
 

@@ -1,8 +1,8 @@
 #include "Rect.hpp"
 
-map::renderables::shapes::Rect::Rect(Point p, size_t w, size_t h, Data &&d)
-: Shape( p, d.color, d.filled, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
-width_(w), height_(h), alignment(d.alignment)
+map::renderables::shapes::Rect::Rect(ssize_t w, ssize_t h, const Point &p, Data &&d)
+: Shape(p, d.color, d.filled, d.thickness, {{p.x - w/2, p.y - h/2}, {p.x + w/2, p.y - h/2}, {p.x + w/2, p.y + h/2}, {p.x - w/2, p.y + h/2}}),
+alignment(d.alignment)
 {
 
     switch(alignment){
@@ -26,10 +26,11 @@ width_(w), height_(h), alignment(d.alignment)
     // for(auto &point : points){
     //     std::clog << point << std::endl;
     // }
+    size = {size_t(w), size_t(h)};
 }
 
 void map::renderables::shapes::Rect::draw(Mapper *m) const {
-    m->drawRect<true>(center, height_, width_, color, filled, thickness, alignment);
+    m->drawRect<true>(size.width, size.height, center, color, filled, thickness, alignment);
 }
 
 map::renderables::RenderablePtr map::renderables::shapes::Rect::clone() const {

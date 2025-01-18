@@ -19,7 +19,7 @@ namespace map::renderables{
 
 
         std::filesystem::path filename;
-        Size size;
+        // Size size;
         double scale;
         map::Alignment alignment;
 

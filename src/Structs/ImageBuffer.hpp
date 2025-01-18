@@ -12,7 +12,7 @@
 #include "../Config/DIRs.hpp"
 
 
-namespace map::img{
+namespace map{
 
     class ImageBuffer final {
 

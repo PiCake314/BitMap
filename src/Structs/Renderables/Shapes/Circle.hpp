@@ -21,7 +21,12 @@ namespace map::renderables::shapes{
         bool inverted;
         map::Alignment alignment;
 
-        Circle(Point p, int r, Data && = Data{.color = clr::RGB{}, .filled = true, .inverted = false, .thickness = 1, .alignment = map::Alignment::none});
+
+        // !have to init every member variable withing the enclosing class
+        // !compiler bug doesn't allow for " = Data{}"
+        // !creating an empty constructor "Data(){}" would fix this but would dissallow "{.name = value}"
+
+        Circle(ssize_t r, const Point &p, Data && = Data{.color = clr::RGB{}, .filled = true, .inverted = false, .thickness = 1, .alignment = map::Alignment::none});
 
         void rotate(double angle) override;
 

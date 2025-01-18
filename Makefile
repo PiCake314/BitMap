@@ -28,7 +28,7 @@ test: unit_tests/test.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
 clean: 
-	rm mapper_exec test
+	rm mapper_exec test *.o
 
 dir:
 	mkdir output/pngs; mkdir output/vids; mkdir output/vids/.temp; mkdir sounds

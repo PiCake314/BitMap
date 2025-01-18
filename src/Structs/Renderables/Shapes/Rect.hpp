@@ -16,11 +16,9 @@ namespace  map::renderables::shapes{
         };
 
 
-        size_t width_;
-        size_t height_;
         map::Alignment alignment;
 
-        Rect(Point p, size_t w, size_t h, Data &&);
+        Rect(ssize_t w, ssize_t h, const Point &p, Data &&);
 
         RenderablePtr clone() const override;
 
