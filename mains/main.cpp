@@ -42,10 +42,6 @@ bool parseArgs(int argc, char **argv, std::filesystem::path &filename, size_t &f
 	}
 	else if(ext != ".ppm") throw std::invalid_argument("Invalid file extension");
 
-
-
-
-
 	return vid;
 }
 
@@ -90,7 +86,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 
-	const auto canvas = reinterpret_cast<void (*)(map::Mapper&, size_t, size_t)>(dlsym(handle, "canvas"));
+	const auto canvas = reinterpret_cast<void (*)(map::Mapper&, map::Size)>(dlsym(handle, "canvas"));
 
 	if(char *err = dlerror(); err){
 		std::cerr << "Error loading symbol: " << err << '\n';
@@ -121,7 +117,7 @@ int main(int argc, char *argv[]){
 
 
 	const auto end = std::chrono::high_resolution_clock::now();
-	auto res = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	const auto res = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 	std::clog << "Performance time: " << res.count() << "ms\n";
 
