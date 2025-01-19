@@ -55,7 +55,7 @@ void canvas(map::Mapper&, map::Size);
 #endif
 
 
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
 
 	#if DYLIB
 	if(argc < 5){
