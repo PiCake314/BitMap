@@ -83,7 +83,7 @@ namespace map{
 
             bool m_Set_state;
 
-            struct { ssize_t x{}, y{};} m_Center;
+            struct { size_t x{}, y{};} m_Center;
 
             // for multithreading
             const size_t m_Root_pix_per_lock;
@@ -122,7 +122,7 @@ namespace map{
 
             // void setFPS(int);
 
-            size_t getFPS() const;
+            size_t getFPS() const noexcept;
 
             void doSet();
 
@@ -136,11 +136,11 @@ namespace map{
 
             // void setFile(std::string);
 
-            auto getCenter() const { return m_Center; }
+            auto getCenter() const noexcept { return m_Center; }
 
-            void setCenter(decltype(m_Center) center) { m_Center = center; }
+            void setCenter(decltype(m_Center) center) noexcept { m_Center = center; }
 
-            Size getSize() const;
+            Size getSize() const noexcept;
 
             [[deprecated]]
             void fillWhite();
@@ -148,7 +148,7 @@ namespace map{
             void fill(clr::RGB = clr::WHITE);
 
             template <bool grey_scale>
-            void randomize();
+            void randomize() noexcept;
 
             [[deprecated]]
             void randomizeGrey();
@@ -203,6 +203,9 @@ namespace map{
             void drawImage(const std::filesystem::path&, Point, const double scale = 1, const Alignment = Alignment::none);
 
 
+            /**
+             * @param string_view: "frac{1}{2}" will be turned into 1/2. No need for any meta data.
+            */
             void drawLatex(const std::string_view, Point, const double scale = 1, const Alignment = Alignment::none);
 
 

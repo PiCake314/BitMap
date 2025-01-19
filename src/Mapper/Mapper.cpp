@@ -98,7 +98,7 @@ std::ptrdiff_t map::Mapper::loadImage(const std::filesystem::path &image_path, d
 // }
 
 
-size_t map::Mapper::getFPS() const { return m_FPS; }
+size_t map::Mapper::getFPS() const noexcept { return m_FPS; }
 
 void map::Mapper::doSet(){ m_Set_state = true ; }
 void map::Mapper::noSet(){ m_Set_state = false; }
@@ -111,7 +111,7 @@ void map::Mapper::noSet(){ m_Set_state = false; }
 // }
 
 
-map::Size map::Mapper::getSize() const{
+map::Size map::Mapper::getSize() const noexcept {
     return m_Size;
 }
 
@@ -131,18 +131,18 @@ void map::Mapper::fill(clr::RGB color){
     for(size_t i = 0; i < m_Size.height; i++)
         for(size_t j = 0; j < m_Size.width; j++)
             m_Map[i * m_Size.width + j] = color;
-    
+
     if(m_Set_state) setState();
 }
 
 
 
 template <bool grey_scale>
-void map::Mapper::randomize(){
+void map::Mapper::randomize() noexcept {
     for(size_t i = 0; i < m_Size.height; i++)
         for(size_t j = 0; j < m_Size.width; j++)
             if constexpr(grey_scale){
-                const int c = rand() % 256;
+                const auto c = rand() % 256;
                  m_Map[i * m_Size.width + j] = clr::RGB(c, c, c);
             }
             else m_Map[i * m_Size.width + j] = clr::RGB(rand() % 256, rand() %256, rand() % 256);
@@ -725,28 +725,28 @@ void map::Mapper::drawText(std::string_view text, Point center, std::string_view
 
     switch(alignment){
         case Alignment::center:
-            center.x = (m_Size.width/2) - textWidth/2;
-            center.y = (m_Size.height/2) - textHeight/2;
+            center.x = (m_Size.width/2);
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::top:
-            center.x = (m_Size.width/2) - textWidth/2;
+            center.x = (m_Size.width/2);
             center.y = 0;
             break;
 
         case Alignment::bottom:
-            center.x = (m_Size.width/2) - textWidth/2;
-            center.y = m_Size.height - textHeight;
+            center.x = (m_Size.width/2);
+            center.y = m_Size.height;
             break;
 
         case Alignment::left:
             center.x = 0;
-            center.y = (m_Size.height/2) - textHeight/2;
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::right:
-            center.x = m_Size.width - textWidth;
-            center.y = (m_Size.height/2) - textHeight/2;
+            center.x = m_Size.width;
+            center.y = (m_Size.height/2);
             break;
 
         case Alignment::none:
