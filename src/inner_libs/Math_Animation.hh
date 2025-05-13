@@ -3,8 +3,8 @@
 #include "../Mapper/Mapper.hpp"
 
 
-auto animatePlot(std::invocable<double> auto func, size_t thickness, map::clr::RGB color, map::Size size)
-requires (std::same_as<decltype(func(double{})), double>)
+auto animatePlot(const std::invocable<double> auto func, const size_t thickness, const map::clr::RGB color, const map::Size size)
+requires (std::convertible_to<decltype(func(double{})), double>)
 {
     using namespace map::renderables;
 

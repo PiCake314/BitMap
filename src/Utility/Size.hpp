@@ -7,11 +7,9 @@ namespace map{
     struct Size{
         size_t width, height;
 
-        bool operator==(const Size&) const = default;
+        bool operator==(const Size&) const noexcept = default;
 
-        operator Point() const noexcept{
-            return {width, height};
-        }
+        operator Point() const noexcept { return {width, height}; }
 
 
         friend std::ostream &operator<<(std::ostream &os, const Size &s) noexcept {

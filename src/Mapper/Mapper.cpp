@@ -209,7 +209,7 @@ void map::Mapper::drawLine(const Point &p1, const Point &p2, clr::RGB color, int
                     if(color.depth > pixel.depth) pixel = color;
                 }
             }
-        }
+        } 
     }
     else{
         // i_start -= thickness/2; j_start -= thickness/2;
