@@ -50,6 +50,11 @@ m_PType{"P3"}, m_Max{255}, m_Set_state{INIT_STATE}, m_Root_pix_per_lock{0}
 {
     resetFile();
 
+    if(not std::filesystem::exists(dirs::TEMP)) // maybe the check is not needed?
+        std::filesystem::create_directory(dirs::TEMP);
+
+    // check if 
+
     // lazy load the default font
     // m_Fonts.push_back(fnt::Font{DEFUALT_FONT}); // default font "Minecraft"
 }
@@ -1078,7 +1083,8 @@ void map::Mapper::wait(const std::chrono::duration<double> &duration) noexcept {
 // ----------------------- Video Related Functions ----------------------- //
 
 void map::Mapper::saveFrame() {
-    if(m_FPS <= 0) throw std::runtime_error("FPS must be greater than 0!");
+    assert(m_FPS > 0);
+    // if(m_FPS <= 0) throw std::runtime_error("FPS must be greater than 0!");
 
     using std::operator""s;
 

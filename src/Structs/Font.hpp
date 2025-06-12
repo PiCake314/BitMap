@@ -248,8 +248,8 @@ namespace map::fnt{
                     m_Letters[index].xadvance = xadvance;
                     m_Letters[index].buffer = new map::clr::RGB[width * height];
 
-                    for(size_t i = 0; i < height; ++i){
-                        for(size_t j = 0; j < width; ++j){
+                    for(ssize_t i = 0; i < height; ++i){
+                        for(ssize_t j = 0; j < width; ++j){
                             m_Letters[index].buffer[i*width + j] = buffer[(y + i)* m_Image_size.width + (x + j)];
                         }
                     }

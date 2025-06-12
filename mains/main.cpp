@@ -47,7 +47,7 @@ bool parseArgs(int argc, char **argv, std::filesystem::path &filename, size_t &f
 
 #if not DYLIB
 // extern "C"
-void canvas(map::Mapper&, map::Size);
+void canvas(map::Mapper&);
 #endif
 
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
 	/* ---------------------------------------------------------------- */
 	auto start = std::chrono::high_resolution_clock::now();
 
-	canvas(m, {map::Config::width, map::Config::height});
+	canvas(m /*, {map::Config::width, map::Config::height} */);
 
 	m.setState();
 
@@ -126,3 +126,5 @@ int main(int argc, char *argv[]){
 	dlclose(handle);
 	#endif
 }
+
+

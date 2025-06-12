@@ -1,10 +1,14 @@
 #pragma once
+
 #include <ostream>
 #include <concepts>
 #include <array>
 #include <cmath>
 #include <compare>
 #include <limits>
+
+#include "RGB.hpp"
+#include "../Utility/Concepts.hpp"
 
 namespace map{
     struct Point{
@@ -15,9 +19,7 @@ namespace map{
         // constexpr Point(double x_, double y_) noexcept : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
-        template <typename X, typename Y>
-        requires ((std::integral<X> or std::floating_point<X>) and (std::integral<Y> or std::floating_point<Y>))
-        constexpr Point(X x_, Y y_) noexcept : x(static_cast<double>(x_)), y(static_cast<double>(y_)) {}
+        constexpr Point(cpts::numeric auto x, cpts::numeric auto y) noexcept : x(static_cast<double>(x)), y(static_cast<double>(y)) {}
 
         [[nodiscard]] constexpr Point operator+(const Point& p) const noexcept {
             return {x + p.x, y + p.y};
@@ -155,7 +157,7 @@ namespace map{
         double x{};
         double y{};
         double z{};
-        
+
 
         enum Axis{
             X = 0,
@@ -166,8 +168,8 @@ namespace map{
 
         constexpr Point3D() : x{}, y{}, z{} {}
         constexpr explicit Point3D(double i) : x{i}, y{i}, z{i} {}
-        constexpr Point3D(double x_, double y_, double z_) : x{x_}, y{y_}, z{z_} {}
-        
+        constexpr Point3D(double x, double y, double z) : x{x}, y{y}, z{z} {}
+
         constexpr Point3D(std::integral auto x_, std::integral auto y_, std::integral auto z_)
         : x{static_cast<double>(x_)}, y{static_cast<double>(y_)}, z{static_cast<double>(z_)} {}
 
@@ -212,19 +214,23 @@ namespace map{
 
         // constexpr auto operator<=>(const Point3D&) const = default; // un-needed
 
-        [[nodiscard]] constexpr Point3D abs() const {
-            return {std::abs(x), std::abs(y), std::abs(z)};
+        constexpr Point3D abs() noexcept {
+            x = std::abs(x);
+            y = std::abs(y);
+            z = std::abs(z);
+
+            return *this;
         }
 
-        [[nodiscard]] constexpr double magSqrd() const {
+        [[nodiscard]] constexpr double magSqrd() const noexcept {
             return x * x + y * y + z * z;
         }
 
-        [[nodiscard]] constexpr double mag() const {
+        [[nodiscard]] constexpr double mag() const noexcept {
             return std::sqrt(magSqrd());
         }
 
-        constexpr void normalize(){
+        constexpr void normalize() noexcept {
             double m = mag();
             if(m < std::numeric_limits<double>::epsilon()){
                 x /= m;
@@ -233,25 +239,25 @@ namespace map{
             }
         }
 
-        [[nodiscard]] constexpr Point3D normalized() const {
+        [[nodiscard]] constexpr Point3D normalized() const noexcept {
             Point3D p = *this;
             p.normalize();
             return p;
         }
 
-        [[nodiscard]] constexpr Point3D max(const Point3D& p) const {
+        [[nodiscard]] constexpr Point3D max(const Point3D& p) const noexcept {
             return {std::max(x, p.x), std::max(y, p.y), std::max(z, p.z)};
         }
 
-        [[nodiscard]] constexpr Point3D min(const Point3D& p) const {
+        [[nodiscard]] constexpr Point3D min(const Point3D& p) const noexcept {
             return {std::min(x, p.x), std::min(y, p.y), std::min(z, p.z)};
         }
 
-        [[nodiscard]] constexpr double distSqrd(const Point3D& p) const {
+        [[nodiscard]] constexpr double distSqrd(const Point3D& p) const noexcept {
             return (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) + (z - p.z) * (z - p.z);
         }
 
-        [[nodiscard]] constexpr double dist(const Point3D& p) const {
+        [[nodiscard]] constexpr double dist(const Point3D& p) const noexcept {
             return std::sqrt(this->distSqrd(p));
         }
 
@@ -264,7 +270,7 @@ namespace map{
         //     return a.distSqrd(b);
         // }
 
-        constexpr friend Point3D operator * (const double matrix[3][3], const Point3D& p){
+        constexpr friend Point3D operator * (const double matrix[3][3], const Point3D& p) noexcept {
             return {
                 p.x * matrix[0][0] + p.y * matrix[0][1] + p.z * matrix[0][2],
                 p.x * matrix[1][0] + p.y * matrix[1][1] + p.z * matrix[1][2],
@@ -273,7 +279,7 @@ namespace map{
         }
 
         template <Axis axis>
-        constexpr void rotate(double angle, Point3D center = {}){
+        constexpr void rotate(double angle, Point3D center = {}) noexcept {
             double ROT_MAT[3][3] = {
                 {1, 0, 0},
                 {0, 1, 0},
@@ -305,7 +311,7 @@ namespace map{
         }
 
         template <Axis axis>
-        [[nodiscard]] constexpr Point3D rotated(double angle, Point3D center = {}) const {
+        [[nodiscard]] constexpr Point3D rotated(double angle, Point3D center = {}) const noexcept {
             Point3D p = *this;
             p.rotate<axis>(angle, center);
             return p;
@@ -314,6 +320,19 @@ namespace map{
         friend std::ostream& operator << (std::ostream &os, const Point3D& p){
             return os << p.x << ", " << p.y << ", " << p.z;
         }
+
+
+        explicit operator clr::RGB() const noexcept {
+            return {x, y, z};
+            // the constructor already clamps
+            // return {
+            //         std::clamp<uint8_t>(x, 0, 255),
+            //         std::clamp<uint8_t>(y, 0, 255),
+            //         std::clamp<uint8_t>(z, 0, 255)
+            //     };
+        }
+
+        // explicit operator Point() const noexcept { return {x, y}; }
     };
 
 

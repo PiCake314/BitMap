@@ -17,6 +17,7 @@
 #include <utility>
 #include <filesystem>
 #include <chrono>
+#include <numbers>
 
 #include <unistd.h>
 
@@ -337,15 +338,15 @@ namespace map{
 
             // ----------------------- Operators -----------------------
 
-            clr::RGB &operator[](const Point&) noexcept;
-            
-            clr::RGB &operator[](size_t) noexcept;
+            clr::RGB& operator[](const Point&) noexcept;
 
-            map::clr::RGB &at(const Point&);
+            clr::RGB& operator[](size_t) noexcept;
 
-            map::clr::RGB &at(size_t i);
+            map::clr::RGB& at(const Point&);
 
-             clr::RGB *begin() noexcept;
+            map::clr::RGB& at(size_t i);
+
+            clr::RGB *begin() noexcept;
 
             clr::RGB *end() noexcept;
 

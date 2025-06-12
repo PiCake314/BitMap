@@ -2,9 +2,13 @@
 
 #include <iostream>
 #include <algorithm>
+#include <concepts>
+
+#include "../Utility/Concepts.hpp"
 
 namespace map{
     namespace clr{
+
         struct RGB{
             uint8_t red{};
             uint8_t green{};
@@ -18,16 +22,16 @@ namespace map{
             // blue(0)
             // {}
 
-            constexpr explicit RGB(uint8_t v) noexcept :
-            red(std::clamp<uint8_t>(v, 0, 255)),
-            green(std::clamp<uint8_t>(v, 0, 255)),
-            blue(std::clamp<uint8_t>(v, 0, 255))
+            constexpr explicit RGB(cpts::numeric auto v) noexcept :
+            red{  uint8_t(std::clamp<decltype(v)>(v, 0, 255))},
+            green{uint8_t(std::clamp<decltype(v)>(v, 0, 255))},
+            blue{ uint8_t(std::clamp<decltype(v)>(v, 0, 255))}
             {}
 
-            constexpr RGB(uint8_t r, uint8_t g, uint8_t b) noexcept :
-            red(std::clamp<uint8_t>(r, 0, 255)),
-            green(std::clamp<uint8_t>(g, 0, 255)),
-            blue(std::clamp<uint8_t>(b, 0, 255))
+            constexpr RGB(cpts::numeric auto r, cpts::numeric auto g, cpts::numeric auto b) noexcept :
+            red{  uint8_t(std::clamp<decltype(r)>(r, 0, 255))},
+            green{uint8_t(std::clamp<decltype(g)>(g, 0, 255))},
+            blue{ uint8_t(std::clamp<decltype(b)>(b, 0, 255))}
             {}
 
             // that was stupid anyway
@@ -52,7 +56,7 @@ namespace map{
             constexpr bool operator==(const RGB& rgb) const noexcept = default;
 
             friend std::ostream& operator<<(std::ostream &os, const RGB &c) noexcept {
-                return (os << int(c.red) << " " << int(c.green) << " " << int(c.blue));
+                return os << int(c.red) << " " << int(c.green) << " " << int(c.blue);
             }
 
             static RGB RAND() noexcept {

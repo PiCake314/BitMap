@@ -1,11 +1,11 @@
 DEP = mains/main.cpp  src/Structs/Renderables/Shapes/*.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
 
-CC = g++
+CC = g++-14
 
 CVER = -std=c++20
-FLAGS = -pthread -c
+FLAGS = -fopenmp -pthread -c
 NoWarn = -Wno-c++98-compat -Wno-switch 
-OPT = -O0
+OPT = -O2
 
 EXEC_NAME = mapper_exec
 

@@ -1,9 +1,9 @@
 #pragma once
 
 namespace map{
-    struct Config{
-        static decltype(sizeof(0)) height;
-        static decltype(sizeof(0)) width;
+    namespace Config{
+        inline decltype(sizeof(0)) height;
+        inline decltype(sizeof(0)) width;
     };
 
 }
