@@ -19,23 +19,18 @@ namespace map{
         // constexpr Point(double x_, double y_) noexcept : x(x_), y(y_) {}
         // Point(int x_, int y_) : x(x_), y(y_) {}
 
-        constexpr Point(cpts::numeric auto x, cpts::numeric auto y) noexcept : x(static_cast<double>(x)), y(static_cast<double>(y)) {}
+        constexpr Point(const cpts::numeric auto x, const cpts::numeric auto y) noexcept : x(static_cast<double>(x)), y(static_cast<double>(y)) {}
 
-        [[nodiscard]] constexpr Point operator+(const Point& p) const noexcept {
-            return {x + p.x, y + p.y};
-        }
+        [[nodiscard]] constexpr Point operator+(const Point& p) const noexcept { return {x + p.x, y + p.y}; }
 
-        [[nodiscard]] constexpr Point operator-(const Point& p) const noexcept {
-            return {x - p.x, y - p.y};
-        }
+        [[nodiscard]] constexpr Point operator-(const Point& p) const noexcept { return {x - p.x, y - p.y}; }
+        [[nodiscard]] constexpr Point operator-() const noexcept { return {-x, -y}; }
 
-        [[nodiscard]] constexpr Point operator*(double f) const noexcept {
-            return {x * f, y * f};
-        }
-
-        [[nodiscard]] constexpr Point operator/(double f) const noexcept {
-            return {x / f, y / f};
-        }
+        [[nodiscard]] constexpr Point operator*(double d) const noexcept { return {x * d, y * d}; }
+        [[nodiscard]] friend constexpr Point operator*(const double d, const Point &p) noexcept { return p * d; }
+ 
+        [[nodiscard]] constexpr Point operator/(double f) const noexcept { return {x / f, y / f}; }
+        [[nodiscard]] friend constexpr Point operator/(const double d, const Point &p) noexcept { return p / d; }
 
         constexpr Point operator+=(const Point& p) noexcept {
             return *this = *this + p;
@@ -73,7 +68,7 @@ namespace map{
 
         constexpr void normalize() noexcept {
             double m = mag(); // m is never < 0
-            if(m < std::numeric_limits<double>::epsilon()){
+            if(m > std::numeric_limits<double>::epsilon()){
                 x /= m;
                 y /= m;
             }
@@ -100,6 +95,8 @@ namespace map{
         [[nodiscard]] constexpr double dist(const Point& p) const noexcept {
             return std::sqrt(distSqrd(p));
         }
+
+        constexpr void reset() noexcept { *this = {}; }
 
         // why..
         static constexpr double dist(const Point& a, const Point& b) noexcept {
@@ -166,7 +163,7 @@ namespace map{
         };
 
 
-        constexpr Point3D() : x{}, y{}, z{} {}
+        constexpr Point3D() = default;
         constexpr explicit Point3D(double i) : x{i}, y{i}, z{i} {}
         constexpr Point3D(double x, double y, double z) : x{x}, y{y}, z{z} {}
 
@@ -174,45 +171,41 @@ namespace map{
         : x{static_cast<double>(x_)}, y{static_cast<double>(y_)}, z{static_cast<double>(z_)} {}
 
 
-        [[nodiscard]] constexpr Point toPoint() const {
+        [[nodiscard]] constexpr Point toPoint() const noexcept {
             return {x, y};
         }
 
-        [[nodiscard]] constexpr Point3D operator+(const Point3D& p) const {
+        [[nodiscard]] constexpr Point3D operator+(const Point3D& p) const noexcept {
             return {x + p.x, y + p.y, z + p.z};
         }
 
-        [[nodiscard]] constexpr Point3D operator-(const Point3D& p) const {
+        [[nodiscard]] constexpr Point3D operator-(const Point3D& p) const noexcept {
             return {x - p.x, y - p.y, z - p.z};
         }
 
-        [[nodiscard]] constexpr Point3D operator*(double f) const {
-            return {x * f, y * f, z * f};
-        }
+        [[nodiscard]] constexpr Point3D operator-() const noexcept { return {-x, -y, -z}; }
 
-        [[nodiscard]] constexpr Point3D operator/(double f) const {
-            return {x / f, y / f, z / f};
-        }
+        [[nodiscard]] constexpr Point3D operator*(const double d) const noexcept { return {x * d, y * d, z * d}; }
+        [[nodiscard]] friend constexpr Point3D operator*(const double d, const Point3D &p) noexcept { return p * d; }
 
-        constexpr Point3D operator+=(const Point3D& p){
-            return *this = *this + p;
-        }
+        [[nodiscard]] constexpr Point3D operator/(const double d) const noexcept { return {x / d, y / d, z / d}; }
+        [[nodiscard]] friend constexpr Point3D operator/(const double d, const Point3D &p) noexcept { return p / d; }
 
-        constexpr Point3D operator-=(const Point3D& p){
-            return *this = *this - p;
-        }
+        constexpr Point3D operator+=(const Point3D& p) noexcept { return *this = *this + p; }
 
-        constexpr Point3D operator*=(double f){
-            return *this = *this * f;
-        }
+        constexpr Point3D operator-=(const Point3D& p) noexcept { return *this = *this - p; }
 
-        constexpr Point3D operator/=(double f){
-            return *this = *this / f;
-        }
+        constexpr Point3D operator*=(double f) noexcept { return *this = *this * f; }
 
-        constexpr bool operator==(const Point3D& p) const = default;
+        constexpr Point3D operator/=(double f) noexcept { return *this = *this / f; }
+
+        constexpr bool operator==(const Point3D& p) const noexcept = default;
 
         // constexpr auto operator<=>(const Point3D&) const = default; // un-needed
+
+        constexpr double dot(const Point3D& v) const noexcept {
+            return x * v.x + y * v.y + z * v.z;
+        }
 
         constexpr Point3D abs() noexcept {
             x = std::abs(x);
@@ -232,7 +225,7 @@ namespace map{
 
         constexpr void normalize() noexcept {
             double m = mag();
-            if(m < std::numeric_limits<double>::epsilon()){
+            if(m > std::numeric_limits<double>::epsilon()){
                 x /= m;
                 y /= m;
                 z /= m;
@@ -260,6 +253,8 @@ namespace map{
         [[nodiscard]] constexpr double dist(const Point3D& p) const noexcept {
             return std::sqrt(this->distSqrd(p));
         }
+
+        constexpr void reset() noexcept { *this = {}; }
 
         // no
         // static constexpr double dist(const Point3D& a, const Point3D& b){

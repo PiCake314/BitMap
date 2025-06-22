@@ -7,4 +7,5 @@ main
 CMakelists.txt
 build/
 WRITEUP.md
+object_files/
 object_files/*.o

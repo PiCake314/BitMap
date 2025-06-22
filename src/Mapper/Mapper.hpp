@@ -340,11 +340,11 @@ namespace map{
 
             clr::RGB& operator[](const Point&) noexcept;
 
-            clr::RGB& operator[](size_t) noexcept;
+            clr::RGB& operator[](const size_t) noexcept;
 
             map::clr::RGB& at(const Point&);
 
-            map::clr::RGB& at(size_t i);
+            map::clr::RGB& at(const size_t i);
 
             clr::RGB *begin() noexcept;
 

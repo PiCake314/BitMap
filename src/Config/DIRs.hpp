@@ -23,6 +23,10 @@ namespace map::dirs{
     inline const std::filesystem::path MANGLED_PPM = MANGLED.string() + ".ppm";
     inline const std::filesystem::path MANGLED_MP4 = MANGLED.string() + ".mp4";
 
-    inline const std::filesystem::path FONTS_DIR = std::getenv("MAPPER_FONT_PATH") ? std::getenv("MAPPER_FONT_PATH") : "fonts";
+    inline const std::filesystem::path FONTS_DIR = []{
+        // if a built-in path exists, use it, otherwise use fonts/
+        const auto var = std::getenv("MAPPER_FONT_PATH");
+        return var ? var : "fonts";
+    }();
 
 }

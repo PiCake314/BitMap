@@ -1185,22 +1185,22 @@ void map::Mapper::clearFrames() const {
 
 // ----------------------- Operators ----------------------- //
 
-map::clr::RGB &map::Mapper::operator[](const Point& p) noexcept {
+map::clr::RGB& map::Mapper::operator[](const Point& p) noexcept {
     return m_Map[size_t(p.y) * m_Size.width + size_t(p.x)];
 }
 
-map::clr::RGB &map::Mapper::operator[](size_t i) noexcept {
+map::clr::RGB& map::Mapper::operator[](const size_t i) noexcept {
     return m_Map[i];
 }
 
 
-map::clr::RGB &map::Mapper::at(const Point& p){
+map::clr::RGB& map::Mapper::at(const Point& p){
     if(not safePoint(p)) throw std::out_of_range("Point out of range");
 
     return m_Map[size_t(p.y) * m_Size.width + size_t(p.x)];
 }
 
-map::clr::RGB &map::Mapper::at(size_t i){
+map::clr::RGB& map::Mapper::at(const size_t i){
     if(i < 0 or i >= m_Size.height * m_Size.width) throw std::out_of_range("Index out of range");
 
     return m_Map[i];

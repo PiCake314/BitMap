@@ -34,7 +34,7 @@ namespace map{
             blue{ uint8_t(std::clamp<decltype(b)>(b, 0, 255))}
             {}
 
-            // that was stupid anyway
+            // that was stupid anyway --: added a conversion in Point3D instead
             // explicit constexpr RGB(const map::Point3D& p) noexcept:
             // red(std::clamp<uint8_t>(uint8_t(p.x), 0, 255)),
             // green(std::clamp<uint8_t>(uint8_t(p.y), 0, 255)),
