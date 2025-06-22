@@ -9,13 +9,14 @@ OPT = -O2
 
 EXEC_NAME = mapper_exec
 
-compile: $(DEP)
-	find src -name "*.cpp" | xargs $(CC) $(CVER) $(OPT) mains/main.cpp $(FLAGS) -Wall $(NoWarn)
-
-
 move: $(DEP)
 	make compile && mv *.o object_files
 
+compile: $(DEP)
+	find src -name "*.cpp" | xargs $(CC) $(CVER) $(OPT) mains/main.cpp $(FLAGS) -Wall $(NoWarn)
+
+mv:
+	mv *.o object_files
 
 test: unit_tests/test.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
 	$(CC) $(CVER) -o test unit_tests/test.cpp src/Mapper/Mapper.cpp src/Structs/Shapes/*.cpp src/Config/Config.cpp \
@@ -28,7 +29,7 @@ test: unit_tests/test.cpp src/Mapper/Mapper.cpp src/Config/Config.cpp
 	# make videodeb filename=test.mp4 h=100 w=100 fps=10 && make clean
 
 clean: 
-	rm mapper_exec test *.o
+	rm object_files/*.o
 
 dir:
 	mkdir output/pngs; mkdir output/vids; mkdir output/vids/.temp; mkdir sounds
